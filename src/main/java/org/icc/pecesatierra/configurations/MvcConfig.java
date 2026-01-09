@@ -20,12 +20,10 @@ public class MvcConfig implements WebMvcConfigurer {
                     protected Resource getResource(String resourcePath, Resource location) throws IOException {
                         Resource requestedResource = location.createRelative(resourcePath);
 
-                        // Si el recurso existe (es un js, css, imagen, etc) lo servimos
                         if (requestedResource.exists() && requestedResource.isReadable()) {
                             return requestedResource;
                         }
 
-                        // Si no existe y no es una ruta de API, servimos el index.html
                         if (!resourcePath.startsWith("api/")) {
                             return location.createRelative("index.html");
                         }

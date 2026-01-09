@@ -44,6 +44,7 @@ public class RoleServiceImp implements RoleService {
                 .name(roleRequestDto.getName())
                 .color(roleRequestDto.getColor())
                 .createdAt(LocalDateTime.now())
+                .description(roleRequestDto.getDescription())
                 .permissions(new HashSet<>())
                 .build());
 

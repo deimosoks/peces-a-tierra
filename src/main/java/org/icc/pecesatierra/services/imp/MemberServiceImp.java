@@ -109,7 +109,7 @@ public class MemberServiceImp implements MemberService {
 
         Pageable pageable = PageRequest.of(page, 20);
 
-        Page<Member> members = memberRepository.findByQueryActive(query,onlyActive ,pageable);
+        Page<Member> members = onlyActive ? memberRepository.findByQueryActive(query, pageable) : memberRepository.findByQuery(query, pageable);
 
         int totalPages = members.getTotalPages();
 

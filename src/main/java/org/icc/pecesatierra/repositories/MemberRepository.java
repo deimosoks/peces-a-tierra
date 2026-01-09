@@ -15,7 +15,17 @@ public interface MemberRepository extends JpaRepository<Member,String> {
 
     @Query("""
     SELECT m FROM Member m
-    WHERE m.active = :active
+    WHERE LOWER(m.completeName) LIKE LOWER(CONCAT('%', :query, '%'))
+       OR m.cc LIKE CONCAT('%', :query, '%')
+       OR LOWER(m.type) LIKE LOWER(CONCAT('%', :query, '%'))
+       OR LOWER(m.category) LIKE LOWER(CONCAT('%', :query, '%'))
+       OR LOWER(m.id) LIKE LOWER(CONCAT('%', :query, '%'))
+    """)
+    Page<Member> findByQuery(@Param("query") String query, Pageable pageable);
+
+    @Query("""
+    SELECT m FROM Member m
+    WHERE m.active = true
       AND (
            LOWER(m.completeName) LIKE LOWER(CONCAT('%', :query, '%'))
         OR m.cc LIKE CONCAT('%', :query, '%')
@@ -24,9 +34,7 @@ public interface MemberRepository extends JpaRepository<Member,String> {
         OR LOWER(m.id) LIKE LOWER(CONCAT('%', :query, '%'))
       )
     """)
-    Page<Member> findByQueryActive(@Param("query") String query,
-                                   @Param("active") boolean active,
-                                   Pageable pageable);
+    Page<Member> findByQueryActive(@Param("query") String query, Pageable pageable);
 
     Page<Member> findAllByActiveTrue(Pageable pageable);
 
