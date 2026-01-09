@@ -2,7 +2,6 @@ package org.icc.pecesatierra.dtos.user;
 
 import lombok.*;
 
-import java.util.List;
 import java.util.Set;
 
 @Builder

@@ -3,8 +3,6 @@ package org.icc.pecesatierra.dtos.user;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
-import org.icc.pecesatierra.enums.CategoryMember;
-import org.icc.pecesatierra.enums.TypeMember;
 
 import java.util.Set;
 

@@ -1,0 +1,96 @@
+package org.icc.pecesatierra.web.services.impl;
+
+import lombok.AllArgsConstructor;
+import org.icc.pecesatierra.domain.reference.RefreshToken;
+import org.icc.pecesatierra.domain.reference.User;
+import org.icc.pecesatierra.dtos.auth.*;
+import org.icc.pecesatierra.exceptions.RefreshTokenException;
+import org.icc.pecesatierra.exceptions.UserNotFoundException;
+import org.icc.pecesatierra.repositories.RefreshTokenRepository;
+import org.icc.pecesatierra.repositories.UserRepository;
+import org.icc.pecesatierra.web.services.AuthService;
+import org.icc.pecesatierra.web.services.JwtService;
+import org.icc.pecesatierra.web.services.RefreshTokenService;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+@Service
+@AllArgsConstructor
+public class AuthServiceImpl implements AuthService {
+
+    private RefreshTokenService refreshTokenService;
+    private JwtService jwtService;
+    private RefreshTokenRepository refreshTokenRepository;
+    private AuthenticationManager authenticationManager;
+    private UserDetailsService userDetailsService;
+    private UserRepository userRepository;
+
+    @Transactional
+    @Override
+    public AuthResponseDto login(AuthRequestDto authRequestDto) {
+
+        authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        authRequestDto.getUsername(),
+                        authRequestDto.getPassword()
+                )
+        );
+
+        UserDetails userDetails = userDetailsService.loadUserByUsername(authRequestDto.getUsername());
+
+        User user = userRepository.findByUsername(userDetails.getUsername())
+                .orElseThrow(() -> new UserNotFoundException("User doesn't exist."));
+
+        String accessToken = jwtService.generateToken(userDetails);
+
+        AccessTokenDto accessTokenDto = AccessTokenDto.builder()
+                .token(accessToken)
+                .expiredAt(jwtService.extractExpiration(accessToken))
+                .build();
+
+        return AuthResponseDto.builder()
+                .accessTokenDto(accessTokenDto)
+                .refreshTokenDto(refreshTokenService.generate(user))
+                .build();
+    }
+
+    @Transactional
+    @Override
+    public void logout(User user, RefreshTokenRequestDto refreshTokenRequestDto) {
+
+        RefreshToken refreshToken = refreshTokenRepository.findByToken(refreshTokenRequestDto.getRefreshToken())
+                .orElseThrow(() -> new RefreshTokenException("Invalid token"));
+
+        if (!user.getUsername().equals(refreshToken.getUser().getUsername())){
+            throw new RefreshTokenException("You are no the owner of this token.");
+        }
+
+        refreshTokenRepository.deleteByToken(refreshToken.getToken());
+
+    }
+
+    @Transactional
+    @Override
+    public AuthResponseDto refresh(RefreshTokenRequestDto refreshTokenRequestDto) {
+
+        RefreshToken oldRefreshToken = refreshTokenService.validate(refreshTokenRequestDto.getRefreshToken());
+
+        RefreshTokenDto newRefreshToken = refreshTokenService.rotate(oldRefreshToken);
+
+        String accessToken = jwtService.generateToken(oldRefreshToken.getUser());
+
+        AccessTokenDto newAccessTokenDto = AccessTokenDto.builder()
+                .token(accessToken)
+                .expiredAt(jwtService.extractExpiration(accessToken))
+                .build();
+
+        return AuthResponseDto.builder()
+                .accessTokenDto(newAccessTokenDto)
+                .refreshTokenDto(newRefreshToken)
+                .build();
+    }
+}
