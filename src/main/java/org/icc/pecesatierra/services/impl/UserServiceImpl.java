@@ -1,12 +1,9 @@
-package org.icc.pecesatierra.services.imp;
+package org.icc.pecesatierra.services.impl;
 
 import lombok.AllArgsConstructor;
-import org.icc.pecesatierra.dtos.permission.PermissionResponseDto;
-import org.icc.pecesatierra.dtos.role.RoleResponseDto;
 import org.icc.pecesatierra.dtos.user.*;
 import org.icc.pecesatierra.entities.*;
 import org.icc.pecesatierra.exceptions.*;
-import org.icc.pecesatierra.mappers.MemberMapper;
 import org.icc.pecesatierra.mappers.UserMapper;
 import org.icc.pecesatierra.repositories.MemberRepository;
 import org.icc.pecesatierra.repositories.RoleRepository;
@@ -29,7 +26,7 @@ import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
-public class UserServiceImp implements UserService {
+public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final MemberRepository memberRepository;

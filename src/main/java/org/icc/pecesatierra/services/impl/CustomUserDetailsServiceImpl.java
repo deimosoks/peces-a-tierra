@@ -1,4 +1,4 @@
-package org.icc.pecesatierra.services.imp;
+package org.icc.pecesatierra.services.impl;
 
 import lombok.AllArgsConstructor;
 import org.icc.pecesatierra.repositories.UserRepository;
@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @AllArgsConstructor
-public class CustomUserDetailsService implements UserDetailsService {
+public class CustomUserDetailsServiceImpl implements UserDetailsService {
 
     private final UserRepository userRepository;
 

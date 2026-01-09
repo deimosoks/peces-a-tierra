@@ -1,4 +1,4 @@
-package org.icc.pecesatierra.services.imp;
+package org.icc.pecesatierra.services.impl;
 
 import lombok.AllArgsConstructor;
 import org.icc.pecesatierra.dtos.auth.*;
@@ -20,7 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @AllArgsConstructor
-public class AuthServiceImp implements AuthService {
+public class AuthServiceImpl implements AuthService {
 
     private RefreshTokenService refreshTokenService;
     private JwtService jwtService;

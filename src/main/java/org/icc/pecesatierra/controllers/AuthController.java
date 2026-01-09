@@ -1,13 +1,40 @@
 package org.icc.pecesatierra.controllers;
 
+import jakarta.validation.Valid;
+import lombok.AllArgsConstructor;
 import org.icc.pecesatierra.dtos.auth.AuthRequestDto;
 import org.icc.pecesatierra.dtos.auth.AuthResponseDto;
 import org.icc.pecesatierra.dtos.auth.RefreshTokenRequestDto;
 import org.icc.pecesatierra.entities.User;
+import org.icc.pecesatierra.services.AuthService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-public interface AuthController {
-    ResponseEntity<AuthResponseDto> login(AuthRequestDto authRequestDto);
-    ResponseEntity<AuthResponseDto> refresh(RefreshTokenRequestDto refreshTokenRequestDto);
-    ResponseEntity<Void> logout(User user, RefreshTokenRequestDto refreshTokenRequestDto);
+@RestController
+@AllArgsConstructor
+@RequestMapping("/api/auth")
+public class AuthController extends BaseController  {
+
+    private AuthService authService;
+
+    @PostMapping("/login")
+    public ResponseEntity<AuthResponseDto> login(@RequestBody @Valid AuthRequestDto authRequestDto) {
+        return ResponseEntity.ok(authService.login(authRequestDto));
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<AuthResponseDto> refresh(@RequestBody @Valid RefreshTokenRequestDto refreshTokenRequestDto) {
+        return ResponseEntity.ok(authService.refresh(refreshTokenRequestDto));
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<Void> logout(@AuthenticationPrincipal User user,
+                                       @RequestBody @Valid RefreshTokenRequestDto refreshTokenRequestDto) {
+        authService.logout(user, refreshTokenRequestDto);
+        return ResponseEntity.ok().build();
+    }
 }

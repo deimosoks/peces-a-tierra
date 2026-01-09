@@ -1,8 +1,6 @@
-package org.icc.pecesatierra.services.imp;
+package org.icc.pecesatierra.services.impl;
 
 import lombok.AllArgsConstructor;
-import org.icc.pecesatierra.dtos.permission.PermissionRequestDto;
-import org.icc.pecesatierra.dtos.permission.PermissionResponseDto;
 import org.icc.pecesatierra.dtos.role.RoleRequestDto;
 import org.icc.pecesatierra.dtos.role.RoleResponseDto;
 import org.icc.pecesatierra.entities.Permission;
@@ -13,7 +11,6 @@ import org.icc.pecesatierra.exceptions.PermissionNotFoundException;
 import org.icc.pecesatierra.exceptions.RoleNotFoundException;
 import org.icc.pecesatierra.mappers.RoleMapper;
 import org.icc.pecesatierra.repositories.PermissionRepository;
-import org.icc.pecesatierra.repositories.RolePermissionRepository;
 import org.icc.pecesatierra.repositories.RoleRepository;
 import org.icc.pecesatierra.repositories.UserRoleRepository;
 import org.icc.pecesatierra.services.RoleService;
@@ -21,15 +18,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
-public class RoleServiceImp implements RoleService {
+public class RoleServiceImpl implements RoleService {
 
     private final RoleRepository roleRepository;
     private final RoleMapper roleMapper;

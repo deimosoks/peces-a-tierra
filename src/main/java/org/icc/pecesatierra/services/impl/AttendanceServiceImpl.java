@@ -1,4 +1,4 @@
-package org.icc.pecesatierra.services.imp;
+package org.icc.pecesatierra.services.impl;
 
 import lombok.AllArgsConstructor;
 import org.icc.pecesatierra.dtos.attendance.AttendanceRequestDto;
@@ -20,7 +20,7 @@ import java.util.List;
 
 @Service
 @AllArgsConstructor
-public class AttendanceServiceImp implements AttendanceService {
+public class AttendanceServiceImpl implements AttendanceService {
 
     private final AttendanceRepository attendanceRepository;
     private final ServiceRepository serviceRepository;

@@ -1,4 +1,4 @@
-package org.icc.pecesatierra.services.imp;
+package org.icc.pecesatierra.services.impl;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -25,7 +25,7 @@ import java.util.concurrent.ThreadLocalRandom;
 
 @Service
 @AllArgsConstructor
-public class ReportServiceImp implements ReportService {
+public class ReportServiceImpl implements ReportService {
 
     @PersistenceContext
     private EntityManager em;

@@ -1,4 +1,4 @@
-package org.icc.pecesatierra.services.imp;
+package org.icc.pecesatierra.services.impl;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -16,7 +16,7 @@ import java.util.concurrent.ThreadLocalRandom;
 @Service
 @AllArgsConstructor
 @Builder
-public class DataLoaderService implements Runnable{
+public class DataLoaderService implements Runnable {
 
     private final ServiceRepository serviceRepository;
     private final MemberRepository memberRepository;
@@ -25,7 +25,7 @@ public class DataLoaderService implements Runnable{
     @Override
     public void run() {
         LocalDateTime from = LocalDateTime.of(2021, 1, 1, 0, 0);
-        LocalDateTime to   = LocalDateTime.of(2025, 12, 31, 23, 59);
+        LocalDateTime to = LocalDateTime.of(2025, 12, 31, 23, 59);
 
         serviceRepository.findAll().forEach(service -> {
             LocalDateTime attendanceDate = randomDateTime(from, to);

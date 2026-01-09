@@ -1,10 +1,7 @@
-package org.icc.pecesatierra.services.imp;
+package org.icc.pecesatierra.services.impl;
 
 import lombok.AllArgsConstructor;
-import org.icc.pecesatierra.dtos.auth.AccessTokenDto;
-import org.icc.pecesatierra.dtos.auth.AuthResponseDto;
 import org.icc.pecesatierra.dtos.auth.RefreshTokenDto;
-import org.icc.pecesatierra.dtos.auth.RefreshTokenRequestDto;
 import org.icc.pecesatierra.entities.RefreshToken;
 import org.icc.pecesatierra.entities.User;
 import org.icc.pecesatierra.exceptions.RefreshTokenException;
@@ -12,7 +9,6 @@ import org.icc.pecesatierra.mappers.RefreshTokenMapper;
 import org.icc.pecesatierra.repositories.RefreshTokenRepository;
 import org.icc.pecesatierra.services.JwtService;
 import org.icc.pecesatierra.services.RefreshTokenService;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,7 +18,7 @@ import java.util.Date;
 
 @Service
 @AllArgsConstructor
-public class RefreshTokenServiceImp implements RefreshTokenService {
+public class RefreshTokenServiceImpl implements RefreshTokenService {
 
     private final RefreshTokenRepository refreshTokenRepository;
     private final JwtService jwtService;

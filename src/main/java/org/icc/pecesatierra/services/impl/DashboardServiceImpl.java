@@ -1,11 +1,10 @@
-package org.icc.pecesatierra.services.imp;
+package org.icc.pecesatierra.services.impl;
 
 import lombok.AllArgsConstructor;
 import org.icc.pecesatierra.dtos.dashboard.DashboardResponseDto;
 import org.icc.pecesatierra.dtos.member.MemberResponseDto;
 import org.icc.pecesatierra.dtos.report.ReportRequestDto;
 import org.icc.pecesatierra.dtos.report.ReportResponseDto;
-import org.icc.pecesatierra.entities.Member;
 import org.icc.pecesatierra.mappers.MemberMapper;
 import org.icc.pecesatierra.repositories.AttendanceRepository;
 import org.icc.pecesatierra.repositories.MemberRepository;
@@ -18,7 +17,7 @@ import java.util.List;
 
 @Service
 @AllArgsConstructor
-public class DashboardServiceImp implements DashboardService {
+public class DashboardServiceImpl implements DashboardService {
 
     private final AttendanceRepository attendanceRepository;
     private final MemberRepository memberRepository;
