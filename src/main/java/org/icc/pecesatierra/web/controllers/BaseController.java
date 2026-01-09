@@ -1,6 +1,7 @@
 package org.icc.pecesatierra.web.controllers;
 
 import lombok.AllArgsConstructor;
+import lombok.Data;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -34,6 +35,7 @@ public abstract class BaseController {
         return ResponseEntity.status(status).body(new ApiResponse<>(false, data, message));
     }
 
+    @Data
     @AllArgsConstructor
     public static class ApiResponse<T> {
         private boolean success;
