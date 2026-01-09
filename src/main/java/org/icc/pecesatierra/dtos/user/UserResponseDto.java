@@ -3,8 +3,6 @@ package org.icc.pecesatierra.dtos.user;
 import lombok.*;
 import org.icc.pecesatierra.dtos.member.MemberResponseDto;
 import org.icc.pecesatierra.dtos.role.RoleResponseDto;
-import org.icc.pecesatierra.enums.CategoryMember;
-import org.icc.pecesatierra.enums.TypeMember;
 
 import java.time.LocalDateTime;
 import java.util.Set;
