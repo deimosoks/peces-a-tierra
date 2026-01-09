@@ -28,8 +28,8 @@ public class Services {
 //    @Column(nullable = false)
 //    private String dayOfWeek;
 
-    @Column(nullable = false)
-    private LocalTime startTime;
+//    @Column(nullable = false)
+//    private LocalTime startTime;
 
     private LocalDateTime updatedAt;
 

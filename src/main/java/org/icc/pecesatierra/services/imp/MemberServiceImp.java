@@ -19,14 +19,9 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import static org.icc.pecesatierra.utils.Validator.validate;
 
 @Service
 @AllArgsConstructor
@@ -114,7 +109,7 @@ public class MemberServiceImp implements MemberService {
 
         Pageable pageable = PageRequest.of(page, 20);
 
-        Page<Member> members = onlyActive ? memberRepository.findByQueryActive(query, pageable) : memberRepository.findByQuery(query, pageable);
+        Page<Member> members = memberRepository.findByQueryActive(query,onlyActive ,pageable);
 
         int totalPages = members.getTotalPages();
 
@@ -129,16 +124,14 @@ public class MemberServiceImp implements MemberService {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new MemberNotFoundException("Member doesn't exist."));
 
-        validate(
-                !attendanceRepository.existsByMember(member),
-                new MemberHasHistoricalRecordException("Member Member has historical record and cannot be deleted")
-        );
+        if (attendanceRepository.existsByMember(member))
+            throw new MemberHasHistoricalRecordException("Member Member has historical record and cannot be deleted");
 
         String pictureUrl = member.getPictureProfileUrl();
 
         memberRepository.delete(member);
 
-        pictureManager.delete(pictureUrl);
+        if (pictureUrl != null)pictureManager.delete(pictureUrl);
     }
 
     @Override

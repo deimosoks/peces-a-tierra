@@ -3,8 +3,8 @@ package org.icc.pecesatierra.dtos.member;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
-import org.icc.pecesatierra.enums.CategoryPerson;
-import org.icc.pecesatierra.enums.TypePerson;
+import org.icc.pecesatierra.enums.CategoryMember;
+import org.icc.pecesatierra.enums.TypeMember;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
@@ -20,10 +20,10 @@ public class MemberRequestDto {
     private String completeName;
 
     @NotNull
-    private TypePerson type;
+    private TypeMember type;
 
     @NotNull
-    private CategoryPerson category;
+    private CategoryMember category;
 
     private String cellphone;
 

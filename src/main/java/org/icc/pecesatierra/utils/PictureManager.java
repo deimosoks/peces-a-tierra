@@ -11,8 +11,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.UUID;
 
-import static org.icc.pecesatierra.utils.Validator.validate;
-
 @Component
 public class PictureManager {
 
@@ -26,17 +24,13 @@ public class PictureManager {
 
             if (file != null) {
 
-                validate(
-                        tika.detect(file.getBytes()).startsWith("image/"),
-                        new InvalidImageFormatException("Invalid image format.")
-                );
+                if (!tika.detect(file.getBytes()).startsWith("image/"))
+                    throw new InvalidImageFormatException("Invalid image format");
 
                 String originalName = file.getOriginalFilename();
 
-                validate(
-                        !(originalName == null || !originalName.contains(".")),
-                        new InvalidImageFormatException("Invalid image format")
-                );
+                if (originalName == null || !originalName.contains("."))
+                    throw new InvalidImageFormatException("Invalid image format.");
 
                 newFileName = UUID.randomUUID() + originalName.substring(originalName.lastIndexOf("."));
 

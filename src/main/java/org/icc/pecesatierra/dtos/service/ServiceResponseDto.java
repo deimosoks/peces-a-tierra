@@ -14,10 +14,12 @@ public class ServiceResponseDto {
 
     private String id;
     private String name;
-//    private String dayOfWeek;
-    private LocalTime startTime;
+
     private LocalDateTime createdAt;
     private String description;
     private boolean active;
+
+    //    private String dayOfWeek;
+//    private LocalTime startTime;
 
 }

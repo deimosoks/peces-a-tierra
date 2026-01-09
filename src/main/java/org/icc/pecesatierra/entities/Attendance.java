@@ -3,6 +3,8 @@ package org.icc.pecesatierra.entities;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
+
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
@@ -21,6 +23,9 @@ public class Attendance {
     @Column(nullable = false)
     private String memberType;
 
+    @Column(nullable = false)
+    private LocalDateTime serviceStartDate;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("serviceId")
     @JoinColumn(name = "service_id", nullable = false)
@@ -31,4 +36,15 @@ public class Attendance {
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
 
+    @Override
+    public String toString() {
+        return "Attendance{" +
+                "id=" + id +
+                ", memberCategory='" + memberCategory + '\'' +
+                ", memberType='" + memberType + '\'' +
+                ", serviceStartDate=" + serviceStartDate +
+                ", services=" + services +
+                ", member=" + member +
+                '}';
+    }
 }

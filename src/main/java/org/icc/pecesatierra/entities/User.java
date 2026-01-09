@@ -3,11 +3,14 @@ package org.icc.pecesatierra.entities;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -37,17 +40,22 @@ public class User implements UserDetails {
     @Column(nullable = false)
     private LocalDateTime createdAt;
 
-    @Column(nullable = false)
     private LocalDateTime updatedAt;
 
     @Column(nullable = false)
-    private boolean state;
+    private boolean active;
 
-
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    List<UserRole> roles = new ArrayList<>();
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of();
+        return this.roles.stream()
+                .flatMap(userRole ->
+                        userRole.getRole().getPermissions().stream()
+                        ).map(rolePermission ->
+                            new SimpleGrantedAuthority(rolePermission.getPermission().getName())
+                        ).collect(Collectors.toSet());
     }
 
     @Override

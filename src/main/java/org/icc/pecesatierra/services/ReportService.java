@@ -5,5 +5,5 @@ import org.icc.pecesatierra.dtos.report.*;
 import java.util.List;
 
 public interface ReportService {
-    List<AttendanceReportRowDto> generate(ReportRequestDto reportRequestDto);
+    List<ReportResponseDto> generate(ReportRequestDto reportRequestDto);
 }

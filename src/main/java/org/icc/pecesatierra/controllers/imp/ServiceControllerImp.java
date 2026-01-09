@@ -8,6 +8,7 @@ import org.icc.pecesatierra.dtos.service.ServiceResponseDto;
 import org.icc.pecesatierra.services.ServiceService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,12 +21,14 @@ public class ServiceControllerImp implements ServiceController {
     private final ServiceService serviceService;
 
     @Override
+    @PreAuthorize("hasAuthority('CREATE_SERVICE')")
     @PostMapping
     public ResponseEntity<ServiceResponseDto> create(@Valid @RequestBody ServiceRequestDto serviceRequestDto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(serviceService.create(serviceRequestDto));
     }
 
     @Override
+    @PreAuthorize("hasAuthority('UPDATE_SERVICE')")
     @PutMapping("/{serviceId}")
     public ResponseEntity<ServiceResponseDto> update(@Valid @RequestBody ServiceRequestDto serviceRequestDto,
                                                      @PathVariable String serviceId) {
@@ -33,6 +36,7 @@ public class ServiceControllerImp implements ServiceController {
     }
 
     @Override
+    @PreAuthorize("hasAuthority('DELETE_SERVICE')")
     @DeleteMapping("/{serviceId}")
     public ResponseEntity<ServiceResponseDto> delete(@PathVariable String serviceId) {
         serviceService.delete(serviceId);
@@ -40,12 +44,14 @@ public class ServiceControllerImp implements ServiceController {
     }
 
     @Override
+    @PreAuthorize("hasAuthority('VIEW_SERVICE_PANEL')")
     @GetMapping
     public ResponseEntity<List<ServiceResponseDto>> findAll(@RequestParam boolean onlyActive) {
         return ResponseEntity.ok(serviceService.findAll(onlyActive));
     }
 
     @Override
+    @PreAuthorize("hasAuthority('UPDATE_SERVICE')")
     @PatchMapping("/{serviceId}")
     public ResponseEntity<Boolean> updateState(@PathVariable String serviceId,
                                                @RequestParam boolean active) {

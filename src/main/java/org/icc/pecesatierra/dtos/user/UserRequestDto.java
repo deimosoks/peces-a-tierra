@@ -3,8 +3,10 @@ package org.icc.pecesatierra.dtos.user;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
-import org.icc.pecesatierra.enums.CategoryPerson;
-import org.icc.pecesatierra.enums.TypePerson;
+import org.icc.pecesatierra.enums.CategoryMember;
+import org.icc.pecesatierra.enums.TypeMember;
+
+import java.util.Set;
 
 @Builder
 @Getter
@@ -20,24 +22,32 @@ public class UserRequestDto {
     private String username;
 
     @NotBlank
-    private String memberCompleteName;
-
-    @NotBlank
-    private String cellphone;
-
-    @NotBlank
-    private String address;
-
-    @NotBlank
-    private String birthdate;
+    private String password;
 
     @NotNull
-    private CategoryPerson categoryPerson;
+    private Set<String> rolesId;
 
-    @NotNull
-    private TypePerson typePerson;
 
-    @NotBlank
-    private String cc;
+//    @NotBlank
+//    private String memberCompleteName;
+//
+//    @NotBlank
+//    private String cellphone;
+//
+//    @NotBlank
+//    private String address;
+//
+//    @NotBlank
+//    private String birthdate;
+//
+//    @NotNull
+//    private CategoryMember categoryMember;
+//
+//    @NotNull
+//    private TypeMember typeMember;
+//
 
+//
+//    @NotBlank
+//    private String cc;
 }

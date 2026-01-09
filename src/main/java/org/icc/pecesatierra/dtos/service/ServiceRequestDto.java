@@ -22,7 +22,7 @@ public class ServiceRequestDto {
 //    @NotNull
 //    private DayOfWeek dayOfWeek;
 
-    @NotNull
-    private LocalTime startTime;
+//    @NotNull
+//    private LocalTime startTime;
 
 }

@@ -12,13 +12,11 @@ import org.icc.pecesatierra.repositories.AttendanceRepository;
 import org.icc.pecesatierra.repositories.MemberRepository;
 import org.icc.pecesatierra.repositories.ServiceRepository;
 import org.icc.pecesatierra.services.AttendanceService;
-import org.icc.pecesatierra.utils.Validator;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
-
-import static org.icc.pecesatierra.utils.Validator.validate;
 
 @Service
 @AllArgsConstructor
@@ -37,23 +35,19 @@ public class AttendanceServiceImp implements AttendanceService {
             Services service = serviceRepository.findById(attendanceRequestDto.getServiceId())
                     .orElseThrow(() -> new ServicesNotFoundException("Service doesn't exist."));
 
-            validate(
-                    service.isActive(),
-                    new ServicesNotFoundException("You cannot create an attendance record with a service that is deactivated.")
-            );
+            if (!service.isActive())
+                throw new ServicesNotFoundException("You cannot create an attendance record with a service that is deactivated.");
 
             Member member = memberRepository.findById(attendanceRequestDto.getMemberId())
                     .orElseThrow(() -> new MemberNotFoundException("Member doesn't exist."));
 
-            validate(
-                    service.isActive(),
-                    new ServicesNotFoundException("You cannot create an attendance record with a member that is deactivated.")
-            );
+            if (!member.isActive())
+                throw new ServicesNotFoundException("You cannot create an attendance record with a member that is deactivated.");
 
             AttendanceId attendanceId = AttendanceId.builder()
                     .serviceId(service.getId())
                     .memberId(member.getId())
-                    .attendanceDate(attendanceRequestDto.getAttendanceDate())
+                    .attendanceDate(LocalDateTime.now())
                     .build();
 
             Attendance attendance = Attendance.builder()
@@ -62,6 +56,7 @@ public class AttendanceServiceImp implements AttendanceService {
                     .services(service)
                     .memberCategory(member.getCategory())
                     .memberType(member.getType())
+                    .serviceStartDate(attendanceRequestDto.getAttendanceDate())
                     .build();
 
             attendanceRepository.save(attendance);

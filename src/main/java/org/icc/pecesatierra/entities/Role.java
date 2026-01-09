@@ -33,7 +33,10 @@ public class Role {
     @Column(nullable = false)
     private String color;
 
-    @OneToMany(mappedBy = "role", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @Column(nullable = false)
+    private String description;
+
+    @OneToMany(mappedBy = "role", fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<RolePermission> permissions = new HashSet<>();
 
 }

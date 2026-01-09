@@ -1,23 +1,37 @@
 package org.icc.pecesatierra.configurations;
 
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-
-import java.util.List;
+import org.springframework.core.io.Resource;
+import org.springframework.web.servlet.resource.PathResourceResolver;
+import java.io.IOException;
 
 @Configuration
 public class MvcConfig implements WebMvcConfigurer {
 
     @Override
-    public void addResourceHandlers(ResourceHandlerRegistry registry){
-        registry
-                .addResourceHandler("/uploads/**")
-                .addResourceLocations("file:./uploads/");
-    }
+    public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        registry.addResourceHandler("/**")
+                .addResourceLocations("classpath:/static/")
+                .resourceChain(true)
+                .addResolver(new PathResourceResolver() {
+                    @Override
+                    protected Resource getResource(String resourcePath, Resource location) throws IOException {
+                        Resource requestedResource = location.createRelative(resourcePath);
 
+                        // Si el recurso existe (es un js, css, imagen, etc) lo servimos
+                        if (requestedResource.exists() && requestedResource.isReadable()) {
+                            return requestedResource;
+                        }
+
+                        // Si no existe y no es una ruta de API, servimos el index.html
+                        if (!resourcePath.startsWith("api/")) {
+                            return location.createRelative("index.html");
+                        }
+
+                        return null;
+                    }
+                });
+    }
 }

@@ -12,6 +12,7 @@ import java.io.Serializable;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode
+@Builder
 public class UserRoleId implements Serializable {
 
     private String roleId;

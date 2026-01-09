@@ -1,11 +1,20 @@
 package org.icc.pecesatierra.configurations;
 
+import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.HttpStatusEntryPoint;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -14,7 +23,12 @@ import java.util.List;
 
 @Configuration
 @EnableWebSecurity
+//@EnableMethodSecurity
+@AllArgsConstructor
 public class SecurityConfig {
+
+    private final AuthenticationProvider authenticationProvider;
+    private final JwtAuthFilter jwtAuthFilter;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -22,13 +36,55 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        .anyRequest().permitAll()
-                );
+                                .requestMatchers("/**").permitAll()
+//                        .requestMatchers(HttpMethod.POST,
+//                                "/api/auth/**"
+//                        ).permitAll()
+//                        .requestMatchers(HttpMethod.GET,
+//                                "/uploads/**"
+//                        ).permitAll()
+//
+//                        .requestMatchers("/api/**").authenticated()
+//
+//                        .requestMatchers(
+//                                "/",
+//                                "/index.html",
+//                                "/*.js",
+//                                "/*.css",
+//                                "/*.ico",
+//                                "/assets/**",
+//                                "/images/**",
+//                                "/fonts/**"
+//                        ).permitAll()
+
+                        .requestMatchers("/{path:[^\\.]*}", "/**/{path:[^\\.]*}").permitAll()
+                )
+
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                )
+                .exceptionHandling(ex -> ex
+                        .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
+                )
+                .authenticationProvider(authenticationProvider)
+                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
 
-
+//    @Bean
+//    public WebSecurityCustomizer webSecurityCustomizer() {
+//        return web -> web.ignoring().requestMatchers(
+//                "/",
+//                "/index.html",
+//                "/*.js",
+//                "/*.css",
+//                "/*.ico",
+//                "/assets/**",
+//                "/images/**",
+//                "/fonts/**"
+//        );
+//    }
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource(){

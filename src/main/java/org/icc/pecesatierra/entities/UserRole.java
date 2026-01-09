@@ -20,12 +20,12 @@ public class UserRole {
     @EmbeddedId
     private UserRoleId id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @MapsId("roleId")
     @JoinColumn(name = "role_id", nullable = false)
     private Role role;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @MapsId("userId")
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
@@ -34,6 +34,6 @@ public class UserRole {
     private LocalDateTime givenDate;
 
     @Column(nullable = false)
-    private String givenBy;
+    private String giverId;
 
 }

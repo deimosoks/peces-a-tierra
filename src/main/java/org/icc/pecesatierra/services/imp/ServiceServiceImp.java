@@ -15,8 +15,6 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import static org.icc.pecesatierra.utils.Validator.validate;
-
 @Service
 @AllArgsConstructor
 public class ServiceServiceImp implements ServiceService {
@@ -32,7 +30,7 @@ public class ServiceServiceImp implements ServiceService {
                 .name(serviceRequestDto.getName())
                 .description(serviceRequestDto.getDescription())
 //                .dayOfWeek(serviceRequestDto.getDayOfWeek().toString())
-                .startTime(serviceRequestDto.getStartTime())
+//                .startTime(serviceRequestDto.getStartTime())
                 .createdAt(LocalDateTime.now())
                 .active(true)
                 .build();
@@ -57,10 +55,8 @@ public class ServiceServiceImp implements ServiceService {
         Services services = serviceRepository.findById(serviceId)
                 .orElseThrow(() -> new ServicesNotFoundException("Services doesn't exist."));
 
-        validate(
-                !attendanceRepository.existsByServices(services),
-                new ServiceHasHistoricalRecordException("Service have a historical record and cannot be deleted.")
-        );
+        if (attendanceRepository.existsByServices(services))
+            throw new ServiceHasHistoricalRecordException("Service have a historical record and cannot be deleted.");
 
         serviceRepository.delete(services);
     }

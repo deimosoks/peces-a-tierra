@@ -14,5 +14,4 @@ public interface MemberMapper {
 
     void updateEntityFromDto(MemberRequestDto memberRequestDto, @MappingTarget Member member);
 
-    Member toEntity(MemberRequestDto memberRequestDto);
 }

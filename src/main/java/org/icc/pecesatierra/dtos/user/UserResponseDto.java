@@ -1,10 +1,13 @@
 package org.icc.pecesatierra.dtos.user;
 
 import lombok.*;
-import org.icc.pecesatierra.enums.CategoryPerson;
-import org.icc.pecesatierra.enums.TypePerson;
+import org.icc.pecesatierra.dtos.member.MemberResponseDto;
+import org.icc.pecesatierra.dtos.role.RoleResponseDto;
+import org.icc.pecesatierra.enums.CategoryMember;
+import org.icc.pecesatierra.enums.TypeMember;
 
 import java.time.LocalDateTime;
+import java.util.Set;
 
 @Builder
 @Getter
@@ -13,18 +16,21 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class UserResponseDto {
 
-    private String memberId;
+    private String id;
     private String username;
-    private String memberCompleteName;
-    private String cellphone;
-    private String address;
-    private String birthdate;
-    private int age;
+    private boolean active;
     private LocalDateTime createdAt;
     private LocalDateTime updateAt;
-    private boolean state;
-    private CategoryPerson categoryPerson;
-    private TypePerson typePerson;
-    private String cc;
+    private MemberResponseDto memberResponseDto;
+    private Set<RoleResponseDto> roles;
+
+//    private String memberCompleteName;
+//    private String cellphone;
+//    private String address;
+//    private String birthdate;
+//    private CategoryMember categoryMember;
+//    private TypeMember typeMember;
+//    private String cc;
+//    private String memberId;
 
 }

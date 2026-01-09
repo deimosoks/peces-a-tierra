@@ -1,8 +1,8 @@
 package org.icc.pecesatierra.dtos.member;
 
 import lombok.*;
-import org.icc.pecesatierra.enums.CategoryPerson;
-import org.icc.pecesatierra.enums.TypePerson;
+import org.icc.pecesatierra.enums.CategoryMember;
+import org.icc.pecesatierra.enums.TypeMember;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -16,8 +16,8 @@ public class MemberResponseDto {
 
     private String id;
     private String completeName;
-    private TypePerson type;
-    private CategoryPerson category;
+    private TypeMember type;
+    private CategoryMember category;
     private String cellphone;
     private String address;
     private LocalDate birthdate;

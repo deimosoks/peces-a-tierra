@@ -1,5 +1,6 @@
 package org.icc.pecesatierra.dtos.role;
 
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import org.icc.pecesatierra.dtos.permission.PermissionRequestDto;
@@ -13,14 +14,17 @@ import java.util.Set;
 @AllArgsConstructor
 public class RoleRequestDto{
 
-    @NotNull
+    @NotBlank
+    private String name;
+
+    @NotBlank
     private String color;
 
     @NotNull
-    private String name;
-
-    @NotNull
     private Set<PermissionRequestDto> permissions;
+
+    @NotBlank
+    private String description;
 
     @Override
     public String toString() {

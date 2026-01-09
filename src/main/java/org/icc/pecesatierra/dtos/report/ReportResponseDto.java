@@ -2,8 +2,8 @@ package org.icc.pecesatierra.dtos.report;
 
 import lombok.*;
 
-import java.util.List;
-import java.util.Map;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Builder
 @Getter
@@ -12,8 +12,16 @@ import java.util.Map;
 @AllArgsConstructor
 public class ReportResponseDto {
 
-    private ReportRequestDto reportRequest;
-    private SummaryResponseDto summary;
-    private List<Map<String, ?>> reports;
+    private LocalDate date;
+    private LocalDateTime serviceTime;
 
+    private String serviceName;
+
+    private String category;
+    private String typePeople;
+
+    private Long total;
 }
+
+
+

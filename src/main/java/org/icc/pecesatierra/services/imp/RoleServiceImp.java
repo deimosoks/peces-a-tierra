@@ -15,6 +15,7 @@ import org.icc.pecesatierra.mappers.RoleMapper;
 import org.icc.pecesatierra.repositories.PermissionRepository;
 import org.icc.pecesatierra.repositories.RolePermissionRepository;
 import org.icc.pecesatierra.repositories.RoleRepository;
+import org.icc.pecesatierra.repositories.UserRoleRepository;
 import org.icc.pecesatierra.services.RoleService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,7 +34,7 @@ public class RoleServiceImp implements RoleService {
     private final RoleRepository roleRepository;
     private final RoleMapper roleMapper;
     private final PermissionRepository permissionRepository;
-    private final RolePermissionRepository rolePermissionRepository;
+    private final UserRoleRepository userRoleRepository;
 
     @Transactional
     @Override
@@ -66,13 +67,13 @@ public class RoleServiceImp implements RoleService {
                 }
         );
 
-        RoleResponseDto roleResponseDto = roleMapper.toDto(role);
-        roleResponseDto.getPermissions().clear();
-        roleResponseDto.getPermissions().addAll(role.getPermissions().stream().map(
-                rolePermission -> new PermissionResponseDto(rolePermission.getPermission().getName())
-        ).collect(Collectors.toSet()));
+//        RoleResponseDto roleResponseDto = roleMapper.toDto(role);
+//        roleResponseDto.getPermissions().clear();
+//        roleResponseDto.getPermissions().addAll(role.getPermissions().stream().map(
+//                rolePermission -> new PermissionResponseDto(rolePermission.getPermission().getName())
+//        ).collect(Collectors.toSet()));
 
-        return roleResponseDto;
+        return roleMapper.toDto(role);
     }
 
     @Transactional
@@ -85,48 +86,51 @@ public class RoleServiceImp implements RoleService {
         roleMapper.updateEntityFromDto(roleRequestDto, role);
         role.setUpdatedAt(LocalDateTime.now());
 
-        Set<String> requestedPermissions = roleRequestDto.getPermissions().stream()
-                .map(PermissionRequestDto::getName)
-                .collect(Collectors.toSet());
+        return roleMapper.toDto(roleRepository.save(role));
+//                RoleResponseDto.builder()
+//                .id(role.getId())
+//                .color(role.getColor())
+//                .name(role.getName())
+//                .createdAt(role.getCreatedAt())
+//                .totalUsers(userRoleRepository.countByRoleId(role.getId()))
+//                .permissions(role.getPermissions().stream().map(rolePermission ->
+//                        PermissionResponseDto.builder()
+//                                .name(rolePermission.getPermission().getName())
+//                                .build()).collect(Collectors.toSet()))
+//                .updatedAt(LocalDateTime.now())
+//                .build();
 
-        Set<String> currentPermissions = role.getPermissions().stream()
-                .map(rolePermission -> rolePermission.getPermission().getName())
-                .collect(Collectors.toSet());
+//        Set<String> requestedPermissions = roleRequestDto.getPermissions().stream()
+//                .map(PermissionRequestDto::getName)
+//                .collect(Collectors.toSet());
+//
+//        Set<String> currentPermissions = role.getPermissions().stream()
+//                .map(rolePermission -> rolePermission.getPermission().getName())
+//                .collect(Collectors.toSet());
+//
+//        role.getPermissions().removeIf(
+//                rolePermission -> !requestedPermissions.contains(rolePermission.getPermission().getName())
+//                );
+//
+//        requestedPermissions.forEach(permissionName -> {
+//            if (!currentPermissions.contains(permissionName)){
+//                Permission permission = permissionRepository.findById(permissionName)
+//                        .orElseThrow(() -> new PermissionNotFoundException("Permission doesn't exist."));
+//
+//                RolePermission rolePermission = RolePermission.builder()
+//                        .id(RolePermissionId.builder()
+//                                .roleId(role.getId())
+//                                .permissionId(permissionName)
+//                                .build()
+//                        )
+//                        .role(role)
+//                        .permission(permission)
+//                        .build();
+//
+//                role.getPermissions().add(rolePermission);
+//            }
+//        });
 
-        role.getPermissions().removeIf(
-                rolePermission -> !requestedPermissions.contains(rolePermission.getPermission().getName())
-                );
-
-        requestedPermissions.forEach(permissionName -> {
-            if (!currentPermissions.contains(permissionName)){
-                Permission permission = permissionRepository.findById(permissionName)
-                        .orElseThrow(() -> new PermissionNotFoundException("Permission doesn't exist."));
-
-                RolePermission rolePermission = RolePermission.builder()
-                        .id(RolePermissionId.builder()
-                                .roleId(role.getId())
-                                .permissionId(permissionName)
-                                .build()
-                        )
-                        .role(role)
-                        .permission(permission)
-                        .build();
-
-                role.getPermissions().add(rolePermission);
-            }
-        });
-
-        return RoleResponseDto.builder()
-                .id(role.getId())
-                .color(role.getColor())
-                .name(role.getName())
-                .createdAt(role.getCreatedAt())
-                .permissions(role.getPermissions().stream().map(rolePermission ->
-                        PermissionResponseDto.builder()
-                                .name(rolePermission.getPermission().getName())
-                                .build()).collect(Collectors.toSet()))
-                .updatedAt(LocalDateTime.now())
-                .build();
     }
 
     @Override
@@ -139,14 +143,15 @@ public class RoleServiceImp implements RoleService {
     @Override
     public List<RoleResponseDto> findAll() {
         return roleRepository.findAll().stream().map(role -> {
-            RoleResponseDto roleResponseDto = roleMapper.toDto(role);
-            roleResponseDto.getPermissions().clear();
-            roleResponseDto.getPermissions().addAll(
-                    role.getPermissions().stream().map(rolePermission -> PermissionResponseDto.builder()
-                            .name(rolePermission.getPermission().getName())
-                            .build()).collect(Collectors.toSet())
-            );
-            return roleResponseDto;
+//            RoleResponseDto roleResponseDto = roleMapper.toDto(role);
+//            roleResponseDto.setTotalUsers(userRoleRepository.countByRoleId(role.getId()));
+//            roleResponseDto.getPermissions().clear();
+//            roleResponseDto.getPermissions().addAll(
+//                    role.getPermissions().stream().map(rolePermission -> PermissionResponseDto.builder()
+//                            .name(rolePermission.getPermission().getName())
+//                            .build()).collect(Collectors.toSet())
+//            );
+            return roleMapper.toDto(role);
         }).toList();
     }
 }

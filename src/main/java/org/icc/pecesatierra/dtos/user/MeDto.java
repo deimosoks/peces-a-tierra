@@ -3,6 +3,7 @@ package org.icc.pecesatierra.dtos.user;
 import lombok.*;
 
 import java.util.List;
+import java.util.Set;
 
 @Builder
 @Getter
@@ -12,6 +13,6 @@ import java.util.List;
 public class MeDto {
 
     private String username;
-    private List<String> permissions;
+    private Set<String> permissions;
 
 }

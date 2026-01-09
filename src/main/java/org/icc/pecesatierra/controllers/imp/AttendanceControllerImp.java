@@ -1,10 +1,12 @@
 package org.icc.pecesatierra.controllers.imp;
 
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.icc.pecesatierra.controllers.AttendanceController;
 import org.icc.pecesatierra.dtos.attendance.AttendanceRequestDto;
 import org.icc.pecesatierra.services.AttendanceService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -20,6 +22,7 @@ public class AttendanceControllerImp implements AttendanceController {
     private final AttendanceService attendanceService;
 
     @Override
+    @PreAuthorize("hasAuthority('MANAGE_ATTENDANCE')")
     @PostMapping
     public ResponseEntity<Void> create(@RequestBody List<AttendanceRequestDto> attendances) {
         attendanceService.create(attendances);
