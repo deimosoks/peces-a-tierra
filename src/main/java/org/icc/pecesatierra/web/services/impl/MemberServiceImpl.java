@@ -25,7 +25,7 @@ import java.util.List;
 
 @Service
 @AllArgsConstructor
-public class MemberServiceImp implements MemberService {
+public class MemberServiceImpl implements MemberService {
 
     private final MemberRepository memberRepository;
     private final MemberMapper memberMapper;
