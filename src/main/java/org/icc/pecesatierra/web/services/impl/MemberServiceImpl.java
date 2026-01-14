@@ -4,10 +4,10 @@ import lombok.AllArgsConstructor;
 import org.icc.pecesatierra.dtos.member.MemberPagesResponseDto;
 import org.icc.pecesatierra.dtos.member.MemberRequestDto;
 import org.icc.pecesatierra.dtos.member.MemberResponseDto;
-import org.icc.pecesatierra.domain.reference.Member;
+import org.icc.pecesatierra.domain.entities.Member;
 import org.icc.pecesatierra.exceptions.MemberHasHistoricalRecordException;
 import org.icc.pecesatierra.exceptions.MemberNotFoundException;
-import org.icc.pecesatierra.helpers.mappers.MemberMapper;
+import org.icc.pecesatierra.utils.mappers.MemberMapper;
 import org.icc.pecesatierra.repositories.AttendanceRepository;
 import org.icc.pecesatierra.repositories.MemberRepository;
 import org.icc.pecesatierra.web.services.MemberService;
@@ -20,7 +20,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 
 @Service
@@ -32,7 +31,7 @@ public class MemberServiceImpl implements MemberService {
     private final AttendanceRepository attendanceRepository;
     private final PictureManager pictureManager;
 
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public MemberResponseDto create(MemberRequestDto memberRequestDto) {
 
@@ -49,16 +48,17 @@ public class MemberServiceImpl implements MemberService {
 //                    .pictureProfileUrl("/uploads/" + newFileName)
                 .build();
 
-        String newFileName = pictureManager.validatePicture(memberRequestDto.getPictureProfile());
+        String newFileName = pictureManager.validateAndSavePicture(memberRequestDto.getPictureProfile());
 
-        if (!newFileName.isBlank())
+        if (!newFileName.isBlank()) {
             member.setPictureProfileUrl("/uploads/" + newFileName);
+        }
 
         return memberMapper.toDto(memberRepository.save(member));
 
     }
 
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public MemberResponseDto update(MemberRequestDto memberRequestDto, String memberId) {
 
@@ -76,49 +76,35 @@ public class MemberServiceImpl implements MemberService {
                 !member.getPictureProfileUrl().equals(memberRequestDto.getPictureProfile().getOriginalFilename())) {
             pictureManager.delete(member.getPictureProfileUrl());
 
-            String newFileName = pictureManager.validatePicture(memberRequestDto.getPictureProfile());
+            String newFileName = pictureManager.validateAndSavePicture(memberRequestDto.getPictureProfile());
 
             if (!newFileName.isBlank()) {
                 member.setPictureProfileUrl("/uploads/" + newFileName);
             }
-        } else if (member.getPictureProfileUrl() == null && memberRequestDto.getPictureProfile() != null){
-            String newFileName = pictureManager.validatePicture(memberRequestDto.getPictureProfile());
+        } else if (member.getPictureProfileUrl() == null && memberRequestDto.getPictureProfile() != null) {
+            String newFileName = pictureManager.validateAndSavePicture(memberRequestDto.getPictureProfile());
 
             if (!newFileName.isBlank()) {
                 member.setPictureProfileUrl("/uploads/" + newFileName);
             }
         }
 
-            return memberMapper.toDto(memberRepository.save(member));
+        return memberMapper.toDto(memberRepository.save(member));
     }
 
     @Override
-    public MemberPagesResponseDto findAll(int page, boolean onlyActives) {
+    public MemberPagesResponseDto findAll(int page, boolean onlyActives, String query) {
 
         Pageable pageable = PageRequest.of(page, 20, Sort.by("id").ascending());
 
-        Page<Member> members = onlyActives ? memberRepository.findAllByActiveTrue(pageable) : memberRepository.findAll(pageable);
+        Page<Member> members = onlyActives ? memberRepository.findAllByOptionalQueryAndActiveTrue(query, pageable) : memberRepository.findAllByQuery(query, pageable);
 
         int totalPages = members.getTotalPages();
 
         return new MemberPagesResponseDto(members.stream().map(memberMapper::toDto).toList(), totalPages);
     }
 
-    @Override
-    public MemberPagesResponseDto findByQuery(String query, int page, boolean onlyActive) {
-
-        Pageable pageable = PageRequest.of(page, 20);
-
-        Page<Member> members = onlyActive ? memberRepository.findByQueryActive(query, pageable) : memberRepository.findByQuery(query, pageable);
-
-        int totalPages = members.getTotalPages();
-
-        List<MemberResponseDto> memberResponseDto = members.stream().map(memberMapper::toDto).toList();
-
-        return new MemberPagesResponseDto(memberResponseDto, totalPages);
-    }
-
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void delete(String memberId) {
         Member member = memberRepository.findById(memberId)
@@ -131,7 +117,7 @@ public class MemberServiceImpl implements MemberService {
 
         memberRepository.delete(member);
 
-        if (pictureUrl != null)pictureManager.delete(pictureUrl);
+        if (pictureUrl != null) pictureManager.delete(pictureUrl);
     }
 
     @Override

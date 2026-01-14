@@ -1,8 +1,8 @@
 package org.icc.pecesatierra.web.services.impl;
 
 import lombok.AllArgsConstructor;
-import org.icc.pecesatierra.domain.reference.RefreshToken;
-import org.icc.pecesatierra.domain.reference.User;
+import org.icc.pecesatierra.domain.entities.RefreshToken;
+import org.icc.pecesatierra.domain.entities.User;
 import org.icc.pecesatierra.dtos.auth.*;
 import org.icc.pecesatierra.exceptions.RefreshTokenException;
 import org.icc.pecesatierra.exceptions.UserNotFoundException;

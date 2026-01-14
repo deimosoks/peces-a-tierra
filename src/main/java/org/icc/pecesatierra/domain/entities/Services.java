@@ -1,0 +1,41 @@
+package org.icc.pecesatierra.domain.entities;
+
+import jakarta.persistence.*;
+import lombok.*;
+
+import java.time.LocalDateTime;
+
+@AllArgsConstructor
+@NoArgsConstructor
+@Getter
+@Setter
+@Builder
+@Entity
+@Table(name = "services")
+public class Services {
+
+    @Id
+    @GeneratedValue(strategy =  GenerationType.UUID)
+    private String id;
+
+    @Column(nullable = false)
+    private String name;
+
+    @Column(nullable = false)
+    private LocalDateTime createdAt;
+
+//    @Column(nullable = false)
+//    private String dayOfWeek;
+
+//    @Column(nullable = false)
+//    private LocalTime startTime;
+
+    private LocalDateTime updatedAt;
+
+    @Column(nullable = false)
+    private String description;
+
+    @Column(nullable = false)
+    private boolean active;
+
+}

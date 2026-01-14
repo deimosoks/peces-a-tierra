@@ -10,6 +10,8 @@ import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Date;
 import java.util.function.Function;
 
@@ -19,7 +21,7 @@ public class JwtServiceImpl implements JwtService {
     @Value("${jwt.secret}")
     private String SECRET_KEY;
 
-    private final long EXPIRATION_TIME = 600000L *60*60;//TimeUnit.MINUTES.toMillis(5);
+//    private final long EXPIRATION_TIME = ;//TimeUnit.MINUTES.toMillis(5);
 
     @Override
     public SecretKey getSigningKey() {
@@ -68,7 +70,7 @@ public class JwtServiceImpl implements JwtService {
         return Jwts.builder()
                 .subject(userDetails.getUsername())
                 .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
+                .expiration(new Date(System.currentTimeMillis() + Duration.ofMinutes(5).toMillis()))
                 .signWith(getSigningKey())
                 .compact();
     }

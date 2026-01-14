@@ -3,10 +3,10 @@ package org.icc.pecesatierra.web.services.impl;
 import lombok.AllArgsConstructor;
 import org.icc.pecesatierra.dtos.service.ServiceRequestDto;
 import org.icc.pecesatierra.dtos.service.ServiceResponseDto;
-import org.icc.pecesatierra.domain.reference.Services;
+import org.icc.pecesatierra.domain.entities.Services;
 import org.icc.pecesatierra.exceptions.ServiceHasHistoricalRecordException;
 import org.icc.pecesatierra.exceptions.ServicesNotFoundException;
-import org.icc.pecesatierra.helpers.mappers.ServiceMapper;
+import org.icc.pecesatierra.utils.mappers.ServiceMapper;
 import org.icc.pecesatierra.repositories.AttendanceRepository;
 import org.icc.pecesatierra.repositories.ServiceRepository;
 import org.icc.pecesatierra.web.services.ServiceService;
@@ -29,8 +29,6 @@ public class ServiceServiceImpl implements ServiceService {
         Services services = Services.builder()
                 .name(serviceRequestDto.getName())
                 .description(serviceRequestDto.getDescription())
-//                .dayOfWeek(serviceRequestDto.getDayOfWeek().toString())
-//                .startTime(serviceRequestDto.getStartTime())
                 .createdAt(LocalDateTime.now())
                 .active(true)
                 .build();

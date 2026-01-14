@@ -2,7 +2,7 @@ package org.icc.pecesatierra.web.controllers;
 
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
-import org.icc.pecesatierra.domain.reference.User;
+import org.icc.pecesatierra.domain.entities.User;
 import org.icc.pecesatierra.dtos.user.*;
 import org.icc.pecesatierra.web.services.UserService;
 import org.springframework.http.HttpStatus;
@@ -38,15 +38,15 @@ public class UserController extends BaseController  {
 
     @PreAuthorize("hasAuthority('VIEW_USER_PANEL')")
     @GetMapping
-    public ResponseEntity<UserPagesResponseDto> findAll(@RequestParam int page) {
-        return ResponseEntity.ok(userService.findAll(page));
-    }
-
-    @PreAuthorize("hasAuthority('VIEW_USER_PANEL')")
-    @GetMapping("/query")
-    public ResponseEntity<UserPagesResponseDto> findAllByQuery(@RequestParam int page,
-                                                               @RequestParam String query) {
-        return ResponseEntity.ok(userService.findByQuery(query, page));
+    public ResponseEntity<UserPagesResponseDto> findAll(@RequestParam(
+                                                                required = false,
+                                                                defaultValue = "0"
+                                                        ) int page,
+                                                        @RequestParam(
+                                                                required = false,
+                                                                defaultValue = ""
+                                                        ) String query) {
+        return ResponseEntity.ok(userService.findAll(page, query));
     }
 
     @PreAuthorize("hasAuthority('UPDATE_USER')")

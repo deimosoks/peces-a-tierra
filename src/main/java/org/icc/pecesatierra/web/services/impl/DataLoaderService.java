@@ -2,8 +2,8 @@ package org.icc.pecesatierra.web.services.impl;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import org.icc.pecesatierra.domain.reference.Attendance;
-import org.icc.pecesatierra.domain.reference.AttendanceId;
+import org.icc.pecesatierra.domain.entities.Attendance;
+import org.icc.pecesatierra.domain.entities.AttendanceId;
 import org.icc.pecesatierra.repositories.AttendanceRepository;
 import org.icc.pecesatierra.repositories.MemberRepository;
 import org.icc.pecesatierra.repositories.ServiceRepository;

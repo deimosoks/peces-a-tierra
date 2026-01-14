@@ -12,6 +12,8 @@ import java.util.Set;
 public class MeDto {
 
     private String username;
+    private String pictureProfileUrl;
+    private String completeName;
     private Set<String> permissions;
 
 }

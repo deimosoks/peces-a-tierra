@@ -52,12 +52,13 @@ public class SecurityConfig {
 //                                "/*.js",
 //                                "/*.css",
 //                                "/*.ico",
+//                                "/*.png",
 //                                "/assets/**",
-//                                "/images/**",
+//                                "/img/**",
 //                                "/fonts/**"
 //                        ).permitAll()
-
-                        .requestMatchers("/{path:[^\\.]*}", "/**/{path:[^\\.]*}").permitAll()
+//
+//                        .requestMatchers("/{path:[^\\.]*}", "/**/{path:[^\\.]*}").permitAll()
                 )
 
                 .sessionManagement(session -> session
@@ -90,11 +91,10 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource(){
         CorsConfiguration configuration = new CorsConfiguration();
 
-        configuration.setAllowedOrigins(List.of(
+        configuration.setAllowedOriginPatterns(List.of(
                 "http://localhost:4200",
-                "http://localhost:8080",
-                "https://*.trycloudflare.com/",
-                "https://saved-managing-inform-soft.trycloudflare.com/"
+                "http://localhost:*",
+                "https://*.trycloudflare.com"
         ));
 
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));

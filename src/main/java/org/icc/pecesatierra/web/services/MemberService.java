@@ -9,9 +9,7 @@ public interface MemberService {
 
     MemberResponseDto update(MemberRequestDto memberRequestDto, String memberId);
 
-    MemberPagesResponseDto findAll(int page, boolean onlyActives);
-
-    MemberPagesResponseDto findByQuery(String query, int page, boolean onlyActives);
+    MemberPagesResponseDto findAll(int page, boolean onlyActives, String query);
 
     void delete(String memberId);
 

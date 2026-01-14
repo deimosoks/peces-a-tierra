@@ -5,7 +5,7 @@ import org.icc.pecesatierra.dtos.dashboard.DashboardResponseDto;
 import org.icc.pecesatierra.dtos.member.MemberResponseDto;
 import org.icc.pecesatierra.dtos.report.ReportRequestDto;
 import org.icc.pecesatierra.dtos.report.ReportResponseDto;
-import org.icc.pecesatierra.helpers.mappers.MemberMapper;
+import org.icc.pecesatierra.utils.mappers.MemberMapper;
 import org.icc.pecesatierra.repositories.AttendanceRepository;
 import org.icc.pecesatierra.repositories.MemberRepository;
 import org.icc.pecesatierra.web.services.DashboardService;

@@ -6,9 +6,9 @@ import jakarta.persistence.criteria.*;
 import lombok.AllArgsConstructor;
 import org.icc.pecesatierra.dtos.report.ReportResponseDto;
 import org.icc.pecesatierra.dtos.report.ReportRequestDto;
-import org.icc.pecesatierra.domain.reference.Attendance;
-import org.icc.pecesatierra.domain.reference.Member;
-import org.icc.pecesatierra.domain.reference.Services;
+import org.icc.pecesatierra.domain.entities.Attendance;
+import org.icc.pecesatierra.domain.entities.Member;
+import org.icc.pecesatierra.domain.entities.Services;
 import org.icc.pecesatierra.repositories.AttendanceRepository;
 import org.icc.pecesatierra.repositories.MemberRepository;
 import org.icc.pecesatierra.repositories.ServiceRepository;
@@ -20,6 +20,8 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadLocalRandom;
 
 

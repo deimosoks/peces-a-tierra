@@ -1,10 +1,10 @@
 package org.icc.pecesatierra.web.services.impl;
 
 import lombok.AllArgsConstructor;
-import org.icc.pecesatierra.domain.reference.*;
+import org.icc.pecesatierra.domain.entities.*;
 import org.icc.pecesatierra.dtos.user.*;
 import org.icc.pecesatierra.exceptions.*;
-import org.icc.pecesatierra.helpers.mappers.UserMapper;
+import org.icc.pecesatierra.utils.mappers.UserMapper;
 import org.icc.pecesatierra.repositories.MemberRepository;
 import org.icc.pecesatierra.repositories.RoleRepository;
 import org.icc.pecesatierra.repositories.UserRepository;
@@ -83,6 +83,8 @@ public class UserServiceImpl implements UserService {
     public MeDto me(User user) {
         return MeDto.builder()
                 .username(user.getUsername())
+                .pictureProfileUrl(user.getMember().getPictureProfileUrl())
+                .completeName(user.getMember().getCompleteName())
                 .permissions(
                         user.getAuthorities().stream().map(GrantedAuthority::getAuthority)
                                 .collect(Collectors.toSet()))
@@ -90,28 +92,11 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserPagesResponseDto findAll(int page) {
+    public UserPagesResponseDto findAll(int page, String query) {
 
         Pageable pageable = PageRequest.of(page, 20, Sort.by("id").ascending());
 
-        Page<User> users = userRepository.findAll(pageable);
-
-        int totalPages = users.getTotalPages();
-
-        List<UserResponseDto> usersDto = users.stream().map(userMapper::toDto).toList();
-
-        return UserPagesResponseDto.builder()
-                .users(usersDto)
-                .pages(totalPages)
-                .build();
-    }
-
-    @Override
-    public UserPagesResponseDto findByQuery(String query, int page) {
-
-        Pageable pageable = PageRequest.of(page, 20);
-
-        Page<User> users = userRepository.findByQuery(query, pageable);
+        Page<User> users = userRepository.findAll(query, pageable);
 
         int totalPages = users.getTotalPages();
 

@@ -1,6 +1,6 @@
 package org.icc.pecesatierra.repositories;
 
-import org.icc.pecesatierra.domain.reference.Member;
+import org.icc.pecesatierra.domain.entities.Member;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -21,7 +21,7 @@ public interface MemberRepository extends JpaRepository<Member,String> {
        OR LOWER(m.category) LIKE LOWER(CONCAT('%', :query, '%'))
        OR LOWER(m.id) LIKE LOWER(CONCAT('%', :query, '%'))
     """)
-    Page<Member> findByQuery(@Param("query") String query, Pageable pageable);
+    Page<Member> findAllByQuery(@Param("query") String query, Pageable pageable);
 
     @Query("""
     SELECT m FROM Member m
@@ -34,9 +34,7 @@ public interface MemberRepository extends JpaRepository<Member,String> {
         OR LOWER(m.id) LIKE LOWER(CONCAT('%', :query, '%'))
       )
     """)
-    Page<Member> findByQueryActive(@Param("query") String query, Pageable pageable);
-
-    Page<Member> findAllByActiveTrue(Pageable pageable);
+    Page<Member> findAllByOptionalQueryAndActiveTrue(@Param("query") String query, Pageable pageable);
 
     long count();
 

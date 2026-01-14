@@ -2,10 +2,10 @@ package org.icc.pecesatierra.web.services.impl;
 
 import lombok.AllArgsConstructor;
 import org.icc.pecesatierra.dtos.attendance.AttendanceRequestDto;
-import org.icc.pecesatierra.domain.reference.Attendance;
-import org.icc.pecesatierra.domain.reference.AttendanceId;
-import org.icc.pecesatierra.domain.reference.Member;
-import org.icc.pecesatierra.domain.reference.Services;
+import org.icc.pecesatierra.domain.entities.Attendance;
+import org.icc.pecesatierra.domain.entities.AttendanceId;
+import org.icc.pecesatierra.domain.entities.Member;
+import org.icc.pecesatierra.domain.entities.Services;
 import org.icc.pecesatierra.exceptions.MemberNotFoundException;
 import org.icc.pecesatierra.exceptions.ServicesNotFoundException;
 import org.icc.pecesatierra.repositories.AttendanceRepository;

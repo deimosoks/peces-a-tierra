@@ -1,6 +1,6 @@
 package org.icc.pecesatierra.repositories;
 
-import org.icc.pecesatierra.domain.reference.Role;
+import org.icc.pecesatierra.domain.entities.Role;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

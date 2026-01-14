@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @AllArgsConstructor
 @RequestMapping("/api/members")
-public class MemberController extends BaseController  {
+public class MemberController extends BaseController {
 
     private final MemberService memberService;
 
@@ -31,19 +31,21 @@ public class MemberController extends BaseController  {
         return ResponseEntity.ok(memberService.update(memberRequestDto, memberId));
     }
 
-    @PreAuthorize("hasAuthority('VIEW_MEMBER_PANEL')")
+    @PreAuthorize("hasAuthority('VIEW_MEMBER_PANEL') || hasAuthority('MANAGE_ATTENDANCE')")
     @GetMapping
-    public ResponseEntity<MemberPagesResponseDto> findAll(@RequestParam int page,
-                                                          @RequestParam boolean onlyActive) {
-        return ResponseEntity.ok(memberService.findAll(page, onlyActive));
-    }
-
-    @PreAuthorize("hasAuthority('VIEW_MEMBER_PANEL')")
-    @GetMapping("/query")
-    public ResponseEntity<MemberPagesResponseDto> findByQuery(@RequestParam String query,
-                                                              @RequestParam int page,
-                                                              @RequestParam boolean onlyActive) {
-        return ResponseEntity.ok(memberService.findByQuery(query, page, onlyActive));
+    public ResponseEntity<MemberPagesResponseDto> findAll(@RequestParam(
+                                                                  required = false,
+                                                                  defaultValue = "0"
+                                                          ) int page,
+                                                          @RequestParam(
+                                                                  required = false,
+                                                                  defaultValue = "false"
+                                                          ) boolean onlyActive,
+                                                          @RequestParam(
+                                                                  required = false,
+                                                                  defaultValue = ""
+                                                          ) String query) {
+        return ResponseEntity.ok(memberService.findAll(page, onlyActive, query));
     }
 
     @PreAuthorize("hasAuthority('DELETE_MEMBER')")

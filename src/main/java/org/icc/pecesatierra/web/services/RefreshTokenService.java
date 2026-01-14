@@ -1,8 +1,8 @@
 package org.icc.pecesatierra.web.services;
 
 import org.icc.pecesatierra.dtos.auth.RefreshTokenDto;
-import org.icc.pecesatierra.domain.reference.RefreshToken;
-import org.icc.pecesatierra.domain.reference.User;
+import org.icc.pecesatierra.domain.entities.RefreshToken;
+import org.icc.pecesatierra.domain.entities.User;
 
 public interface RefreshTokenService {
 

@@ -16,7 +16,7 @@ public class PictureManager {
 
     private final Path rootLocation = Paths.get("uploads").toAbsolutePath().normalize();
 
-    public String validatePicture(MultipartFile file) {
+    public String validateAndSavePicture(MultipartFile file) {
         String newFileName = "";
 
         try {

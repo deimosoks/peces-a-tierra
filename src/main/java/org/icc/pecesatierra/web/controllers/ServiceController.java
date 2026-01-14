@@ -39,7 +39,7 @@ public class ServiceController extends BaseController  {
         return ResponseEntity.noContent().build();
     }
 
-    @PreAuthorize("hasAuthority('VIEW_SERVICE_PANEL')")
+    @PreAuthorize("hasAuthority('VIEW_SERVICE_PANEL') || hasAuthority('MANAGE_ATTENDANCE')")
     @GetMapping
     public ResponseEntity<List<ServiceResponseDto>> findAll(@RequestParam boolean onlyActive) {
         return ResponseEntity.ok(serviceService.findAll(onlyActive));

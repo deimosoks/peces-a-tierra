@@ -1,6 +1,6 @@
 package org.icc.pecesatierra.web.services;
 
-import org.icc.pecesatierra.domain.reference.User;
+import org.icc.pecesatierra.domain.entities.User;
 import org.icc.pecesatierra.dtos.user.*;
 
 public interface UserService {
@@ -9,9 +9,7 @@ public interface UserService {
 
     MeDto me(User user);
 
-    UserPagesResponseDto findAll(int page);
-
-    UserPagesResponseDto findByQuery(String query, int page);
+    UserPagesResponseDto findAll(int page, String query);
 
     UserResponseDto update(UserRequestDto userRequestDto, String userId, User givenBy);
 
