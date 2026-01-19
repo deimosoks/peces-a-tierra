@@ -63,7 +63,7 @@ public class JwtServiceImpl implements JwtService {
         return Jwts.builder()
                 .subject(userDetails.getUsername())
                 .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis() + Duration.ofSeconds(10).toMillis()))
+                .expiration(new Date(System.currentTimeMillis() + Duration.ofMinutes(10).toMillis()))
                 .signWith(getSigningKey())
                 .compact();
     }
