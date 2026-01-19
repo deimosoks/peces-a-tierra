@@ -1,7 +1,7 @@
 package org.icc.pecesatierra.utils.mappers;
 
 import org.icc.pecesatierra.dtos.auth.RefreshTokenDto;
-import org.icc.pecesatierra.domain.entities.RefreshToken;
+import org.icc.pecesatierra.entities.RefreshToken;
 import org.mapstruct.Mapper;
 import org.springframework.stereotype.Component;
 

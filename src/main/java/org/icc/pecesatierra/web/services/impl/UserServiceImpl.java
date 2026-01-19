@@ -1,8 +1,8 @@
 package org.icc.pecesatierra.web.services.impl;
 
 import lombok.AllArgsConstructor;
-import org.icc.pecesatierra.domain.entities.*;
 import org.icc.pecesatierra.dtos.user.*;
+import org.icc.pecesatierra.entities.*;
 import org.icc.pecesatierra.exceptions.*;
 import org.icc.pecesatierra.utils.mappers.UserMapper;
 import org.icc.pecesatierra.repositories.MemberRepository;
@@ -39,13 +39,13 @@ public class UserServiceImpl implements UserService {
     public UserResponseDto create(UserRequestDto userRequestDto, User givenBy) {
 
         if (userRepository.existsByMemberId(userRequestDto.getMemberId()))
-            throw new MemberAlreadyRegisteredWithUserException("Member is already related to a user.");
+            throw new MemberAlreadyRegisteredWithUserException("Este integrante ya esta relacionado a un usuario.");
 
         if (userRepository.findByUsername(userRequestDto.getUsername()).isPresent())
-            throw new UsernameAlreadyRegister("Username already register.");
+            throw new UsernameAlreadyRegister("Este username ya se encuentra registrado.");
 
         Member member = memberRepository.findById(userRequestDto.getMemberId())
-                .orElseThrow(() -> new MemberNotFoundException("Member doesn't exist."));
+                .orElseThrow(() -> new MemberNotFoundException("Este integrante no existe."));
 
         User user = User.builder()
                 .username(userRequestDto.getUsername())
@@ -61,7 +61,7 @@ public class UserServiceImpl implements UserService {
         user.getRoles().addAll(userRequestDto.getRolesId().stream().map(roleId ->
                 {
                     Role role = roleRepository.findById(roleId)
-                            .orElseThrow(() -> new RoleNotFoundException("Role doesn't exist."));
+                            .orElseThrow(() -> new RoleNotFoundException("Este rol no existe."));
 
                     return UserRole.builder()
                             .id(UserRoleId.builder()
@@ -113,12 +113,12 @@ public class UserServiceImpl implements UserService {
     public UserResponseDto update(UserRequestDto userRequestDto, String userId, User givenBy) {
 
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new UserNotFoundException("User doesn't exist."));
+                .orElseThrow(() -> new UserNotFoundException("Este usuario no existe."));
         Member member = memberRepository.findById(userRequestDto.getMemberId())
-                .orElseThrow(() -> new MemberNotFoundException("Member doesn't exist."));
+                .orElseThrow(() -> new MemberNotFoundException("Este integrante no existe."));
 
         if (!userRequestDto.getMemberId().equals(user.getMember().getId()) && userRepository.existsByMemberId(userRequestDto.getMemberId()))
-            throw new MemberAlreadyRegisteredWithUserException("Member is already related to a user.");
+            throw new MemberAlreadyRegisteredWithUserException("Este integrante ya esta relacionado a un usario..");
 
         if (userRequestDto.getMemberId() != null) {
             user.setMember(member);
@@ -134,7 +134,7 @@ public class UserServiceImpl implements UserService {
 
         Set<Role> requestedRoles = userRequestDto.getRolesId().stream().map(s -> {
             return roleRepository.findById(s)
-                    .orElseThrow(() -> new RoleNotFoundException("Role doesn't exist."));
+                    .orElseThrow(() -> new RoleNotFoundException("Este rol no existe."));
         }).collect(Collectors.toSet());
 
         Set<Role> currentRoles = user.getRoles().stream().map(UserRole::getRole).collect(Collectors.toSet());
@@ -169,7 +169,7 @@ public class UserServiceImpl implements UserService {
     public boolean updateActive(String userId, boolean active) {
 
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new UserNotFoundException("User doesn't exist."));
+                .orElseThrow(() -> new UserNotFoundException("Este usuario no existe."));
 
         user.setUpdatedAt(LocalDateTime.now());
 
@@ -183,7 +183,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public void delete(String userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new UserNotFoundException("User doesn't exist"));
+                .orElseThrow(() -> new UserNotFoundException("Este usuario no existe."));
 
         userRepository.delete(user);
 

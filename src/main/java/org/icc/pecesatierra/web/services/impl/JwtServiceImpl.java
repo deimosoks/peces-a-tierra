@@ -21,8 +21,6 @@ public class JwtServiceImpl implements JwtService {
     @Value("${jwt.secret}")
     private String SECRET_KEY;
 
-//    private final long EXPIRATION_TIME = ;//TimeUnit.MINUTES.toMillis(5);
-
     @Override
     public SecretKey getSigningKey() {
         byte[] keyBytes = this.SECRET_KEY.getBytes(StandardCharsets.UTF_8);
@@ -50,11 +48,6 @@ public class JwtServiceImpl implements JwtService {
     }
 
     @Override
-    public boolean isTokenExpired(String token) {
-        return extractExpiration(token).before(new Date());
-    }
-
-    @Override
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
     }
@@ -62,7 +55,7 @@ public class JwtServiceImpl implements JwtService {
     @Override
     public boolean isTokenValid(String token, UserDetails userDetails) {
         final String username = extractUsername(token);
-        return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
+        return (username.equals(userDetails.getUsername()));
     }
 
     @Override
@@ -70,7 +63,7 @@ public class JwtServiceImpl implements JwtService {
         return Jwts.builder()
                 .subject(userDetails.getUsername())
                 .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis() + Duration.ofMinutes(5).toMillis()))
+                .expiration(new Date(System.currentTimeMillis() + Duration.ofSeconds(10).toMillis()))
                 .signWith(getSigningKey())
                 .compact();
     }

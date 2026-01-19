@@ -14,24 +14,16 @@ import java.util.Set;
 @AllArgsConstructor
 public class RoleRequestDto{
 
-    @NotBlank
+    @NotBlank(message = "Nombre invalido.")
     private String name;
 
-    @NotBlank
+    @NotBlank(message = "Color invalido.")
     private String color;
 
-    @NotNull
+    @NotNull(message = "Permisos invalidos.")
     private Set<PermissionRequestDto> permissions;
 
-    @NotBlank
+    @NotBlank(message = "Descripción invalida.")
     private String description;
 
-    @Override
-    public String toString() {
-        return "RoleRequestDto{" +
-                "color='" + color + '\'' +
-                ", name='" + name + '\'' +
-                ", permissions=" + permissions +
-                '}';
-    }
 }

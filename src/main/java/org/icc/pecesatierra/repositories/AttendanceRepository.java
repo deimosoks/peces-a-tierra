@@ -1,24 +1,29 @@
 package org.icc.pecesatierra.repositories;
 
-import org.icc.pecesatierra.domain.entities.Attendance;
-import org.icc.pecesatierra.domain.entities.AttendanceId;
-import org.icc.pecesatierra.domain.entities.Member;
-import org.icc.pecesatierra.domain.entities.Services;
+import org.icc.pecesatierra.entities.Attendance;
+import org.icc.pecesatierra.entities.AttendanceId;
+import org.icc.pecesatierra.entities.Member;
+import org.icc.pecesatierra.entities.Services;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+
+import java.time.LocalDateTime;
 
 @Repository
 public interface AttendanceRepository extends JpaRepository<Attendance, AttendanceId> {
 
     @Query("""
-        SELECT COUNT(a)
-        FROM Attendance a
-        WHERE a.serviceStartDate = (
-            SELECT MAX(a2.serviceStartDate)
-            FROM Attendance a2
-        )
-    """)
+                SELECT COUNT(a)
+                FROM Attendance a
+                WHERE a.id.serviceDate = (
+                    SELECT MAX(a2.id.serviceDate)
+                    FROM Attendance a2
+                )
+            """)
     long countAttendanceLastService();
 
 

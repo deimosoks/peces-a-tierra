@@ -1,6 +1,6 @@
 package org.icc.pecesatierra.web.services;
 
-import org.icc.pecesatierra.domain.entities.User;
+import org.icc.pecesatierra.entities.User;
 import org.icc.pecesatierra.dtos.user.*;
 
 public interface UserService {

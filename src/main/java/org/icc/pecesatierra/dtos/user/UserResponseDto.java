@@ -22,13 +22,4 @@ public class UserResponseDto {
     private MemberResponseDto memberResponseDto;
     private Set<RoleResponseDto> roles;
 
-//    private String memberCompleteName;
-//    private String cellphone;
-//    private String address;
-//    private String birthdate;
-//    private CategoryMember categoryMember;
-//    private TypeMember typeMember;
-//    private String cc;
-//    private String memberId;
-
 }

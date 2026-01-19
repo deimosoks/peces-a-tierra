@@ -10,16 +10,10 @@ import lombok.*;
 @AllArgsConstructor
 public class ServiceRequestDto {
 
-    @NotBlank
+    @NotBlank(message = "Nombre invalido.")
     private String name;
 
-    @NotBlank
+    @NotBlank(message = "Descripción invalida.")
     private String description;
-
-//    @NotNull
-//    private DayOfWeek dayOfWeek;
-
-//    @NotNull
-//    private LocalTime startTime;
 
 }

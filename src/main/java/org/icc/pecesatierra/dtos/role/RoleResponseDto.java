@@ -19,7 +19,7 @@ public class RoleResponseDto {
     private String description;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-    private String givenById;
+    private String givenBy;
     private long totalUsers;
     private Set<PermissionResponseDto> permissions;
 

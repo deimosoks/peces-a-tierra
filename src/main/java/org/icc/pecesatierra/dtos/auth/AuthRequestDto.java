@@ -11,9 +11,9 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 public class AuthRequestDto {
-    @NotBlank
+    @NotBlank(message = "Username invalido.")
     private String username;
 
-    @NotBlank
+    @NotBlank(message = "Contraseña invalida.")
     private String password;
 }

@@ -1,16 +1,15 @@
 package org.icc.pecesatierra.web.services;
 
-import org.icc.pecesatierra.dtos.auth.RefreshTokenDto;
-import org.icc.pecesatierra.domain.entities.RefreshToken;
-import org.icc.pecesatierra.domain.entities.User;
+import org.icc.pecesatierra.entities.RefreshToken;
+import org.icc.pecesatierra.entities.User;
 
 public interface RefreshTokenService {
 
-    RefreshTokenDto generate(User user);
+    RefreshToken generate(User user);
 
-    RefreshToken validate(String token);
+    void validate(String token);
 
-    RefreshTokenDto rotate(RefreshToken refreshToken);
+    RefreshToken validateAndRotate(String token);
 
     String generateSecureToken(int byteLength);
 

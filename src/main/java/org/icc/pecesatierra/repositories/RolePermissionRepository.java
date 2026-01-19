@@ -1,7 +1,7 @@
 package org.icc.pecesatierra.repositories;
 
-import org.icc.pecesatierra.domain.entities.RolePermission;
-import org.icc.pecesatierra.domain.entities.RolePermissionId;
+import org.icc.pecesatierra.entities.RolePermission;
+import org.icc.pecesatierra.entities.RolePermissionId;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

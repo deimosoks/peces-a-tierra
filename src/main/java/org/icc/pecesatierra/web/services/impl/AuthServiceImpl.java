@@ -1,13 +1,15 @@
 package org.icc.pecesatierra.web.services.impl;
 
 import lombok.AllArgsConstructor;
-import org.icc.pecesatierra.domain.entities.RefreshToken;
-import org.icc.pecesatierra.domain.entities.User;
+import org.icc.pecesatierra.entities.RefreshToken;
+import org.icc.pecesatierra.entities.User;
 import org.icc.pecesatierra.dtos.auth.*;
 import org.icc.pecesatierra.exceptions.RefreshTokenException;
+import org.icc.pecesatierra.exceptions.UserDeactivatedException;
 import org.icc.pecesatierra.exceptions.UserNotFoundException;
 import org.icc.pecesatierra.repositories.RefreshTokenRepository;
 import org.icc.pecesatierra.repositories.UserRepository;
+import org.icc.pecesatierra.utils.mappers.RefreshTokenMapper;
 import org.icc.pecesatierra.web.services.AuthService;
 import org.icc.pecesatierra.web.services.JwtService;
 import org.icc.pecesatierra.web.services.RefreshTokenService;
@@ -28,6 +30,7 @@ public class AuthServiceImpl implements AuthService {
     private AuthenticationManager authenticationManager;
     private UserDetailsService userDetailsService;
     private UserRepository userRepository;
+    private RefreshTokenMapper refreshTokenMapper;
 
     @Transactional
     @Override
@@ -43,7 +46,11 @@ public class AuthServiceImpl implements AuthService {
         UserDetails userDetails = userDetailsService.loadUserByUsername(authRequestDto.getUsername());
 
         User user = userRepository.findByUsername(userDetails.getUsername())
-                .orElseThrow(() -> new UserNotFoundException("User doesn't exist."));
+                .orElseThrow(() -> new UserNotFoundException("Este usuario no existe."));
+
+        if (!user.isActive()){
+            throw new UserDeactivatedException("El usuario con el que si intenta logear esta desactivado.");
+        }
 
         String accessToken = jwtService.generateToken(userDetails);
 
@@ -54,7 +61,7 @@ public class AuthServiceImpl implements AuthService {
 
         return AuthResponseDto.builder()
                 .accessTokenDto(accessTokenDto)
-                .refreshTokenDto(refreshTokenService.generate(user))
+                .refreshTokenDto(refreshTokenMapper.toDto(refreshTokenService.generate(user)))
                 .build();
     }
 
@@ -63,10 +70,10 @@ public class AuthServiceImpl implements AuthService {
     public void logout(User user, RefreshTokenRequestDto refreshTokenRequestDto) {
 
         RefreshToken refreshToken = refreshTokenRepository.findByToken(refreshTokenRequestDto.getRefreshToken())
-                .orElseThrow(() -> new RefreshTokenException("Invalid token"));
+                .orElseThrow(() -> new RefreshTokenException("Session token invalido."));
 
-        if (!user.getUsername().equals(refreshToken.getUser().getUsername())){
-            throw new RefreshTokenException("You are no the owner of this token.");
+        if (!user.getUsername().equals(refreshToken.getUser().getUsername())) {
+            throw new RefreshTokenException("No eres el dueño de este session token.");
         }
 
         refreshTokenRepository.deleteByToken(refreshToken.getToken());
@@ -77,11 +84,11 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public AuthResponseDto refresh(RefreshTokenRequestDto refreshTokenRequestDto) {
 
-        RefreshToken oldRefreshToken = refreshTokenService.validate(refreshTokenRequestDto.getRefreshToken());
+//        refreshTokenService.validate(refreshTokenRequestDto.getRefreshToken());
 
-        RefreshTokenDto newRefreshToken = refreshTokenService.rotate(oldRefreshToken);
+        RefreshToken newRefreshToken = refreshTokenService.validateAndRotate(refreshTokenRequestDto.getRefreshToken());
 
-        String accessToken = jwtService.generateToken(oldRefreshToken.getUser());
+         String accessToken = jwtService.generateToken(newRefreshToken.getUser());
 
         AccessTokenDto newAccessTokenDto = AccessTokenDto.builder()
                 .token(accessToken)
@@ -90,7 +97,7 @@ public class AuthServiceImpl implements AuthService {
 
         return AuthResponseDto.builder()
                 .accessTokenDto(newAccessTokenDto)
-                .refreshTokenDto(newRefreshToken)
+                .refreshTokenDto(refreshTokenMapper.toDto(newRefreshToken))
                 .build();
     }
 }

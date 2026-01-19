@@ -6,9 +6,10 @@ import jakarta.persistence.criteria.*;
 import lombok.AllArgsConstructor;
 import org.icc.pecesatierra.dtos.report.ReportResponseDto;
 import org.icc.pecesatierra.dtos.report.ReportRequestDto;
-import org.icc.pecesatierra.domain.entities.Attendance;
-import org.icc.pecesatierra.domain.entities.Member;
-import org.icc.pecesatierra.domain.entities.Services;
+import org.icc.pecesatierra.entities.Attendance;
+import org.icc.pecesatierra.entities.AttendanceId;
+import org.icc.pecesatierra.entities.Member;
+import org.icc.pecesatierra.entities.Services;
 import org.icc.pecesatierra.repositories.AttendanceRepository;
 import org.icc.pecesatierra.repositories.MemberRepository;
 import org.icc.pecesatierra.repositories.ServiceRepository;
@@ -39,6 +40,9 @@ public class ReportServiceImpl implements ReportService {
     @Override
     public List<ReportResponseDto> generate(ReportRequestDto dto) {
 
+        CriteriaBuilder cb = em.getCriteriaBuilder();
+        CriteriaQuery<ReportResponseDto> cq = cb.createQuery(ReportResponseDto.class);
+
 //        ExecutorService executor = Executors.newFixedThreadPool(30);
 //
 //        for (int i = 0; i < 60; i++) {
@@ -51,14 +55,16 @@ public class ReportServiceImpl implements ReportService {
 //
 //        executor.shutdown();
 
-        CriteriaBuilder cb = em.getCriteriaBuilder();
-        CriteriaQuery<ReportResponseDto> cq = cb.createQuery(ReportResponseDto.class);
-
         Root<Attendance> attendance = cq.from(Attendance.class);
-        Join<Attendance, Member> member = attendance.join("member");
-        Join<Attendance, Services> service = attendance.join("services");
+        Join<Attendance, Member> member = attendance.join("member", JoinType.INNER);
+        Join<Attendance, Services> service = attendance.join("services", JoinType.INNER);
+
+        Path<AttendanceId> id = attendance.get("id");
+        Path<LocalDateTime> serviceDate = id.get("serviceDate");
 
         List<Predicate> predicates = new ArrayList<>();
+
+        predicates.add(cb.isFalse(attendance.get("invalid")));
 
         if (dto.getCategories() != null && !dto.getCategories().isEmpty()) {
             predicates.add(attendance.get("memberCategory").in(dto.getCategories()));
@@ -69,39 +75,32 @@ public class ReportServiceImpl implements ReportService {
         }
 
         if (dto.getServiceIds() != null && !dto.getServiceIds().isEmpty()) {
-            predicates.add(attendance.get("id").get("serviceId").in(dto.getServiceIds()));
+            predicates.add(id.get("serviceId").in(dto.getServiceIds()));
         }
 
         if (dto.getStartDate() != null) {
-            predicates.add(cb.greaterThanOrEqualTo(
-                    attendance.get("serviceStartDate"),
-                    dto.getStartDate()
-            ));
+            predicates.add(cb.greaterThanOrEqualTo(serviceDate, dto.getStartDate()));
         }
 
         if (dto.getEndDate() != null) {
-            predicates.add(cb.lessThanOrEqualTo(
-                    attendance.get("serviceStartDate"),
-                    dto.getEndDate()
-            ));
+            predicates.add(cb.lessThanOrEqualTo(serviceDate, dto.getEndDate()));
         }
 
         if (dto.getUserId() != null) {
-            predicates.add(cb.equal(attendance.get("id").get("memberId"), dto.getUserId()));
+            predicates.add(cb.equal(id.get("memberId"), dto.getUserId()));
         }
 
         if (dto.isOnlyActive()) {
             predicates.add(cb.isTrue(member.get("active")));
         }
 
-        Path<LocalDateTime> attendanceDateTime = attendance.get("serviceStartDate");
-
-        Expression<LocalDate> serviceAttendanceDate = cb.function("DATE", LocalDate.class, attendanceDateTime);
+        Expression<LocalDate> serviceAttendanceDate =
+                cb.function("DATE", LocalDate.class, serviceDate);
 
         cq.select(cb.construct(
                 ReportResponseDto.class,
                 serviceAttendanceDate,
-                attendance.get("serviceStartDate"),
+                serviceDate,
                 service.get("name"),
                 attendance.get("memberCategory"),
                 attendance.get("memberType"),
@@ -112,7 +111,7 @@ public class ReportServiceImpl implements ReportService {
 
         cq.groupBy(
                 serviceAttendanceDate,
-                attendance.get("serviceStartDate"),
+                serviceDate,
                 service.get("name"),
                 attendance.get("memberCategory"),
                 attendance.get("memberType")
@@ -120,12 +119,12 @@ public class ReportServiceImpl implements ReportService {
 
         cq.orderBy(
                 cb.asc(serviceAttendanceDate),
-                cb.asc(attendance.get("serviceStartDate"))
+                cb.asc(serviceDate)
         );
 
         return em.createQuery(cq).getResultList();
-
     }
+
 
     public static LocalDateTime randomDateTime(
             LocalDateTime start,

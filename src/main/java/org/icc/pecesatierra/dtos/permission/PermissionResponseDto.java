@@ -10,7 +10,6 @@ import lombok.*;
 @NoArgsConstructor
 public class PermissionResponseDto {
 
-    @NotBlank
     private String name;
 
 }

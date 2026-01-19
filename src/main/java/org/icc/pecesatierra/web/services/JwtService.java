@@ -12,7 +12,6 @@ public interface JwtService {
     Claims extractAllClaims(String token);
     <T> T extractClaim(String token, Function<Claims, T> claimsResolver);
     Date extractExpiration(String token);
-    boolean isTokenExpired(String token);
     String extractUsername(String token);
     boolean isTokenValid(String token, UserDetails userDetails);
     String generateToken(UserDetails userDetails);

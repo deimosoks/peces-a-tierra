@@ -13,13 +13,18 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class AttendanceRequestDto {
 
-    @NotBlank
+    @NotBlank(message = "Id de servicio invalido.")
     private String serviceId;
 
-    @NotBlank
+    @NotBlank(message = "Id de miembro invalido.")
     private String memberId;
 
-    @NotNull
+    @NotNull(message = "Fecha de servicio invalida.")
+    private LocalDateTime serviceDate;
+
+    @NotNull(message = "Fecha de llegada invalida.")
     private LocalDateTime attendanceDate;
+
+    private String note;
 
 }

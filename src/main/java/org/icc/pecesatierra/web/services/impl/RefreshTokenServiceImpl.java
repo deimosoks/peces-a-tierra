@@ -2,9 +2,11 @@ package org.icc.pecesatierra.web.services.impl;
 
 import lombok.AllArgsConstructor;
 import org.icc.pecesatierra.dtos.auth.RefreshTokenDto;
-import org.icc.pecesatierra.domain.entities.RefreshToken;
-import org.icc.pecesatierra.domain.entities.User;
+import org.icc.pecesatierra.entities.RefreshToken;
+import org.icc.pecesatierra.entities.User;
 import org.icc.pecesatierra.exceptions.RefreshTokenException;
+import org.icc.pecesatierra.exceptions.UserNotFoundException;
+import org.icc.pecesatierra.repositories.UserRepository;
 import org.icc.pecesatierra.utils.mappers.RefreshTokenMapper;
 import org.icc.pecesatierra.repositories.RefreshTokenRepository;
 import org.icc.pecesatierra.web.services.RefreshTokenService;
@@ -21,10 +23,11 @@ import java.util.Date;
 public class RefreshTokenServiceImpl implements RefreshTokenService {
 
     private final RefreshTokenRepository refreshTokenRepository;
+    private final UserRepository userRepository;
     private final RefreshTokenMapper refreshTokenMapper;
 
     @Override
-    public RefreshTokenDto generate(User user) {
+    public RefreshToken generate(User user) {
 
         RefreshToken refreshToken = RefreshToken.builder()
                 .token(generateSecureToken(128))
@@ -33,34 +36,41 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
                 .expiresAt(new Date(System.currentTimeMillis() + Duration.ofDays(5).toMillis()))
                 .build();
 
-        return refreshTokenMapper.toDto(refreshTokenRepository.save(refreshToken));
-    }
-
-    @Override
-    public RefreshToken validate(String token) {
-
-        RefreshToken refreshToken = refreshTokenRepository.findByToken(token)
-                .orElseThrow(() -> new RefreshTokenException("Invalid RefreshToken."));
-
-        if (refreshToken.getExpiresAt().before(new Date())){
-            refreshTokenRepository.deleteByToken(token);
-            throw new RefreshTokenException("Refresh token expired.");
-        }
-
-        return refreshToken;
+        return refreshTokenRepository.save(refreshToken);
     }
 
     @Transactional
     @Override
-    public RefreshTokenDto rotate(RefreshToken refreshToken) {
+    public void validate(String token) {
 
-        RefreshToken token = refreshTokenRepository.findByToken(refreshToken.getToken())
-                .orElseThrow(() -> new RefreshTokenException("Invalid RefreshToken."));
+        RefreshToken refreshToken = refreshTokenRepository.findByToken(token)
+                .orElseThrow(() -> new RefreshTokenException("Session token invalido."));
 
-        refreshTokenRepository.delete(token);
+        if (refreshToken.getExpiresAt().before(new Date())) {
+            refreshTokenRepository.deleteByToken(token);
+            throw new RefreshTokenException("Session token expirado.");
+        }
+
+    }
+
+    @Transactional
+    @Override
+    public RefreshToken validateAndRotate(String refreshTokenValue) {
+
+        RefreshToken token = refreshTokenRepository.findByToken(refreshTokenValue)
+                .orElseThrow(() -> new RefreshTokenException("Session token inválido"));
+
+        int deleted = refreshTokenRepository.deleteIfValid(
+                refreshTokenValue,
+                new Date()
+        );
+        if (deleted == 0) {
+            throw new RefreshTokenException("Session token expirado o ya usado");
+        }
 
         return generate(token.getUser());
     }
+
 
     @Override
     public String generateSecureToken(int byteLength) {

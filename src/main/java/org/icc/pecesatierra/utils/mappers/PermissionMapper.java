@@ -1,7 +1,7 @@
 package org.icc.pecesatierra.utils.mappers;
 
 import org.icc.pecesatierra.dtos.permission.PermissionResponseDto;
-import org.icc.pecesatierra.domain.entities.Permission;
+import org.icc.pecesatierra.entities.Permission;
 import org.mapstruct.Mapper;
 import org.springframework.stereotype.Component;
 

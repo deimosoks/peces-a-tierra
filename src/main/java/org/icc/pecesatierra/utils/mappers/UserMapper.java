@@ -4,7 +4,9 @@ import lombok.AllArgsConstructor;
 import org.icc.pecesatierra.dtos.permission.PermissionResponseDto;
 import org.icc.pecesatierra.dtos.role.RoleResponseDto;
 import org.icc.pecesatierra.dtos.user.UserResponseDto;
-import org.icc.pecesatierra.domain.entities.User;
+import org.icc.pecesatierra.entities.Member;
+import org.icc.pecesatierra.entities.User;
+import org.icc.pecesatierra.repositories.MemberRepository;
 import org.springframework.stereotype.Component;
 
 import java.util.stream.Collectors;
@@ -15,6 +17,7 @@ import java.util.stream.Collectors;
 public class UserMapper {
 
     private final MemberMapper memberMapper;
+    private final MemberRepository memberRepository;
 
     public UserResponseDto toDto(User user){
         return UserResponseDto.builder()
@@ -24,21 +27,23 @@ public class UserMapper {
                 .createdAt(user.getCreatedAt())
                 .updateAt(user.getUpdatedAt())
                 .memberResponseDto(memberMapper.toDto(user.getMember()))
-                .roles(user.getRoles().stream().map(userRole ->
-                        RoleResponseDto.builder()
-                                .id(userRole.getRole().getId())
-                                .name(userRole.getRole().getName())
-                                .color(userRole.getRole().getColor())
-                                .createdAt(userRole.getRole().getCreatedAt())
-                                .updatedAt(userRole.getRole().getUpdatedAt())
-                                .description(userRole.getRole().getDescription())
-                                .givenById(userRole.getGiverId())
-                                .permissions(userRole.getRole().getPermissions().stream().map(rolePermission ->
-                                        PermissionResponseDto.builder()
-                                                .name(rolePermission.getPermission().getName())
-                                                .build()).collect(Collectors.toUnmodifiableSet())
-                                )
-                                .build()
+                .roles(user.getRoles().stream().map(userRole ->{
+                    Member givenBy = memberRepository.findById(userRole.getGiverId()).orElse(null);
+                    return RoleResponseDto.builder()
+                            .id(userRole.getRole().getId())
+                            .name(userRole.getRole().getName())
+                            .color(userRole.getRole().getColor())
+                            .createdAt(userRole.getRole().getCreatedAt())
+                            .updatedAt(userRole.getRole().getUpdatedAt())
+                            .description(userRole.getRole().getDescription())
+                            .givenBy(givenBy != null ? givenBy.getCompleteName() : "desconocido")
+                            .permissions(userRole.getRole().getPermissions().stream().map(rolePermission ->
+                                    PermissionResponseDto.builder()
+                                            .name(rolePermission.getPermission().getName())
+                                            .build()).collect(Collectors.toUnmodifiableSet())
+                            )
+                            .build();
+                        }
                 ).collect(Collectors.toSet()))
                 .build();
 

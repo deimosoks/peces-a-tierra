@@ -2,7 +2,7 @@ package org.icc.pecesatierra.utils.mappers;
 
 import org.icc.pecesatierra.dtos.member.MemberRequestDto;
 import org.icc.pecesatierra.dtos.member.MemberResponseDto;
-import org.icc.pecesatierra.domain.entities.Member;
+import org.icc.pecesatierra.entities.Member;
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingTarget;
 import org.springframework.stereotype.Component;

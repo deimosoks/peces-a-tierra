@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import org.icc.pecesatierra.dtos.member.MemberPagesResponseDto;
 import org.icc.pecesatierra.dtos.member.MemberRequestDto;
 import org.icc.pecesatierra.dtos.member.MemberResponseDto;
-import org.icc.pecesatierra.domain.entities.Member;
+import org.icc.pecesatierra.entities.Member;
 import org.icc.pecesatierra.exceptions.MemberHasHistoricalRecordException;
 import org.icc.pecesatierra.exceptions.MemberNotFoundException;
 import org.icc.pecesatierra.utils.mappers.MemberMapper;
@@ -63,13 +63,11 @@ public class MemberServiceImpl implements MemberService {
     public MemberResponseDto update(MemberRequestDto memberRequestDto, String memberId) {
 
         Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new MemberNotFoundException("Member doesn't exist"));
+                .orElseThrow(() -> new MemberNotFoundException("Este integrante no existe."));
 
         memberMapper.updateEntityFromDto(memberRequestDto, member);
 
         member.setUpdatedAt(LocalDateTime.now());
-
-//        memberRepository.save(member);
 
         if (memberRequestDto.getPictureProfile() != null &&
                 member.getPictureProfileUrl() != null &&
@@ -108,10 +106,10 @@ public class MemberServiceImpl implements MemberService {
     @Override
     public void delete(String memberId) {
         Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new MemberNotFoundException("Member doesn't exist."));
+                .orElseThrow(() -> new MemberNotFoundException("Este integrante no existe."));
 
         if (attendanceRepository.existsByMember(member))
-            throw new MemberHasHistoricalRecordException("Member Member has historical record and cannot be deleted");
+            throw new MemberHasHistoricalRecordException("Este integrante tiene historial de asistencias registrado asi que no puede ser eliminado del sistema, considere desactivarlo.");
 
         String pictureUrl = member.getPictureProfileUrl();
 
@@ -123,7 +121,7 @@ public class MemberServiceImpl implements MemberService {
     @Override
     public boolean updateActive(String memberId, boolean active) {
         Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new MemberNotFoundException("Member doesn't exist."));
+                .orElseThrow(() -> new MemberNotFoundException("Este integrante no existe."));
 
         member.setActive(active);
 

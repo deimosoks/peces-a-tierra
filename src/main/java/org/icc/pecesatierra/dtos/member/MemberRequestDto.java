@@ -16,13 +16,13 @@ import java.time.LocalDate;
 @AllArgsConstructor
 public class MemberRequestDto {
 
-    @NotBlank
+    @NotBlank(message = "Nombre invalido.")
     private String completeName;
 
-    @NotNull
+    @NotNull(message = "Tipo de integrante invalido.")
     private TypeMember type;
 
-    @NotNull
+    @NotNull(message = "Tipo de categoria invalida.")
     private CategoryMember category;
 
     private String cellphone;
@@ -35,17 +35,4 @@ public class MemberRequestDto {
 
     private MultipartFile pictureProfile;
 
-    @Override
-    public String toString() {
-        return "MemberRequestDto{" +
-                "completeName='" + completeName + '\'' +
-                ", type=" + type +
-                ", category=" + category +
-                ", cellphone='" + cellphone + '\'' +
-                ", birthdate=" + birthdate +
-                ", address='" + address + '\'' +
-                ", cc='" + cc + '\'' +
-                ", pictureProfile=" + pictureProfile +
-                '}';
-    }
 }

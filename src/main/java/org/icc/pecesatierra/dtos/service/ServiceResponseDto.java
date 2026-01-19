@@ -18,7 +18,4 @@ public class ServiceResponseDto {
     private String description;
     private boolean active;
 
-    //    private String dayOfWeek;
-//    private LocalTime startTime;
-
 }

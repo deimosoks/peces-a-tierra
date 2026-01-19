@@ -3,7 +3,7 @@ package org.icc.pecesatierra.web.services.impl;
 import lombok.AllArgsConstructor;
 import org.icc.pecesatierra.dtos.service.ServiceRequestDto;
 import org.icc.pecesatierra.dtos.service.ServiceResponseDto;
-import org.icc.pecesatierra.domain.entities.Services;
+import org.icc.pecesatierra.entities.Services;
 import org.icc.pecesatierra.exceptions.ServiceHasHistoricalRecordException;
 import org.icc.pecesatierra.exceptions.ServicesNotFoundException;
 import org.icc.pecesatierra.utils.mappers.ServiceMapper;
@@ -39,7 +39,7 @@ public class ServiceServiceImpl implements ServiceService {
     @Override
     public ServiceResponseDto update(ServiceRequestDto serviceRequestDto, String serviceId) {
         Services services = serviceRepository.findById(serviceId)
-                .orElseThrow(() -> new ServicesNotFoundException("Services doesn't exist."));
+                .orElseThrow(() -> new ServicesNotFoundException("Este servicio no existe."));
 
         serviceMapper.updateEntityFromDto(serviceRequestDto, services);
 
@@ -51,10 +51,10 @@ public class ServiceServiceImpl implements ServiceService {
     @Override
     public void delete(String serviceId) {
         Services services = serviceRepository.findById(serviceId)
-                .orElseThrow(() -> new ServicesNotFoundException("Services doesn't exist."));
+                .orElseThrow(() -> new ServicesNotFoundException("Este servicio no existe."));
 
         if (attendanceRepository.existsByServices(services))
-            throw new ServiceHasHistoricalRecordException("Service have a historical record and cannot be deleted.");
+            throw new ServiceHasHistoricalRecordException("Este servicio tiene asistencias registradas asi que no puede ser eliminado, considere desactivarlo.");
 
         serviceRepository.delete(services);
     }
@@ -70,7 +70,7 @@ public class ServiceServiceImpl implements ServiceService {
     @Override
     public boolean updateActive(String serviceId, boolean active) {
         Services services = serviceRepository.findById(serviceId)
-                .orElseThrow(() -> new ServicesNotFoundException("Service doesn't exist."));
+                .orElseThrow(() -> new ServicesNotFoundException("Este servicio no existe."));
 
         services.setActive(active);
 

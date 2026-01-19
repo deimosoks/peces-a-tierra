@@ -2,8 +2,8 @@ package org.icc.pecesatierra.web.services.impl;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import org.icc.pecesatierra.domain.entities.Attendance;
-import org.icc.pecesatierra.domain.entities.AttendanceId;
+import org.icc.pecesatierra.entities.Attendance;
+import org.icc.pecesatierra.entities.AttendanceId;
 import org.icc.pecesatierra.repositories.AttendanceRepository;
 import org.icc.pecesatierra.repositories.MemberRepository;
 import org.icc.pecesatierra.repositories.ServiceRepository;
@@ -28,19 +28,21 @@ public class DataLoaderService implements Runnable {
         LocalDateTime to = LocalDateTime.of(2025, 12, 31, 23, 59);
 
         serviceRepository.findAll().forEach(service -> {
-            LocalDateTime attendanceDate = randomDateTime(from, to);
+            LocalDateTime serviceDate = randomDateTime(from, to);
 
             memberRepository.findAll().forEach(member -> {
                 Attendance attendance = Attendance.builder()
                         .id(AttendanceId.builder()
-                                .attendanceDate(LocalDateTime.now())
+                                .serviceDate(serviceDate)
                                 .serviceId(service.getId())
                                 .memberId(member.getId())
                                 .build()
                         )
-                        .serviceStartDate(attendanceDate)
+                        .attendanceDate(serviceDate)
                         .services(service)
                         .member(member)
+                        .registeredById("c65473ca-c001-4318-9397-50992018e80c")
+                        .invalid(false)
                         .memberType(member.getType())
                         .memberCategory(member.getCategory())
                         .build();

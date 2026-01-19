@@ -3,16 +3,14 @@ package org.icc.pecesatierra.web.services.impl;
 import lombok.AllArgsConstructor;
 import org.icc.pecesatierra.dtos.role.RoleRequestDto;
 import org.icc.pecesatierra.dtos.role.RoleResponseDto;
-import org.icc.pecesatierra.domain.entities.Permission;
-import org.icc.pecesatierra.domain.entities.Role;
-import org.icc.pecesatierra.domain.entities.RolePermission;
-import org.icc.pecesatierra.domain.entities.RolePermissionId;
+import org.icc.pecesatierra.entities.*;
 import org.icc.pecesatierra.exceptions.PermissionNotFoundException;
+import org.icc.pecesatierra.exceptions.RoleHasRelatedUserException;
 import org.icc.pecesatierra.exceptions.RoleNotFoundException;
+import org.icc.pecesatierra.repositories.UserRoleRepository;
 import org.icc.pecesatierra.utils.mappers.RoleMapper;
 import org.icc.pecesatierra.repositories.PermissionRepository;
 import org.icc.pecesatierra.repositories.RoleRepository;
-import org.icc.pecesatierra.repositories.UserRoleRepository;
 import org.icc.pecesatierra.web.services.RoleService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,6 +26,7 @@ public class RoleServiceImpl implements RoleService {
     private final RoleRepository roleRepository;
     private final RoleMapper roleMapper;
     private final PermissionRepository permissionRepository;
+    private final UserRoleRepository userRoleRepository;
 
     @Transactional
     @Override
@@ -44,7 +43,7 @@ public class RoleServiceImpl implements RoleService {
         roleRequestDto.getPermissions().forEach(
                 permissionRequestDto -> {
                     Permission permission = permissionRepository.findById(permissionRequestDto.getName())
-                            .orElseThrow(() -> new PermissionNotFoundException("Permission doesn't exist."));
+                            .orElseThrow(() -> new PermissionNotFoundException("Este permiso no existe."));
 
                     RolePermissionId rolePermissionId = RolePermissionId.builder()
                             .permissionId(permission.getName())
@@ -68,7 +67,7 @@ public class RoleServiceImpl implements RoleService {
     public RoleResponseDto update(RoleRequestDto roleRequestDto, String rolId) {
 
         Role role = roleRepository.findById(rolId)
-                .orElseThrow(() -> new RoleNotFoundException("Role doesn't exist."));
+                .orElseThrow(() -> new RoleNotFoundException("Este rol no existe."));
 
         roleMapper.updateEntityFromDto(roleRequestDto, role);
         role.setUpdatedAt(LocalDateTime.now());
@@ -76,10 +75,16 @@ public class RoleServiceImpl implements RoleService {
         return roleMapper.toDto(roleRepository.save(role));
     }
 
+    @Transactional
     @Override
     public void delete(String roleId) {
         Role role = roleRepository.findById(roleId)
-                .orElseThrow(() -> new RoleNotFoundException("Role doesn't exist"));
+                .orElseThrow(() -> new RoleNotFoundException("Este rol no existe."));
+
+        if (userRoleRepository.existsByRoleId(roleId)){
+            throw new RoleHasRelatedUserException("Este rol tiene usuarios relacionados asi que no puede ser borrado hasta que se remueva la relación con los usuarios.");
+        }
+
         roleRepository.delete(role);
     }
 

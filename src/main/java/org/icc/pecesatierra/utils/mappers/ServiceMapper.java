@@ -2,7 +2,7 @@ package org.icc.pecesatierra.utils.mappers;
 
 import org.icc.pecesatierra.dtos.service.ServiceRequestDto;
 import org.icc.pecesatierra.dtos.service.ServiceResponseDto;
-import org.icc.pecesatierra.domain.entities.Services;
+import org.icc.pecesatierra.entities.Services;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;

@@ -18,20 +18,20 @@ public class MemberController extends BaseController {
 
     private final MemberService memberService;
 
-    @PreAuthorize("hasAuthority('CREATE_MEMBER')")
+    @PreAuthorize("hasAuthority('CREATE_MEMBER') && @securityService.isActive(authentication)")
     @PostMapping
     public ResponseEntity<MemberResponseDto> create(@ModelAttribute @Valid MemberRequestDto memberRequestDto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(memberService.create(memberRequestDto));
     }
 
-    @PreAuthorize("hasAuthority('UPDATE_MEMBER')")
+    @PreAuthorize("hasAuthority('UPDATE_MEMBER') && @securityService.isActive(authentication)")
     @PutMapping("/{memberId}")
     public ResponseEntity<MemberResponseDto> update(@Valid @ModelAttribute MemberRequestDto memberRequestDto,
                                                     @PathVariable String memberId) {
         return ResponseEntity.ok(memberService.update(memberRequestDto, memberId));
     }
 
-    @PreAuthorize("hasAuthority('VIEW_MEMBER_PANEL') || hasAuthority('MANAGE_ATTENDANCE')")
+    @PreAuthorize("(hasAuthority('VIEW_MEMBER_PANEL') || hasAuthority('MANAGE_ATTENDANCE') || hasAuthority('REGISTER_ATTENDANCE')) && @securityService.isActive(authentication)")
     @GetMapping
     public ResponseEntity<MemberPagesResponseDto> findAll(@RequestParam(
                                                                   required = false,

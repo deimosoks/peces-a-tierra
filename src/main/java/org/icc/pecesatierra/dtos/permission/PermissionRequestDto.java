@@ -10,6 +10,6 @@ import lombok.*;
 @NoArgsConstructor
 public class PermissionRequestDto {
 
-    @NotBlank
+    @NotBlank(message = "Permiso invalido.")
     private String name;
 }

@@ -6,16 +6,21 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
+import org.icc.pecesatierra.dtos.error.ErrorResponseDto;
 import org.icc.pecesatierra.web.services.JwtService;
 import org.icc.pecesatierra.web.services.impl.CustomUserDetailsServiceImpl;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 
 @Component
 @AllArgsConstructor
@@ -23,13 +28,12 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
     private final CustomUserDetailsServiceImpl userDetailsService;
+    private final ObjectMapper objectMapper;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
-
-
 
         String authHeader = request.getHeader("Authorization");
 
@@ -47,9 +51,15 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         }catch (ExpiredJwtException e){
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.setContentType("application/json");
-            response.getWriter().write("""
-                { "error": "TOKEN_EXPIRED" }
-            """);
+            response.getWriter().write(objectMapper.writeValueAsString(
+                    ErrorResponseDto.builder()
+                            .localDateTime(LocalDateTime.now())
+                            .status(HttpStatus.UNAUTHORIZED.value())
+                            .error(HttpStatus.UNAUTHORIZED.getReasonPhrase())
+                            .path(request.getRequestURI())
+                            .message(e.getMessage())
+                            .build()
+            ));
             return;
         }
 

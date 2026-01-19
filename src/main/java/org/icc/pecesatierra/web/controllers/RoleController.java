@@ -19,27 +19,27 @@ public class RoleController extends BaseController  {
 
     private final RoleService roleService;
 
-    @PreAuthorize("hasAuthority('CREATE_ROLE')")
+    @PreAuthorize("hasAuthority('CREATE_ROLE') && @securityService.isActive(authentication)")
     @PostMapping
     public ResponseEntity<RoleResponseDto> create(@Valid @RequestBody RoleRequestDto roleRequestDto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(roleService.create(roleRequestDto));
     }
 
-    @PreAuthorize("hasAuthority('UPDATE_ROLE')")
+    @PreAuthorize("hasAuthority('UPDATE_ROLE') && @securityService.isActive(authentication)")
     @PutMapping("/{roleId}")
     public ResponseEntity<RoleResponseDto> update(@Valid @RequestBody RoleRequestDto roleRequestDto,
                                                   @PathVariable String roleId) {
         return ResponseEntity.ok(roleService.update(roleRequestDto, roleId));
     }
 
-    @PreAuthorize("hasAuthority('DELETE_ROLE')")
+    @PreAuthorize("hasAuthority('DELETE_ROLE') && @securityService.isActive(authentication)")
     @DeleteMapping("/{roleId}")
     public ResponseEntity<Void> delete(@PathVariable String roleId) {
         roleService.delete(roleId);
         return ResponseEntity.noContent().build();
     }
 
-    @PreAuthorize("hasAuthority('VIEW_ROLE_PANEL')")
+    @PreAuthorize("hasAuthority('VIEW_ROLE_PANEL') && @securityService.isActive(authentication)")
     @GetMapping
     public ResponseEntity<List<RoleResponseDto>> findAll() {
         return ResponseEntity.ok(roleService.findAll());
