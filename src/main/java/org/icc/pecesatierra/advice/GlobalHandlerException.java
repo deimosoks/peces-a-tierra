@@ -100,7 +100,7 @@ public class GlobalHandlerException {
 
     @ExceptionHandler(PermissionNotFoundException.class)
     public ResponseEntity<ErrorResponseDto> handlerPermissionNotFoundException(HttpServletRequest httpServletRequest,
-                                                                           PermissionNotFoundException exception){
+                                                                               PermissionNotFoundException exception) {
         ErrorResponseDto errorResponseDto = ErrorResponseDto.builder()
                 .localDateTime(LocalDateTime.now())
                 .status(HttpStatus.BAD_REQUEST.value())
@@ -114,7 +114,7 @@ public class GlobalHandlerException {
 
     @ExceptionHandler(RefreshTokenException.class)
     public ResponseEntity<ErrorResponseDto> handlerRefreshTokenException(HttpServletRequest httpServletRequest,
-                                                                           RefreshTokenException exception){
+                                                                         RefreshTokenException exception) {
         ErrorResponseDto errorResponseDto = ErrorResponseDto.builder()
                 .localDateTime(LocalDateTime.now())
                 .status(HttpStatus.BAD_REQUEST.value())
@@ -128,7 +128,7 @@ public class GlobalHandlerException {
 
     @ExceptionHandler(RoleHasRelatedUserException.class)
     public ResponseEntity<ErrorResponseDto> handlerRoleHasRelatedUserException(HttpServletRequest httpServletRequest,
-                                                                           RoleHasRelatedUserException exception){
+                                                                               RoleHasRelatedUserException exception) {
         ErrorResponseDto errorResponseDto = ErrorResponseDto.builder()
                 .localDateTime(LocalDateTime.now())
                 .status(HttpStatus.BAD_REQUEST.value())
@@ -142,7 +142,7 @@ public class GlobalHandlerException {
 
     @ExceptionHandler(RoleNotFoundException.class)
     public ResponseEntity<ErrorResponseDto> handlerRoleNotFoundException(HttpServletRequest httpServletRequest,
-                                                                          RoleNotFoundException exception){
+                                                                         RoleNotFoundException exception) {
         ErrorResponseDto errorResponseDto = ErrorResponseDto.builder()
                 .localDateTime(LocalDateTime.now())
                 .status(HttpStatus.BAD_REQUEST.value())
@@ -156,7 +156,7 @@ public class GlobalHandlerException {
 
     @ExceptionHandler(ServiceDeactivatedException.class)
     public ResponseEntity<ErrorResponseDto> handlerServiceDeactivatedException(HttpServletRequest httpServletRequest,
-                                                                               ServiceDeactivatedException exception){
+                                                                               ServiceDeactivatedException exception) {
         ErrorResponseDto errorResponseDto = ErrorResponseDto.builder()
                 .localDateTime(LocalDateTime.now())
                 .status(HttpStatus.BAD_REQUEST.value())
@@ -170,7 +170,7 @@ public class GlobalHandlerException {
 
     @ExceptionHandler(ServiceHasHistoricalRecordException.class)
     public ResponseEntity<ErrorResponseDto> handlerServiceHasHistoricalRecordException(HttpServletRequest httpServletRequest,
-                                                                           ServiceHasHistoricalRecordException exception){
+                                                                                       ServiceHasHistoricalRecordException exception) {
         ErrorResponseDto errorResponseDto = ErrorResponseDto.builder()
                 .localDateTime(LocalDateTime.now())
                 .status(HttpStatus.BAD_REQUEST.value())
@@ -184,7 +184,7 @@ public class GlobalHandlerException {
 
     @ExceptionHandler(ServicesNotFoundException.class)
     public ResponseEntity<ErrorResponseDto> handlerServicesNotFoundException(HttpServletRequest httpServletRequest,
-                                                                           ServicesNotFoundException exception){
+                                                                             ServicesNotFoundException exception) {
         ErrorResponseDto errorResponseDto = ErrorResponseDto.builder()
                 .localDateTime(LocalDateTime.now())
                 .status(HttpStatus.BAD_REQUEST.value())
@@ -198,7 +198,7 @@ public class GlobalHandlerException {
 
     @ExceptionHandler(UsernameAlreadyRegister.class)
     public ResponseEntity<ErrorResponseDto> handlerUsernameAlreadyRegister(HttpServletRequest httpServletRequest,
-                                                                           UsernameAlreadyRegister exception){
+                                                                           UsernameAlreadyRegister exception) {
         ErrorResponseDto errorResponseDto = ErrorResponseDto.builder()
                 .localDateTime(LocalDateTime.now())
                 .status(HttpStatus.BAD_REQUEST.value())
@@ -212,7 +212,7 @@ public class GlobalHandlerException {
 
     @ExceptionHandler(UserNotFoundException.class)
     public ResponseEntity<ErrorResponseDto> handlerUserNotFoundException(HttpServletRequest httpServletRequest,
-                                                                           UserNotFoundException exception){
+                                                                         UserNotFoundException exception) {
         ErrorResponseDto errorResponseDto = ErrorResponseDto.builder()
                 .localDateTime(LocalDateTime.now())
                 .status(HttpStatus.BAD_REQUEST.value())
@@ -226,7 +226,7 @@ public class GlobalHandlerException {
 
     @ExceptionHandler(UsernameNotFoundException.class)
     public ResponseEntity<ErrorResponseDto> handlerUsernameNotFoundException(HttpServletRequest httpServletRequest,
-                                                                         UsernameNotFoundException exception){
+                                                                             UsernameNotFoundException exception) {
         ErrorResponseDto errorResponseDto = ErrorResponseDto.builder()
                 .localDateTime(LocalDateTime.now())
                 .status(HttpStatus.BAD_REQUEST.value())
@@ -240,7 +240,7 @@ public class GlobalHandlerException {
 
     @ExceptionHandler(UserDeactivatedException.class)
     public ResponseEntity<ErrorResponseDto> handlerUserDeactivatedException(HttpServletRequest httpServletRequest,
-                                                                            UserDeactivatedException exception){
+                                                                            UserDeactivatedException exception) {
         ErrorResponseDto errorResponseDto = ErrorResponseDto.builder()
                 .localDateTime(LocalDateTime.now())
                 .status(HttpStatus.UNAUTHORIZED.value())
@@ -250,6 +250,20 @@ public class GlobalHandlerException {
                 .build();
 
         return new ResponseEntity<>(errorResponseDto, HttpStatus.UNAUTHORIZED);
+    }
+
+    @ExceptionHandler(DeactivateYourselfException.class)
+    public ResponseEntity<ErrorResponseDto> handlerDeactivateYourselfException(HttpServletRequest httpServletRequest,
+                                                                            DeactivateYourselfException exception) {
+        ErrorResponseDto errorResponseDto = ErrorResponseDto.builder()
+                .localDateTime(LocalDateTime.now())
+                .status(HttpStatus.BAD_REQUEST.value())
+                .error(HttpStatus.BAD_REQUEST.getReasonPhrase())
+                .message(exception.getMessage())
+                .path(httpServletRequest.getRequestURI())
+                .build();
+
+        return new ResponseEntity<>(errorResponseDto, HttpStatus.BAD_REQUEST);
     }
 
 }

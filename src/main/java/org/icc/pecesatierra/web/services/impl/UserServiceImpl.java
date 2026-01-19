@@ -166,18 +166,22 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public boolean updateActive(String userId, boolean active) {
+    public boolean updateActive(User user,String userId, boolean active) {
 
-        User user = userRepository.findById(userId)
+        User userToUpdate = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("Este usuario no existe."));
 
-        user.setUpdatedAt(LocalDateTime.now());
+        if (user.getId().equals(userToUpdate.getId())){
+            throw new DeactivateYourselfException("No puedes desactivarte a ti mismo.");
+        }
 
-        user.setActive(active);
+        userToUpdate.setUpdatedAt(LocalDateTime.now());
 
-        userRepository.save(user);
+        userToUpdate.setActive(active);
 
-        return user.isActive();
+        userRepository.save(userToUpdate);
+
+        return userToUpdate.isActive();
     }
 
     @Override

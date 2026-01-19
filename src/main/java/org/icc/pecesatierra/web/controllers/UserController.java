@@ -61,8 +61,9 @@ public class UserController extends BaseController  {
     @PreAuthorize("hasAuthority('UPDATE_USER') && @securityService.isActive(authentication)")
     @PatchMapping("/{userId}")
     public ResponseEntity<Boolean> updateActive(@PathVariable String userId,
-                                                @RequestParam boolean active) {
-        return ResponseEntity.ok(userService.updateActive(userId, active));
+                                                @RequestParam boolean active,
+                                                @AuthenticationPrincipal User user) {
+        return ResponseEntity.ok(userService.updateActive(user, userId, active));
     }
 
     @PreAuthorize("hasAuthority('DELETE_USER') && @securityService.isActive(authentication)")

@@ -13,7 +13,7 @@ public interface UserService {
 
     UserResponseDto update(UserRequestDto userRequestDto, String userId, User givenBy);
 
-    boolean updateActive(String userId, boolean active);
+    boolean updateActive(User user,String userId, boolean active);
 
     void delete(String userId);
 
