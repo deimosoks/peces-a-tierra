@@ -185,11 +185,14 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void delete(String userId) {
-        User user = userRepository.findById(userId)
+    public void delete(User user, String userId) {
+        User userToDelete = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("Este usuario no existe."));
 
-        userRepository.delete(user);
+        if (user.getId().equals(userToDelete.getId())){
+            throw new DeactivateYourselfException("No puedes borrar tu propio usuario.");
+        }
+        userRepository.delete(userToDelete);
 
     }
 

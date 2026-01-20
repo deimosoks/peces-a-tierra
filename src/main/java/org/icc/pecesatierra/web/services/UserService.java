@@ -15,7 +15,7 @@ public interface UserService {
 
     boolean updateActive(User user,String userId, boolean active);
 
-    void delete(String userId);
+    void delete(User user, String userId);
 
     UserReportResponseDto report();
 

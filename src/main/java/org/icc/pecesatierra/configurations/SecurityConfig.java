@@ -55,7 +55,10 @@ public class SecurityConfig {
                                 "/*.png",
                                 "/assets/**",
                                 "/img/**",
-                                "/fonts/**"
+                                "/icons/**",
+                                "/fonts/**",
+                                "/*.webmanifest",
+                                "/ngsw.json"
                         ).permitAll()
 
                         .requestMatchers("/{path:[^\\.]*}", "/**/{path:[^\\.]*}").permitAll()
@@ -80,7 +83,7 @@ public class SecurityConfig {
         configuration.setAllowedOriginPatterns(List.of(
                 "http://localhost:4200",
                 "http://localhost:*",
-                "https://animation-stars-furthermore-nodes.trycloudflare.com/",
+                "http://192.168.1.22:4200/",
                 "https://*.trycloudflare.com/"
         ));
 

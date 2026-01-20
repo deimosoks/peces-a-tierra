@@ -68,8 +68,9 @@ public class UserController extends BaseController  {
 
     @PreAuthorize("hasAuthority('DELETE_USER') && @securityService.isActive(authentication)")
     @DeleteMapping("/{userId}")
-    public ResponseEntity<Void> delete(@PathVariable String userId) {
-        userService.delete(userId);
+    public ResponseEntity<Void> delete(@AuthenticationPrincipal User user,
+                                       @PathVariable String userId) {
+        userService.delete(user, userId);
         return ResponseEntity.noContent().build();
     }
 
