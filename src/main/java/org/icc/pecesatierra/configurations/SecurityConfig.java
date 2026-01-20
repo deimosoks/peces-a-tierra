@@ -43,7 +43,10 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET,
                                 "/uploads/**"
                         ).permitAll()
-
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/health"
+                        ).permitAll()
                         .requestMatchers("/api/**").authenticated()
 
                         .requestMatchers(
