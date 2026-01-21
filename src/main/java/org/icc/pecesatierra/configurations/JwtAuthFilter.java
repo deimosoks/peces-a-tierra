@@ -1,6 +1,7 @@
 package org.icc.pecesatierra.configurations;
 
 import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.MalformedJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -48,7 +49,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         try {
             jwt = authHeader.substring(7);
             userEmail = jwtService.extractUsername(jwt);
-        }catch (ExpiredJwtException e){
+        }catch (ExpiredJwtException | MalformedJwtException e){
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.setContentType("application/json");
             response.getWriter().write(objectMapper.writeValueAsString(
