@@ -19,7 +19,8 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Attendan
     @Query("""
                 SELECT COUNT(a)
                 FROM Attendance a
-                WHERE a.id.serviceDate = (
+                WHERE invalid = false AND
+                a.id.serviceDate = (
                     SELECT MAX(a2.id.serviceDate)
                     FROM Attendance a2
                 )

@@ -42,5 +42,6 @@ public class Member {
     private String address;
     private LocalDate birthdate;
     private String pictureProfileUrl;
+    private String publicId;
 
 }

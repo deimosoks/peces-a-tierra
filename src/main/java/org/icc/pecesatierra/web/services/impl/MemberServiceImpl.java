@@ -7,11 +7,12 @@ import org.icc.pecesatierra.dtos.member.MemberResponseDto;
 import org.icc.pecesatierra.entities.Member;
 import org.icc.pecesatierra.exceptions.MemberHasHistoricalRecordException;
 import org.icc.pecesatierra.exceptions.MemberNotFoundException;
+import org.icc.pecesatierra.exceptions.ServerErrorException;
 import org.icc.pecesatierra.utils.mappers.MemberMapper;
 import org.icc.pecesatierra.repositories.AttendanceRepository;
 import org.icc.pecesatierra.repositories.MemberRepository;
 import org.icc.pecesatierra.web.services.MemberService;
-import org.icc.pecesatierra.utils.PictureManager;
+import org.icc.pecesatierra.utils.PictureUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -20,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Map;
 
 
 @Service
@@ -29,65 +31,51 @@ public class MemberServiceImpl implements MemberService {
     private final MemberRepository memberRepository;
     private final MemberMapper memberMapper;
     private final AttendanceRepository attendanceRepository;
-    private final PictureManager pictureManager;
+    private final MemberPersistenceService memberPersistenceService;
+    private final PictureUtils pictureUtils;
 
-    @Transactional(rollbackFor = Exception.class)
     @Override
     public MemberResponseDto create(MemberRequestDto memberRequestDto) {
 
-        Member member = Member.builder()
-                .type(memberRequestDto.getType().toString())
-                .category(memberRequestDto.getCategory().toString())
-                .completeName(memberRequestDto.getCompleteName())
-                .createdAt(LocalDateTime.now())
-                .cc(memberRequestDto.getCc())
-                .cellphone(memberRequestDto.getCellphone())
-                .address(memberRequestDto.getAddress())
-                .birthdate(memberRequestDto.getBirthdate())
-                .active(true)
-//                    .pictureProfileUrl("/uploads/" + newFileName)
-                .build();
+        Map<String, String> pictureData = pictureUtils.validateAndSavePicture(memberRequestDto.getPictureProfile());
 
-        String newFileName = pictureManager.validateAndSavePicture(memberRequestDto.getPictureProfile());
-
-        if (!newFileName.isBlank()) {
-            member.setPictureProfileUrl("/uploads/" + newFileName);
+        try {
+            return memberPersistenceService.save(memberRequestDto, pictureData);
+        } catch (Exception e) {
+            if (pictureData.get("publicId") != null) {
+                pictureUtils.delete(pictureData.get("publicId"));
+            }
+            throw new ServerErrorException("Error al procesar su solicitud, por favor intente mas tarde.");
         }
-
-        return memberMapper.toDto(memberRepository.save(member));
-
     }
 
-    @Transactional(rollbackFor = Exception.class)
     @Override
     public MemberResponseDto update(MemberRequestDto memberRequestDto, String memberId) {
 
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new MemberNotFoundException("Este integrante no existe."));
 
-        memberMapper.updateEntityFromDto(memberRequestDto, member);
+        String oldPublicId = member.getPublicId();
+        Map<String, String> newPictureData = null;
 
-        member.setUpdatedAt(LocalDateTime.now());
-
-        if (memberRequestDto.getPictureProfile() != null &&
-                member.getPictureProfileUrl() != null &&
-                !member.getPictureProfileUrl().equals(memberRequestDto.getPictureProfile().getOriginalFilename())) {
-            pictureManager.delete(member.getPictureProfileUrl());
-
-            String newFileName = pictureManager.validateAndSavePicture(memberRequestDto.getPictureProfile());
-
-            if (!newFileName.isBlank()) {
-                member.setPictureProfileUrl("/uploads/" + newFileName);
-            }
-        } else if (member.getPictureProfileUrl() == null && memberRequestDto.getPictureProfile() != null) {
-            String newFileName = pictureManager.validateAndSavePicture(memberRequestDto.getPictureProfile());
-
-            if (!newFileName.isBlank()) {
-                member.setPictureProfileUrl("/uploads/" + newFileName);
-            }
+        if (memberRequestDto.getPictureProfile() != null) {
+            newPictureData = pictureUtils.validateAndSavePicture(memberRequestDto.getPictureProfile());
         }
 
-        return memberMapper.toDto(memberRepository.save(member));
+        try {
+            MemberResponseDto response = memberPersistenceService.update(member, memberRequestDto, newPictureData);
+
+            if (newPictureData != null && oldPublicId != null) {
+                pictureUtils.delete(oldPublicId);
+            }
+            return response;
+
+        } catch (Exception e) {
+            if (newPictureData != null && newPictureData.get("publicId") != null) {
+                pictureUtils.delete(newPictureData.get("publicId"));
+            }
+            throw new ServerErrorException("Error al procesar su solicitud, por favor intente mas tarde.");
+        }
     }
 
     @Override
@@ -115,7 +103,7 @@ public class MemberServiceImpl implements MemberService {
 
         memberRepository.delete(member);
 
-        if (pictureUrl != null) pictureManager.delete(pictureUrl);
+        if (pictureUrl != null) pictureUtils.delete(pictureUrl);
     }
 
     @Override
