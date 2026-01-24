@@ -1,6 +1,5 @@
 package org.icc.pecesatierra.dtos.permission;
 
-import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
 @Getter

@@ -22,6 +22,6 @@ public class AttendanceResponseDto {
     private String registeredBy;
     private String invalidReason;
     private LocalDateTime invalidAt;
-    private String invalidatorId;
+    private String invalidatedBy;
 
 }

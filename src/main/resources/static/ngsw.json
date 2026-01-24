@@ -1,6 +1,6 @@
 {
   "configVersion": 1,
-  "timestamp": 1769044350532,
+  "timestamp": 1769285717995,
   "index": "/index.html",
   "assetGroups": [
     {
@@ -18,7 +18,7 @@
         "/chunk-KFVPZZ6B.js",
         "/chunk-QXSLYJU6.js",
         "/index.html",
-        "/main-AWWRHWPF.js",
+        "/main-I6MXDOFI.js",
         "/manifest.webmanifest",
         "/polyfills-6ISPNSXF.js",
         "/styles-6NBNQMCN.css"
@@ -67,8 +67,8 @@
     "/img/bible-login.png": "05a373af68fa9653e0aff302760e7766aacfc26b",
     "/img/logo-login.png": "1e52dbbff63a2b22afa9c9bd024dca0c53586ec1",
     "/img/logoicc.png": "cfc65c3c0124d7adc4ab251a394cf7711c96afc7",
-    "/index.html": "b1577c7bb9f8d2f509e4971853746e91fd6e1a49",
-    "/main-AWWRHWPF.js": "7d11ed64877bdefe930e5eb5fe29d8edc5e761e7",
+    "/index.html": "606ae6d315a9de816a0358fa63a598a82ba45f56",
+    "/main-I6MXDOFI.js": "cf139c28f4851372503f63dbb8478308fc363860",
     "/manifest.webmanifest": "8a329c666ac9439f4f18f327b65d5a420776666d",
     "/polyfills-6ISPNSXF.js": "b15ba4d1036f2db285649ff775f184bcdcd0b08a",
     "/styles-6NBNQMCN.css": "7b89f4b68764ab21c495b393f1c703c7f50a5d8b"

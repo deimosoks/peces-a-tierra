@@ -11,21 +11,18 @@ import java.time.LocalDateTime;
 @Setter
 @Builder
 @Entity
-@Table(
-        name = "user_role",
-        uniqueConstraints = @UniqueConstraint(columnNames = {"role_id", "user_id"})
-)
+@Table(name = "user_role", uniqueConstraints = @UniqueConstraint(columnNames = { "role_id", "user_id" }))
 public class UserRole {
 
     @EmbeddedId
     private UserRoleId id;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("roleId")
     @JoinColumn(name = "role_id", nullable = false)
     private Role role;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("userId")
     @JoinColumn(name = "user_id", nullable = false)
     private User user;

@@ -16,45 +16,40 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class UserMapper {
 
-    private final MemberMapper memberMapper;
-    private final MemberRepository memberRepository;
+        private final MemberMapper memberMapper;
+        private final MemberRepository memberRepository;
 
-    public UserResponseDto toDto(User user){
-        return UserResponseDto.builder()
-                .id(user.getId())
-                .username(user.getUsername())
-                .active(user.isActive())
-                .createdAt(user.getCreatedAt())
-                .updateAt(user.getUpdatedAt())
-                .memberResponseDto(memberMapper.toDto(user.getMember()))
-                .roles(user.getRoles().stream().map(userRole ->{
-                    Member givenBy = memberRepository.findById(userRole.getGiverId()).orElse(null);
-                    return RoleResponseDto.builder()
-                            .id(userRole.getRole().getId())
-                            .name(userRole.getRole().getName())
-                            .color(userRole.getRole().getColor())
-                            .createdAt(userRole.getRole().getCreatedAt())
-                            .updatedAt(userRole.getRole().getUpdatedAt())
-                            .description(userRole.getRole().getDescription())
-                            .givenBy(givenBy != null ? givenBy.getCompleteName() : "desconocido")
-                            .permissions(userRole.getRole().getPermissions().stream().map(rolePermission ->
-                                    PermissionResponseDto.builder()
-                                            .name(rolePermission.getPermission().getName())
-                                            .build()).collect(Collectors.toUnmodifiableSet())
-                            )
-                            .build();
-                        }
-                ).collect(Collectors.toSet()))
-                .build();
+        public UserResponseDto toDto(User user) {
+                return UserResponseDto.builder()
+                                .id(user.getId())
+                                .username(user.getUsername())
+                                .active(user.isActive())
+                                .createdAt(user.getCreatedAt())
+                                .updateAt(user.getUpdatedAt())
+                                .memberResponseDto(memberMapper.toDto(user.getMember()))
+                                .roles(user.getRoles().stream().map(userRole -> {
+                                        Member givenBy = memberRepository.findById(userRole.getGiverId()).orElse(null);
+                                        return RoleResponseDto.builder()
+                                                        .id(userRole.getRole().getId())
+                                                        .name(userRole.getRole().getName())
+                                                        .color(userRole.getRole().getColor())
+                                                        .createdAt(userRole.getRole().getCreatedAt())
+                                                        .updatedAt(userRole.getRole().getUpdatedAt())
+                                                        .description(userRole.getRole().getDescription())
+                                                        .givenBy(givenBy != null ? givenBy.getCompleteName()
+                                                                        : "desconocido")
+                                                        .permissions(userRole.getRole().getPermissions().stream()
+                                                                        .map(rolePermission -> PermissionResponseDto
+                                                                                        .builder()
+                                                                                        .name(rolePermission
+                                                                                                        .getPermission()
+                                                                                                        .getName())
+                                                                                        .build())
+                                                                        .collect(Collectors.toUnmodifiableSet()))
+                                                        .build();
+                                }).collect(Collectors.toSet()))
+                                .build();
 
-    }
-
-//    @Mapping(target = "roles", ignore = true)
-//    UserResponseDto toDto(User user);
-//
-//    @Mapping(target = "roles", ignore = true)
-//    @Mapping(target = "passwordHash", ignore = true)
-//    @Mapping(target = "memberResponseDto", ignore = true)
-//    void updateEntityFromDto(UserRequestDto userRequestDto, @MappingTarget User user);
+        }
 
 }

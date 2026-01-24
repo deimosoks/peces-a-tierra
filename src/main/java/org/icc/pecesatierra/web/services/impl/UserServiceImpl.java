@@ -19,7 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -53,28 +53,26 @@ public class UserServiceImpl implements UserService {
                 .passwordHash(passwordEncoder.encode(userRequestDto.getPassword()))
                 .createdAt(LocalDateTime.now())
                 .active(true)
-                .roles(new ArrayList<>())
+                .roles(new HashSet<>())
                 .build();
 
         userRepository.save(user);
 
-        user.getRoles().addAll(userRequestDto.getRolesId().stream().map(roleId ->
-                {
-                    Role role = roleRepository.findById(roleId)
-                            .orElseThrow(() -> new RoleNotFoundException("Este rol no existe."));
+        user.getRoles().addAll(userRequestDto.getRolesId().stream().map(roleId -> {
+            Role role = roleRepository.findById(roleId)
+                    .orElseThrow(() -> new RoleNotFoundException("Este rol no existe."));
 
-                    return UserRole.builder()
-                            .id(UserRoleId.builder()
-                                    .roleId(role.getId())
-                                    .userId(user.getId())
-                                    .build())
-                            .user(user)
-                            .role(role)
-                            .giverId(givenBy.getMember().getId())
-                            .givenDate(LocalDateTime.now())
-                            .build();
-                }
-        ).collect(Collectors.toSet()));
+            return UserRole.builder()
+                    .id(UserRoleId.builder()
+                            .roleId(role.getId())
+                            .userId(user.getId())
+                            .build())
+                    .user(user)
+                    .role(role)
+                    .giverId(givenBy.getMember().getId())
+                    .givenDate(LocalDateTime.now())
+                    .build();
+        }).collect(Collectors.toSet()));
 
         return userMapper.toDto(user);
     }
@@ -117,7 +115,11 @@ public class UserServiceImpl implements UserService {
         Member member = memberRepository.findById(userRequestDto.getMemberId())
                 .orElseThrow(() -> new MemberNotFoundException("Este integrante no existe."));
 
-        if (!userRequestDto.getMemberId().equals(user.getMember().getId()) && userRepository.existsByMemberId(userRequestDto.getMemberId()))
+        if (givenBy.getId().equals(user.getId()))
+            throw new UpdateYourselfException("No puedes actualizarte a ti mismo.");
+
+        if (!userRequestDto.getMemberId().equals(user.getMember().getId())
+                && userRepository.existsByMemberId(userRequestDto.getMemberId()))
             throw new MemberAlreadyRegisteredWithUserException("Este integrante ya esta relacionado a un usario..");
 
         if (userRequestDto.getMemberId() != null) {
@@ -128,7 +130,8 @@ public class UserServiceImpl implements UserService {
             user.setUsername(userRequestDto.getUsername());
         }
 
-        if (userRequestDto.getPassword() != null && !passwordEncoder.matches(userRequestDto.getPassword(), user.getPasswordHash())) {
+        if (userRequestDto.getPassword() != null
+                && !passwordEncoder.matches(userRequestDto.getPassword(), user.getPasswordHash())) {
             user.setPasswordHash(passwordEncoder.encode(userRequestDto.getPassword()));
         }
 
@@ -140,8 +143,7 @@ public class UserServiceImpl implements UserService {
         Set<Role> currentRoles = user.getRoles().stream().map(UserRole::getRole).collect(Collectors.toSet());
 
         user.getRoles().removeIf(
-                userRole -> !requestedRoles.contains(userRole.getRole())
-        );
+                userRole -> !requestedRoles.contains(userRole.getRole()));
 
         requestedRoles.forEach(role -> {
             if (!currentRoles.contains(role)) {
@@ -166,12 +168,12 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public boolean updateActive(User user,String userId, boolean active) {
+    public boolean updateActive(User user, String userId, boolean active) {
 
         User userToUpdate = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("Este usuario no existe."));
 
-        if (user.getId().equals(userToUpdate.getId())){
+        if (user.getId().equals(userToUpdate.getId())) {
             throw new DeactivateYourselfException("No puedes desactivarte a ti mismo.");
         }
 
@@ -189,7 +191,7 @@ public class UserServiceImpl implements UserService {
         User userToDelete = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("Este usuario no existe."));
 
-        if (user.getId().equals(userToDelete.getId())){
+        if (user.getId().equals(userToDelete.getId())) {
             throw new DeactivateYourselfException("No puedes borrar tu propio usuario.");
         }
         userRepository.delete(userToDelete);

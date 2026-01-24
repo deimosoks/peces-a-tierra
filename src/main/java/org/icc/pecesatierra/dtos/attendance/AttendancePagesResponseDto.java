@@ -1,7 +1,6 @@
 package org.icc.pecesatierra.dtos.attendance;
 
 import lombok.*;
-import org.icc.pecesatierra.entities.Attendance;
 
 import java.util.List;
 

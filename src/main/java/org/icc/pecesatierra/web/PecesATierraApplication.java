@@ -8,7 +8,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 @SpringBootApplication
 @EntityScan(basePackages = "org.icc.pecesatierra.entities")
-@ComponentScan(basePackages = {"org.icc.pecesatierra"})
+@ComponentScan(basePackages = { "org.icc.pecesatierra" })
 @EnableJpaRepositories(basePackages = "org.icc.pecesatierra.repositories")
 public class PecesATierraApplication {
 

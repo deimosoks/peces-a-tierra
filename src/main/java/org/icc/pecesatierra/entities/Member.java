@@ -12,9 +12,7 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @Entity
-@Table(name = "members",
-        indexes = @Index(name = "idx_cc", columnList = "cc")
-)
+@Table(name = "members", indexes = @Index(name = "idx_cc", columnList = "cc"))
 public class Member {
 
     @Id
@@ -37,6 +35,7 @@ public class Member {
     private boolean active;
 
     private LocalDateTime updatedAt;
+
     private String cc;
     private String cellphone;
     private String address;

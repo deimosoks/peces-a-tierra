@@ -9,6 +9,6 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 public class RefreshTokenRequestDto {
-    @NotBlank
+    @NotBlank(message = "Debe ingresar un token valido.")
     private String refreshToken;
 }

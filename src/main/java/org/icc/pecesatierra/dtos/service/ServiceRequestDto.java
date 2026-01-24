@@ -1,6 +1,7 @@
 package org.icc.pecesatierra.dtos.service;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 
 @Builder
@@ -14,6 +15,7 @@ public class ServiceRequestDto {
     private String name;
 
     @NotBlank(message = "Descripción invalida.")
+    @Size(max = 255, message = "La descripción debe tener un maximo de 255 caracteres.")
     private String description;
 
 }

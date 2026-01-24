@@ -26,21 +26,4 @@ public class MemberResponseDto {
     private LocalDateTime updatedAt;
     private String pictureProfileUrl;
     private boolean active;
-
-    @Override
-    public String toString() {
-        return "MemberResponseDto{" +
-                "id='" + id + '\'' +
-                ", completeName='" + completeName + '\'' +
-                ", type=" + type +
-                ", category=" + category +
-                ", cellphone='" + cellphone + '\'' +
-                ", address='" + address + '\'' +
-                ", birthdate=" + birthdate +
-                ", cc='" + cc + '\'' +
-                ", createdAt=" + createdAt +
-                ", updatedAt=" + updatedAt +
-                ", pictureProfileUrl='" + pictureProfileUrl + '\'' +
-                '}';
-    }
 }
