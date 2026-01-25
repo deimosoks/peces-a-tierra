@@ -33,27 +33,11 @@ public class ReportServiceImpl implements ReportService {
     @PersistenceContext
     private EntityManager em;
 
-    private MemberRepository memberRepository;
-    private ServiceRepository serviceRepository;
-    private AttendanceRepository attendanceRepository;
-
     @Override
     public List<ReportResponseDto> generate(ReportRequestDto dto) {
 
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<ReportResponseDto> cq = cb.createQuery(ReportResponseDto.class);
-
-//        ExecutorService executor = Executors.newFixedThreadPool(30);
-//
-//        for (int i = 0; i < 60; i++) {
-//            executor.submit(DataLoaderService.builder()
-//                    .serviceRepository(serviceRepository)
-//                    .memberRepository(memberRepository)
-//                    .attendanceRepository(attendanceRepository)
-//                    .build());
-//        }
-//
-//        executor.shutdown();
 
         Root<Attendance> attendance = cq.from(Attendance.class);
         Join<Attendance, Member> member = attendance.join("member", JoinType.INNER);

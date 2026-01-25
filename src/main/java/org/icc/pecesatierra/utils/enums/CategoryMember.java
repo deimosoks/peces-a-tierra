@@ -1,4 +1,4 @@
-package org.icc.pecesatierra.enums;
+package org.icc.pecesatierra.utils.enums;
 
 public enum CategoryMember {
 

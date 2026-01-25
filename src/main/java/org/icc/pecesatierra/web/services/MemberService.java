@@ -1,5 +1,6 @@
 package org.icc.pecesatierra.web.services;
 
+import org.icc.pecesatierra.dtos.member.MemberFilterRequestDto;
 import org.icc.pecesatierra.dtos.member.MemberPagesResponseDto;
 import org.icc.pecesatierra.dtos.member.MemberRequestDto;
 import org.icc.pecesatierra.dtos.member.MemberResponseDto;
@@ -9,7 +10,7 @@ public interface MemberService {
 
     MemberResponseDto update(MemberRequestDto memberRequestDto, String memberId);
 
-    MemberPagesResponseDto findAll(int page, boolean onlyActives, String query);
+    MemberPagesResponseDto findAll(int page, MemberFilterRequestDto memberFilterRequestDto);
 
     void delete(String memberId);
 

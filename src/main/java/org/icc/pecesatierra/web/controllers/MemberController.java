@@ -2,6 +2,7 @@ package org.icc.pecesatierra.web.controllers;
 
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
+import org.icc.pecesatierra.dtos.member.MemberFilterRequestDto;
 import org.icc.pecesatierra.dtos.member.MemberPagesResponseDto;
 import org.icc.pecesatierra.dtos.member.MemberRequestDto;
 import org.icc.pecesatierra.dtos.member.MemberResponseDto;
@@ -32,20 +33,13 @@ public class MemberController extends BaseController {
     }
 
     @PreAuthorize("(hasAuthority('VIEW_MEMBER_PANEL') || hasAuthority('MANAGE_ATTENDANCE') || hasAuthority('REGISTER_ATTENDANCE')) && @securityService.isActive(authentication)")
-    @GetMapping
-    public ResponseEntity<MemberPagesResponseDto> findAll(@RequestParam(
+    @PostMapping("/search")
+    public ResponseEntity<MemberPagesResponseDto> findAll(@RequestBody MemberFilterRequestDto memberFilterRequestDto,
+                                                          @RequestParam(
                                                                   required = false,
                                                                   defaultValue = "0"
-                                                          ) int page,
-                                                          @RequestParam(
-                                                                  required = false,
-                                                                  defaultValue = "false"
-                                                          ) boolean onlyActive,
-                                                          @RequestParam(
-                                                                  required = false,
-                                                                  defaultValue = ""
-                                                          ) String query) {
-        return ResponseEntity.ok(memberService.findAll(page, onlyActive, query));
+                                                          ) int page) {
+        return ResponseEntity.ok(memberService.findAll(page, memberFilterRequestDto));
     }
 
     @PreAuthorize("hasAuthority('DELETE_MEMBER')")

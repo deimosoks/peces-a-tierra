@@ -1,8 +1,8 @@
 package org.icc.pecesatierra.dtos.member;
 
 import lombok.*;
-import org.icc.pecesatierra.enums.CategoryMember;
-import org.icc.pecesatierra.enums.TypeMember;
+import org.icc.pecesatierra.utils.enums.CategoryMember;
+import org.icc.pecesatierra.utils.enums.TypeMember;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;

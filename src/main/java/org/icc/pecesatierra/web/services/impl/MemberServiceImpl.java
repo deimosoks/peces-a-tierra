@@ -1,6 +1,14 @@
 package org.icc.pecesatierra.web.services.impl;
 
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.TypedQuery;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
 import lombok.AllArgsConstructor;
+import org.icc.pecesatierra.dtos.member.MemberFilterRequestDto;
 import org.icc.pecesatierra.dtos.member.MemberPagesResponseDto;
 import org.icc.pecesatierra.dtos.member.MemberRequestDto;
 import org.icc.pecesatierra.dtos.member.MemberResponseDto;
@@ -13,14 +21,14 @@ import org.icc.pecesatierra.repositories.AttendanceRepository;
 import org.icc.pecesatierra.repositories.MemberRepository;
 import org.icc.pecesatierra.web.services.MemberService;
 import org.icc.pecesatierra.utils.PictureUtils;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 
@@ -33,6 +41,9 @@ public class MemberServiceImpl implements MemberService {
     private final AttendanceRepository attendanceRepository;
     private final MemberPersistenceService memberPersistenceService;
     private final PictureUtils pictureUtils;
+
+    @PersistenceContext
+    private EntityManager em;
 
     @Override
     public MemberResponseDto create(MemberRequestDto memberRequestDto) {
@@ -79,15 +90,85 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
-    public MemberPagesResponseDto findAll(int page, boolean onlyActives, String query) {
+    public MemberPagesResponseDto findAll(int page, MemberFilterRequestDto dto) {
 
-        Pageable pageable = PageRequest.of(page, 20, Sort.by("id").ascending());
+        Pageable pageable = PageRequest.of(page, 20, Sort.by("createdAt").descending());
 
-        Page<Member> members = onlyActives ? memberRepository.findAllByOptionalQueryAndActiveTrue(query, pageable) : memberRepository.findAllByQuery(query, pageable);
+        CriteriaBuilder cb = em.getCriteriaBuilder();
 
-        int totalPages = members.getTotalPages();
+        CriteriaQuery<Member> cq = cb.createQuery(Member.class);
+        Root<Member> member = cq.from(Member.class);
 
-        return new MemberPagesResponseDto(members.stream().map(memberMapper::toDto).toList(), totalPages);
+        List<Predicate> predicates = new ArrayList<>();
+
+        if (dto != null) {
+            if (dto.getMemberType() != null && !dto.getMemberType().isEmpty()) {
+                predicates.add(member.get("type").in(dto.getMemberType()));
+            }
+
+            if (dto.getMemberCategory() != null && !dto.getMemberCategory().isEmpty()) {
+                predicates.add(member.get("category").in(dto.getMemberCategory()));
+            }
+
+            if (dto.isOnlyActive()) {
+                predicates.add(cb.equal(member.get("active"), true));
+            }
+
+            if (dto.getQuery() != null && !dto.getQuery().isBlank()) {
+                String searchLike = "%" + dto.getQuery().toLowerCase() + "%";
+
+                Predicate nameLike = cb.like(cb.lower(member.get("completeName")), searchLike);
+                Predicate ccLike = cb.like(member.get("cc"), searchLike); // CC suele ser numérico/exacto, pero like sirve para parciales
+
+                predicates.add(cb.or(nameLike, ccLike));
+            }
+        }
+
+        cq.where(predicates.toArray(new Predicate[0]));
+        cq.orderBy(cb.desc(member.get("createdAt")));
+
+        TypedQuery<Member> query = em.createQuery(cq);
+        query.setFirstResult((int) pageable.getOffset());
+        query.setMaxResults(pageable.getPageSize());
+
+        List<Member> results = query.getResultList();
+
+        CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
+        Root<Member> countRoot = countQuery.from(Member.class);
+
+        List<Predicate> countPredicates = new ArrayList<>();
+
+        if (dto != null) {
+            if (dto.getMemberType() != null && !dto.getMemberType().isEmpty()) {
+                countPredicates.add(countRoot.get("type").in(dto.getMemberType()));
+            }
+
+            if (dto.getMemberCategory() != null && !dto.getMemberCategory().isEmpty()) {
+                countPredicates.add(countRoot.get("category").in(dto.getMemberCategory()));
+            }
+
+            if (dto.isOnlyActive()) {
+                countPredicates.add(cb.equal(countRoot.get("active"), true));
+            }
+
+            if (dto.getQuery() != null && !dto.getQuery().isBlank()) {
+                String searchLike = "%" + dto.getQuery().toLowerCase() + "%";
+                Predicate nameLike = cb.like(cb.lower(countRoot.get("completeName")), searchLike);
+                Predicate ccLike = cb.like(countRoot.get("cc"), searchLike);
+
+                countPredicates.add(cb.or(nameLike, ccLike));
+            }
+        }
+
+        countQuery.select(cb.count(countRoot)).where(countPredicates.toArray(new Predicate[0]));
+        Long total = em.createQuery(countQuery).getSingleResult();
+
+        int totalPages = (int) Math.ceil((double) total / pageable.getPageSize());
+
+        return new MemberPagesResponseDto(
+                results.stream().map(memberMapper::toDto).toList(),
+                totalPages
+        );
     }
 
     @Transactional(rollbackFor = Exception.class)

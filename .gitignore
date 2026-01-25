@@ -7,6 +7,8 @@ build/
 
 uploads/
 
+/src/main/java/org/icc/pecesatierra/web/services/impl/DataLoaderService.java
+
 ### STS ###
 .apt_generated
 .classpath

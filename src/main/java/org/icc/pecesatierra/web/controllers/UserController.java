@@ -52,7 +52,7 @@ public class UserController extends BaseController  {
 
     @PreAuthorize("hasAuthority('UPDATE_USER') && @securityService.isActive(authentication)")
     @PutMapping("/{userId}")
-    public ResponseEntity<UserResponseDto> update(@RequestBody UserRequestDto userRequestDto,
+    public ResponseEntity<UserResponseDto> update(@Valid @RequestBody UserRequestDto userRequestDto,
                                                   @PathVariable String userId,
                                                   @AuthenticationPrincipal User user) {
         return ResponseEntity.ok(userService.update(userRequestDto, userId, user));
