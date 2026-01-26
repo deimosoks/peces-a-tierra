@@ -18,7 +18,7 @@ public class UserRequestDto {
     private String memberId;
 
     @NotBlank(message = "Debe ingresar un nombre de usuario valido.")
-    @Size(min = 3, max = 20, message = "El nombre de usuario debe tener entre 3 y 20 caracteres.")
+    @Size(min = 5, max = 20, message = "El nombre de usuario debe tener entre 3 y 20 caracteres.")
     private String username;
 
     @NotBlank(message = "Debe ingresar una contraseña valida.")
