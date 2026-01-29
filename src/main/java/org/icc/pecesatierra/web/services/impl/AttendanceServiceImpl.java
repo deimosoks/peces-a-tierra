@@ -97,6 +97,7 @@ public class AttendanceServiceImpl implements AttendanceService {
         return attendanceMapper.toDto(attendanceRepository.save(attendance));
     }
 
+    @Transactional(readOnly = true)
     @Override
     public AttendancePagesResponseDto findAll(int page, AttendanceFiltersRequestDto dto) {
 
@@ -105,8 +106,12 @@ public class AttendanceServiceImpl implements AttendanceService {
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<Attendance> cq = cb.createQuery(Attendance.class);
         Root<Attendance> attendance = cq.from(Attendance.class);
-        Join<Attendance, Services> service = attendance.join("services");
-        Join<Attendance, Member> member = attendance.join("member");
+
+        Fetch<Attendance, Services> serviceFetch = attendance.fetch("services", JoinType.INNER);
+        Fetch<Attendance, Member> memberFetch = attendance.fetch("member", JoinType.INNER);
+
+        Join<Attendance, Services> service = (Join<Attendance, Services>) serviceFetch;
+        Join<Attendance, Member> member = (Join<Attendance, Member>) memberFetch;
 
         List<Predicate> predicates = new ArrayList<>();
 
@@ -160,6 +165,5 @@ public class AttendanceServiceImpl implements AttendanceService {
                 totalPages
         );
     }
-
 
 }

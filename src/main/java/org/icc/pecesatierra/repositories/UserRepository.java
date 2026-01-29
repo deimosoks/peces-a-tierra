@@ -23,6 +23,13 @@ public interface UserRepository extends JpaRepository<User, String> {
     })
     Optional<User> findByUsername(String username);
 
+    @EntityGraph(attributePaths = {
+            "member",
+            "roles",
+            "roles.role",
+            "roles.role.permissions",
+            "roles.role.permissions.permission"
+    })
     @Query(value = """
                 SELECT DISTINCT u FROM User u
                 JOIN u.member m

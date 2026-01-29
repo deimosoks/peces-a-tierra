@@ -86,6 +86,7 @@ public class MemberServiceImpl implements MemberService {
         }
     }
 
+    @Transactional(readOnly = true)
     @Override
     public MemberPagesResponseDto findAll(int page, MemberFilterRequestDto dto) {
         Pageable pageable = PageRequest.of(page, 20, Sort.by("createdAt").descending());
@@ -121,6 +122,7 @@ public class MemberServiceImpl implements MemberService {
         );
     }
 
+    @Transactional(readOnly = true)
     @Override
     public List<MemberExportDto> findAllData(MemberFilterRequestDto dto) {
         CriteriaBuilder cb = em.getCriteriaBuilder();
@@ -155,6 +157,7 @@ public class MemberServiceImpl implements MemberService {
         if (pictureUrl != null) pictureUtils.delete(pictureUrl);
     }
 
+    @Transactional
     @Override
     public boolean updateActive(String memberId, boolean active) {
         Member member = memberRepository.findById(memberId)

@@ -11,6 +11,7 @@ import org.icc.pecesatierra.repositories.MemberRepository;
 import org.icc.pecesatierra.web.services.DashboardService;
 import org.icc.pecesatierra.web.services.ReportService;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -24,6 +25,7 @@ public class DashboardServiceImpl implements DashboardService {
     private final MemberMapper memberMapper;
     private final ReportService reportService;
 
+    @Transactional(readOnly = true)
     @Override
     public DashboardResponseDto dashboard() {
 

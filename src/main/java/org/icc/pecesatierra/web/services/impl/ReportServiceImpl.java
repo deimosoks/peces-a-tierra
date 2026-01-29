@@ -15,6 +15,7 @@ import org.icc.pecesatierra.repositories.MemberRepository;
 import org.icc.pecesatierra.repositories.ServiceRepository;
 import org.icc.pecesatierra.web.services.ReportService;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -33,6 +34,7 @@ public class ReportServiceImpl implements ReportService {
     @PersistenceContext
     private EntityManager em;
 
+    @Transactional(readOnly = true)
     @Override
     public List<ReportResponseDto> generate(ReportRequestDto dto) {
 

@@ -77,6 +77,7 @@ public class UserServiceImpl implements UserService {
         return userMapper.toDto(user);
     }
 
+    @Transactional(readOnly = true)
     @Override
     public MeDto me(User user) {
         return MeDto.builder()
@@ -89,6 +90,7 @@ public class UserServiceImpl implements UserService {
                 .build();
     }
 
+    @Transactional(readOnly = true)
     @Override
     public UserPagesResponseDto findAll(int page, String query) {
 
@@ -167,6 +169,7 @@ public class UserServiceImpl implements UserService {
         return userMapper.toDto(userRepository.save(user));
     }
 
+    @Transactional
     @Override
     public boolean updateActive(User user, String userId, boolean active) {
 
@@ -186,6 +189,7 @@ public class UserServiceImpl implements UserService {
         return userToUpdate.isActive();
     }
 
+    @Transactional
     @Override
     public void delete(User user, String userId) {
         User userToDelete = userRepository.findById(userId)
@@ -198,6 +202,7 @@ public class UserServiceImpl implements UserService {
 
     }
 
+    @Transactional(readOnly = true)
     @Override
     public UserReportResponseDto report() {
 

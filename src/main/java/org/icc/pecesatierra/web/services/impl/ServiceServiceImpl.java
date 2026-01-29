@@ -11,6 +11,7 @@ import org.icc.pecesatierra.repositories.AttendanceRepository;
 import org.icc.pecesatierra.repositories.ServiceRepository;
 import org.icc.pecesatierra.web.services.ServiceService;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -23,6 +24,7 @@ public class ServiceServiceImpl implements ServiceService {
     private final ServiceMapper serviceMapper;
     private final AttendanceRepository attendanceRepository;
 
+    @Transactional
     @Override
     public ServiceResponseDto create(ServiceRequestDto serviceRequestDto) {
 
@@ -36,6 +38,7 @@ public class ServiceServiceImpl implements ServiceService {
         return serviceMapper.toDto(serviceRepository.save(services));
     }
 
+    @Transactional
     @Override
     public ServiceResponseDto update(ServiceRequestDto serviceRequestDto, String serviceId) {
         Services services = serviceRepository.findById(serviceId)
@@ -48,6 +51,7 @@ public class ServiceServiceImpl implements ServiceService {
         return serviceMapper.toDto(serviceRepository.save(services));
     }
 
+    @Transactional
     @Override
     public void delete(String serviceId) {
         Services services = serviceRepository.findById(serviceId)
@@ -59,6 +63,7 @@ public class ServiceServiceImpl implements ServiceService {
         serviceRepository.delete(services);
     }
 
+    @Transactional(readOnly = true)
     @Override
     public List<ServiceResponseDto> findAll(boolean onlyActive) {
         return onlyActive ?
@@ -67,6 +72,7 @@ public class ServiceServiceImpl implements ServiceService {
                 serviceRepository.findAll().stream().map(serviceMapper::toDto).toList();
     }
 
+    @Transactional
     @Override
     public boolean updateActive(String serviceId, boolean active) {
         Services services = serviceRepository.findById(serviceId)

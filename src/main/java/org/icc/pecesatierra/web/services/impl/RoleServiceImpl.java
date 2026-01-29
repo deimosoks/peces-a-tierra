@@ -88,6 +88,7 @@ public class RoleServiceImpl implements RoleService {
         roleRepository.delete(role);
     }
 
+    @Transactional(readOnly = true)
     @Override
     public List<RoleResponseDto> findAll() {
         return roleRepository.findAll().stream().map(roleMapper::toDto).toList();
