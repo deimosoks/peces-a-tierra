@@ -1,5 +1,6 @@
 package org.icc.pecesatierra.utils.mappers;
 
+import org.icc.pecesatierra.dtos.member.MemberExportDto;
 import org.icc.pecesatierra.dtos.member.MemberRequestDto;
 import org.icc.pecesatierra.dtos.member.MemberResponseDto;
 import org.icc.pecesatierra.entities.Member;
@@ -11,6 +12,8 @@ import org.springframework.stereotype.Component;
 @Component
 public interface MemberMapper {
     MemberResponseDto toDto(Member member);
+
+    MemberExportDto toExportDto(Member member);
 
     void updateEntityFromDto(MemberRequestDto memberRequestDto, @MappingTarget Member member);
 

@@ -1,6 +1,8 @@
 package org.icc.pecesatierra.dtos.member;
 
 import lombok.*;
+import org.icc.pecesatierra.utils.enums.CategoryMember;
+import org.icc.pecesatierra.utils.enums.TypeMember;
 
 import java.util.Set;
 
@@ -13,7 +15,11 @@ public class MemberFilterRequestDto {
 
     private Set<String> memberType;
     private Set<String> memberCategory;
-    private boolean onlyActive;
     private String query;
+    private Boolean onlyActive;
+    private Boolean hasCc;
+    private Boolean hasCellphone;
+    private Boolean hasAddress;
+    private Boolean hasBirthdate;
 
 }

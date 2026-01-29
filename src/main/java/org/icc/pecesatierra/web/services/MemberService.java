@@ -1,9 +1,8 @@
 package org.icc.pecesatierra.web.services;
 
-import org.icc.pecesatierra.dtos.member.MemberFilterRequestDto;
-import org.icc.pecesatierra.dtos.member.MemberPagesResponseDto;
-import org.icc.pecesatierra.dtos.member.MemberRequestDto;
-import org.icc.pecesatierra.dtos.member.MemberResponseDto;
+import org.icc.pecesatierra.dtos.member.*;
+
+import java.util.List;
 
 public interface MemberService {
     MemberResponseDto create(MemberRequestDto memberRequestDto);
@@ -13,6 +12,8 @@ public interface MemberService {
     MemberPagesResponseDto findAll(int page, MemberFilterRequestDto memberFilterRequestDto);
 
     void delete(String memberId);
+
+    List<MemberExportDto> findAllData(MemberFilterRequestDto dto);
 
     boolean updateActive(String memberId, boolean active);
 }

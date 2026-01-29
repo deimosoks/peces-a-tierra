@@ -2,15 +2,14 @@ package org.icc.pecesatierra.web.controllers;
 
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
-import org.icc.pecesatierra.dtos.member.MemberFilterRequestDto;
-import org.icc.pecesatierra.dtos.member.MemberPagesResponseDto;
-import org.icc.pecesatierra.dtos.member.MemberRequestDto;
-import org.icc.pecesatierra.dtos.member.MemberResponseDto;
+import org.icc.pecesatierra.dtos.member.*;
 import org.icc.pecesatierra.web.services.MemberService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @AllArgsConstructor
@@ -34,12 +33,20 @@ public class MemberController extends BaseController {
 
     @PreAuthorize("(hasAuthority('VIEW_MEMBER_PANEL') || hasAuthority('MANAGE_ATTENDANCE') || hasAuthority('REGISTER_ATTENDANCE')) && @securityService.isActive(authentication)")
     @PostMapping("/search")
-    public ResponseEntity<MemberPagesResponseDto> findAll(@RequestBody MemberFilterRequestDto memberFilterRequestDto,
+    public ResponseEntity<MemberPagesResponseDto> findAll(@RequestBody(
+                                                                  required = false
+                                                          ) MemberFilterRequestDto memberFilterRequestDto,
                                                           @RequestParam(
                                                                   required = false,
                                                                   defaultValue = "0"
                                                           ) int page) {
         return ResponseEntity.ok(memberService.findAll(page, memberFilterRequestDto));
+    }
+
+    @PreAuthorize("hasAuthority('VIEW_MEMBER_PANEL')")
+    @PostMapping("/export")
+    public ResponseEntity<List<MemberExportDto>> findAllData(@RequestBody MemberFilterRequestDto memberFilterRequestDto){
+        return ResponseEntity.ok(memberService.findAllData(memberFilterRequestDto));
     }
 
     @PreAuthorize("hasAuthority('DELETE_MEMBER')")

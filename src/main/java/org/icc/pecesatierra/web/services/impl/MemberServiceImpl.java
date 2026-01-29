@@ -8,10 +8,7 @@ import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import lombok.AllArgsConstructor;
-import org.icc.pecesatierra.dtos.member.MemberFilterRequestDto;
-import org.icc.pecesatierra.dtos.member.MemberPagesResponseDto;
-import org.icc.pecesatierra.dtos.member.MemberRequestDto;
-import org.icc.pecesatierra.dtos.member.MemberResponseDto;
+import org.icc.pecesatierra.dtos.member.*;
 import org.icc.pecesatierra.entities.Member;
 import org.icc.pecesatierra.exceptions.MemberHasHistoricalRecordException;
 import org.icc.pecesatierra.exceptions.MemberNotFoundException;
@@ -91,38 +88,13 @@ public class MemberServiceImpl implements MemberService {
 
     @Override
     public MemberPagesResponseDto findAll(int page, MemberFilterRequestDto dto) {
-
         Pageable pageable = PageRequest.of(page, 20, Sort.by("createdAt").descending());
-
         CriteriaBuilder cb = em.getCriteriaBuilder();
 
         CriteriaQuery<Member> cq = cb.createQuery(Member.class);
         Root<Member> member = cq.from(Member.class);
 
-        List<Predicate> predicates = new ArrayList<>();
-
-        if (dto != null) {
-            if (dto.getMemberType() != null && !dto.getMemberType().isEmpty()) {
-                predicates.add(member.get("type").in(dto.getMemberType()));
-            }
-
-            if (dto.getMemberCategory() != null && !dto.getMemberCategory().isEmpty()) {
-                predicates.add(member.get("category").in(dto.getMemberCategory()));
-            }
-
-            if (dto.isOnlyActive()) {
-                predicates.add(cb.equal(member.get("active"), true));
-            }
-
-            if (dto.getQuery() != null && !dto.getQuery().isBlank()) {
-                String searchLike = "%" + dto.getQuery().toLowerCase() + "%";
-
-                Predicate nameLike = cb.like(cb.lower(member.get("completeName")), searchLike);
-                Predicate ccLike = cb.like(member.get("cc"), searchLike); // CC suele ser numérico/exacto, pero like sirve para parciales
-
-                predicates.add(cb.or(nameLike, ccLike));
-            }
-        }
+        List<Predicate> predicates = buildPredicates(dto, cb, member);
 
         cq.where(predicates.toArray(new Predicate[0]));
         cq.orderBy(cb.desc(member.get("createdAt")));
@@ -136,29 +108,7 @@ public class MemberServiceImpl implements MemberService {
         CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
         Root<Member> countRoot = countQuery.from(Member.class);
 
-        List<Predicate> countPredicates = new ArrayList<>();
-
-        if (dto != null) {
-            if (dto.getMemberType() != null && !dto.getMemberType().isEmpty()) {
-                countPredicates.add(countRoot.get("type").in(dto.getMemberType()));
-            }
-
-            if (dto.getMemberCategory() != null && !dto.getMemberCategory().isEmpty()) {
-                countPredicates.add(countRoot.get("category").in(dto.getMemberCategory()));
-            }
-
-            if (dto.isOnlyActive()) {
-                countPredicates.add(cb.equal(countRoot.get("active"), true));
-            }
-
-            if (dto.getQuery() != null && !dto.getQuery().isBlank()) {
-                String searchLike = "%" + dto.getQuery().toLowerCase() + "%";
-                Predicate nameLike = cb.like(cb.lower(countRoot.get("completeName")), searchLike);
-                Predicate ccLike = cb.like(countRoot.get("cc"), searchLike);
-
-                countPredicates.add(cb.or(nameLike, ccLike));
-            }
-        }
+        List<Predicate> countPredicates = buildPredicates(dto, cb, countRoot);
 
         countQuery.select(cb.count(countRoot)).where(countPredicates.toArray(new Predicate[0]));
         Long total = em.createQuery(countQuery).getSingleResult();
@@ -169,6 +119,24 @@ public class MemberServiceImpl implements MemberService {
                 results.stream().map(memberMapper::toDto).toList(),
                 totalPages
         );
+    }
+
+    @Override
+    public List<MemberExportDto> findAllData(MemberFilterRequestDto dto) {
+        CriteriaBuilder cb = em.getCriteriaBuilder();
+        CriteriaQuery<Member> cq = cb.createQuery(Member.class);
+        Root<Member> member = cq.from(Member.class);
+
+        List<Predicate> predicates = buildPredicates(dto, cb, member);
+
+        cq.where(predicates.toArray(new Predicate[0]));
+        cq.orderBy(cb.desc(member.get("createdAt")));
+
+        List<Member> results = em.createQuery(cq).getResultList();
+
+        return results.stream()
+                .map(memberMapper::toExportDto)
+                .toList();
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -199,5 +167,43 @@ public class MemberServiceImpl implements MemberService {
         return member.isActive();
     }
 
+    private List<Predicate> buildPredicates(MemberFilterRequestDto dto, CriteriaBuilder cb, Root<Member> root) {
+        List<Predicate> predicates = new ArrayList<>();
+
+        if (dto == null) return predicates;
+
+        if (dto.getMemberType() != null && !dto.getMemberType().isEmpty()) {
+            predicates.add(root.get("type").in(dto.getMemberType()));
+        }
+        if (dto.getMemberCategory() != null && !dto.getMemberCategory().isEmpty()) {
+            predicates.add(root.get("category").in(dto.getMemberCategory()));
+        }
+        if (Boolean.TRUE.equals(dto.getOnlyActive())) {
+            predicates.add(cb.equal(root.get("active"), true));
+        }
+
+        if (Boolean.TRUE.equals(dto.getHasCc())) {
+            predicates.add(cb.isNotNull(root.get("cc")));
+        }
+        if (Boolean.TRUE.equals(dto.getHasCellphone())) {
+            predicates.add(cb.isNotNull(root.get("cellphone")));
+        }
+        if (Boolean.TRUE.equals(dto.getHasAddress())) {
+            predicates.add(cb.isNotNull(root.get("address")));
+        }
+        if (Boolean.TRUE.equals(dto.getHasBirthdate())) {
+            predicates.add(cb.isNotNull(root.get("birthdate")));
+        }
+
+        if (dto.getQuery() != null && !dto.getQuery().isBlank()) {
+            String searchLike = "%" + dto.getQuery().toLowerCase() + "%";
+            predicates.add(cb.or(
+                    cb.like(cb.lower(root.get("completeName")), searchLike),
+                    cb.like(root.get("cc"), searchLike)
+            ));
+        }
+
+        return predicates;
+    }
 
 }
