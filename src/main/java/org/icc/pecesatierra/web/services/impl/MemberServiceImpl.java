@@ -198,6 +198,19 @@ public class MemberServiceImpl implements MemberService {
             predicates.add(cb.isNotNull(root.get("birthdate")));
         }
 
+        if (Boolean.FALSE.equals(dto.getHasCc())) {
+            predicates.add(cb.isNull(root.get("cc")));
+        }
+        if (Boolean.FALSE.equals(dto.getHasCellphone())) {
+            predicates.add(cb.isNull(root.get("cellphone")));
+        }
+        if (Boolean.FALSE.equals(dto.getHasAddress())) {
+            predicates.add(cb.isNull(root.get("address")));
+        }
+        if (Boolean.FALSE.equals(dto.getHasBirthdate())) {
+            predicates.add(cb.isNull(root.get("birthdate")));
+        }
+
         if (dto.getQuery() != null && !dto.getQuery().isBlank()) {
             String searchLike = "%" + dto.getQuery().toLowerCase() + "%";
             predicates.add(cb.or(

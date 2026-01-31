@@ -62,18 +62,4 @@ public class User implements UserDetails {
         return passwordHash;
     }
 
-    @Override
-    public String toString() {
-        return "User{" +
-                "id='" + id + '\'' +
-                ", member=" + member +
-                ", username='" + username + '\'' +
-                ", passwordHash='" + passwordHash + '\'' +
-                ", createdAt=" + createdAt +
-                ", updatedAt=" + updatedAt +
-                ", active=" + active +
-                ", refreshTokens=" + refreshTokens +
-                ", roles=" + roles +
-                '}';
-    }
 }
