@@ -45,7 +45,7 @@ public class MemberController extends BaseController {
 
     @PreAuthorize("hasAuthority('VIEW_MEMBER_PANEL')")
     @PostMapping("/export")
-    public ResponseEntity<List<MemberExportDto>> findAllData(@RequestBody MemberFilterRequestDto memberFilterRequestDto){
+    public ResponseEntity<List<MemberExportDto>> findAllData(@RequestBody MemberFilterRequestDto memberFilterRequestDto) {
         return ResponseEntity.ok(memberService.findAllData(memberFilterRequestDto));
     }
 

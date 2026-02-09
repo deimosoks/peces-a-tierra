@@ -22,7 +22,7 @@ import java.util.List;
 
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity
+//@EnableMethodSecurity
 @AllArgsConstructor
 public class SecurityConfig {
 
@@ -35,42 +35,42 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-//                                .requestMatchers("/**").permitAll()
-                        .requestMatchers(HttpMethod.POST,
-                                "/api/auth/**"
-                        ).permitAll()
-                        .requestMatchers(HttpMethod.GET,
-                                "/uploads/**"
-                        ).permitAll()
-                        .requestMatchers(
-                                HttpMethod.GET,
-                                "/api/health"
-                        ).permitAll()
-                        .requestMatchers("/api/**").authenticated()
-
-                        .requestMatchers(
-                                "/",
-                                "/index.html",
-                                "/*.js",
-                                "/*.css",
-                                "/*.ico",
-                                "/*.png",
-                                "/assets/**",
-                                "/img/**",
-                                "/icons/**",
-                                "/fonts/**",
-                                "/*.webmanifest",
-                                "/ngsw.json"
-                        ).permitAll()
-
-                        .requestMatchers("/{path:[^\\.]*}", "/**/{path:[^\\.]*}").permitAll()
-                )
-
-                .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                )
-                .exceptionHandling(ex -> ex
-                        .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
+                                .requestMatchers("/**").permitAll()
+//                        .requestMatchers(HttpMethod.POST,
+//                                "/api/auth/**"
+//                        ).permitAll()
+//                        .requestMatchers(HttpMethod.GET,
+//                                "/uploads/**"
+//                        ).permitAll()
+//                        .requestMatchers(
+//                                HttpMethod.GET,
+//                                "/api/health"
+//                        ).permitAll()
+//                        .requestMatchers("/api/**").authenticated()
+//
+//                        .requestMatchers(
+//                                "/",
+//                                "/index.html",
+//                                "/*.js",
+//                                "/*.css",
+//                                "/*.ico",
+//                                "/*.png",
+//                                "/assets/**",
+//                                "/img/**",
+//                                "/icons/**",
+//                                "/fonts/**",
+//                                "/*.webmanifest",
+//                                "/ngsw.json"
+//                        ).permitAll()
+//
+//                        .requestMatchers("/{path:[^\\.]*}", "/**/{path:[^\\.]*}").permitAll()
+//                )
+//
+//                .sessionManagement(session -> session
+//                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+//                )
+//                .exceptionHandling(ex -> ex
+//                        .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
                 )
                 .authenticationProvider(authenticationProvider)
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
