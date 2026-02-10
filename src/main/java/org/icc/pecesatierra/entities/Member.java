@@ -45,6 +45,15 @@ public class Member {
     private String pictureProfileUrl;
     private String publicId;
 
+    //address
+    private String neighborhood;
+    private String city;
+    private String municipality;
+    private String district;
+    private String postalCode;
+    private String latitude;
+    private String longitude;
+
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @Builder.Default
     private Set<MemberNotes> notes = new HashSet<>();

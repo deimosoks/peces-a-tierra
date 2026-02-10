@@ -30,4 +30,13 @@ public class MemberResponseDto {
     private Integer age;
     private boolean active;
     private Set<MemberNoteResponseDto> notes;
+
+    //address
+    private String neighborhood;
+    private String city;
+    private String municipality;
+    private String district;
+    private String postalCode;
+    private String latitude;
+    private String longitude;
 }

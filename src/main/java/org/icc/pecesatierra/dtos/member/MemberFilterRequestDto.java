@@ -22,5 +22,6 @@ public class MemberFilterRequestDto {
     private Integer ageFilterRange1;
     private Integer ageFilterRange2;
 
+    private String location;
 
 }

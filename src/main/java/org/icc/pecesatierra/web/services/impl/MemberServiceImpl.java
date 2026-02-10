@@ -214,6 +214,7 @@ public class MemberServiceImpl implements MemberService {
 
         if (dto == null) return predicates;
 
+        // --- Filtros Existentes ---
         if (dto.getMemberType() != null && !dto.getMemberType().isEmpty()) {
             predicates.add(root.get("type").in(dto.getMemberType()));
         }
@@ -224,32 +225,18 @@ public class MemberServiceImpl implements MemberService {
             predicates.add(cb.equal(root.get("active"), true));
         }
 
-        if (Boolean.TRUE.equals(dto.getHasCc())) {
-            predicates.add(cb.isNotNull(root.get("cc")));
-        }
-        if (Boolean.TRUE.equals(dto.getHasCellphone())) {
-            predicates.add(cb.isNotNull(root.get("cellphone")));
-        }
-        if (Boolean.TRUE.equals(dto.getHasAddress())) {
-            predicates.add(cb.isNotNull(root.get("address")));
-        }
-        if (Boolean.TRUE.equals(dto.getHasBirthdate())) {
-            predicates.add(cb.isNotNull(root.get("birthdate")));
-        }
+        // --- Filtros Booleanos (Tiene/No Tiene) ---
+        if (Boolean.TRUE.equals(dto.getHasCc())) predicates.add(cb.isNotNull(root.get("cc")));
+        if (Boolean.TRUE.equals(dto.getHasCellphone())) predicates.add(cb.isNotNull(root.get("cellphone")));
+        if (Boolean.TRUE.equals(dto.getHasAddress())) predicates.add(cb.isNotNull(root.get("address")));
+        if (Boolean.TRUE.equals(dto.getHasBirthdate())) predicates.add(cb.isNotNull(root.get("birthdate")));
 
-        if (Boolean.FALSE.equals(dto.getHasCc())) {
-            predicates.add(cb.isNull(root.get("cc")));
-        }
-        if (Boolean.FALSE.equals(dto.getHasCellphone())) {
-            predicates.add(cb.isNull(root.get("cellphone")));
-        }
-        if (Boolean.FALSE.equals(dto.getHasAddress())) {
-            predicates.add(cb.isNull(root.get("address")));
-        }
-        if (Boolean.FALSE.equals(dto.getHasBirthdate())) {
-            predicates.add(cb.isNull(root.get("birthdate")));
-        }
+        if (Boolean.FALSE.equals(dto.getHasCc())) predicates.add(cb.isNull(root.get("cc")));
+        if (Boolean.FALSE.equals(dto.getHasCellphone())) predicates.add(cb.isNull(root.get("cellphone")));
+        if (Boolean.FALSE.equals(dto.getHasAddress())) predicates.add(cb.isNull(root.get("address")));
+        if (Boolean.FALSE.equals(dto.getHasBirthdate())) predicates.add(cb.isNull(root.get("birthdate")));
 
+        // --- Búsqueda General ---
         if (dto.getQuery() != null && !dto.getQuery().isBlank()) {
             String searchLike = "%" + dto.getQuery().toLowerCase() + "%";
             predicates.add(cb.or(
@@ -258,23 +245,27 @@ public class MemberServiceImpl implements MemberService {
             ));
         }
 
+        // --- Filtro de Edad ---
         if (dto.getAgeFilterRange1() != null && dto.getAgeFilterRange2() != null) {
-
             int minAge = Math.min(dto.getAgeFilterRange1(), dto.getAgeFilterRange2());
             int maxAge = Math.max(dto.getAgeFilterRange1(), dto.getAgeFilterRange2());
-
             LocalDate today = LocalDate.now();
+            LocalDate maxBirthdate = today.minusYears(minAge);
+            LocalDate minBirthdate = today.minusYears(maxAge);
+            predicates.add(cb.between(root.get("birthdate"), minBirthdate, maxBirthdate));
+        }
 
-            LocalDate maxBirthdate = today.minusYears(minAge); // más jóvenes
-            LocalDate minBirthdate = today.minusYears(maxAge); // más viejos
+        if (dto.getLocation() != null && !dto.getLocation().isBlank()) {
+            String searchLike = "%" + dto.getLocation().toLowerCase() + "%";
 
-            predicates.add(
-                    cb.between(
-                            root.get("birthdate"),
-                            minBirthdate,
-                            maxBirthdate
-                    )
-            );
+            // Busca coincidencias en cualquiera de estos campos
+            predicates.add(cb.or(
+                    cb.like(cb.lower(root.get("address")), searchLike),
+                    cb.like(cb.lower(root.get("neighborhood")), searchLike),
+                    cb.like(cb.lower(root.get("city")), searchLike),
+                    cb.like(cb.lower(root.get("municipality")), searchLike),
+                    cb.like(cb.lower(root.get("district")), searchLike)
+            ));
         }
 
         return predicates;

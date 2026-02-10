@@ -35,4 +35,13 @@ public class MemberRequestDto {
 
     private MultipartFile pictureProfile;
 
+    //address
+    private String neighborhood;
+    private String city;
+    private String municipality;
+    private String district;
+    private String postalCode;
+    private String latitude;
+    private String longitude;
+
 }

@@ -23,4 +23,13 @@ public class MemberExportDto {
     private LocalDate birthdate;
     private String cc;
 
+    //address
+    private String neighborhood;
+    private String city;
+    private String municipality;
+    private String district;
+    private String postalCode;
+    private String latitude;
+    private String longitude;
+
 }
