@@ -9,21 +9,31 @@ import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import lombok.AllArgsConstructor;
 import org.icc.pecesatierra.dtos.member.*;
+import org.icc.pecesatierra.dtos.notes.MemberNoteRequestDto;
+import org.icc.pecesatierra.dtos.notes.MemberNoteResponseDto;
 import org.icc.pecesatierra.entities.Member;
+import org.icc.pecesatierra.entities.MemberNotes;
+import org.icc.pecesatierra.entities.User;
 import org.icc.pecesatierra.exceptions.MemberHasHistoricalRecordException;
 import org.icc.pecesatierra.exceptions.MemberNotFoundException;
+import org.icc.pecesatierra.exceptions.MemberNoteNotFoundException;
 import org.icc.pecesatierra.exceptions.ServerErrorException;
+import org.icc.pecesatierra.repositories.MemberNotesRepository;
 import org.icc.pecesatierra.utils.mappers.MemberMapper;
 import org.icc.pecesatierra.repositories.AttendanceRepository;
 import org.icc.pecesatierra.repositories.MemberRepository;
+import org.icc.pecesatierra.utils.mappers.MemberNotesMapper;
 import org.icc.pecesatierra.web.services.MemberService;
 import org.icc.pecesatierra.utils.PictureUtils;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -38,10 +48,13 @@ public class MemberServiceImpl implements MemberService {
     private final AttendanceRepository attendanceRepository;
     private final MemberPersistenceService memberPersistenceService;
     private final PictureUtils pictureUtils;
+    private final MemberNotesMapper memberNotesMapper;
+    private final MemberNotesRepository memberNotesRepositor;
 
     @PersistenceContext
     private EntityManager em;
 
+    @Transactional
     @Override
     public MemberResponseDto create(MemberRequestDto memberRequestDto) {
 
@@ -57,6 +70,7 @@ public class MemberServiceImpl implements MemberService {
         }
     }
 
+    @Transactional
     @Override
     public MemberResponseDto update(MemberRequestDto memberRequestDto, String memberId) {
 
@@ -89,7 +103,7 @@ public class MemberServiceImpl implements MemberService {
     @Transactional(readOnly = true)
     @Override
     public MemberPagesResponseDto findAll(int page, MemberFilterRequestDto dto) {
-        Pageable pageable = PageRequest.of(page, 20, Sort.by("createdAt").descending());
+        Pageable pageable = PageRequest.of(page, 20, Sort.by("completeName").ascending());
         CriteriaBuilder cb = em.getCriteriaBuilder();
 
         CriteriaQuery<Member> cq = cb.createQuery(Member.class);
@@ -98,7 +112,7 @@ public class MemberServiceImpl implements MemberService {
         List<Predicate> predicates = buildPredicates(dto, cb, member);
 
         cq.where(predicates.toArray(new Predicate[0]));
-        cq.orderBy(cb.desc(member.get("createdAt")));
+        cq.orderBy(cb.asc(member.get("completeName")));
 
         TypedQuery<Member> query = em.createQuery(cq);
         query.setFirstResult((int) pageable.getOffset());
@@ -117,7 +131,7 @@ public class MemberServiceImpl implements MemberService {
         int totalPages = (int) Math.ceil((double) total / pageable.getPageSize());
 
         return new MemberPagesResponseDto(
-                results.stream().map(memberMapper::toDto).toList(),
+                results.stream().map(m -> memberMapper.toDto(m, true)).toList(),
                 totalPages
         );
     }
@@ -132,7 +146,7 @@ public class MemberServiceImpl implements MemberService {
         List<Predicate> predicates = buildPredicates(dto, cb, member);
 
         cq.where(predicates.toArray(new Predicate[0]));
-        cq.orderBy(cb.desc(member.get("createdAt")));
+        cq.orderBy(cb.asc(member.get("completeName")));
 
         List<Member> results = em.createQuery(cq).getResultList();
 
@@ -168,6 +182,31 @@ public class MemberServiceImpl implements MemberService {
         memberRepository.save(member);
 
         return member.isActive();
+    }
+
+    @Transactional
+    @Override
+    public MemberNoteResponseDto createNote(MemberNoteRequestDto memberNoteRequestDto, User user) {
+
+        Member member = memberRepository.findById(memberNoteRequestDto.getMemberId())
+                .orElseThrow(()-> new MemberNoteNotFoundException("Miembro no encontrado."));
+
+        MemberNotes memberNotes = MemberNotes.builder()
+                .note(memberNoteRequestDto.getNote())
+                .createdAt(LocalDateTime.now())
+                .createdBy(user.getMember())
+                .member(member)
+                .build();
+
+        return memberNotesMapper.toDto(memberNotesRepositor.save(memberNotes));
+    }
+
+    @Transactional
+    @Override
+    public void deleteNote(String noteId) {
+        MemberNotes memberNotes = memberNotesRepositor.findById(noteId)
+                .orElseThrow(()-> new MemberNoteNotFoundException("Nota no encontrada."));
+        memberNotesRepositor.delete(memberNotes);
     }
 
     private List<Predicate> buildPredicates(MemberFilterRequestDto dto, CriteriaBuilder cb, Root<Member> root) {
@@ -217,6 +256,25 @@ public class MemberServiceImpl implements MemberService {
                     cb.like(cb.lower(root.get("completeName")), searchLike),
                     cb.like(root.get("cc"), searchLike)
             ));
+        }
+
+        if (dto.getAgeFilterRange1() != null && dto.getAgeFilterRange2() != null) {
+
+            int minAge = Math.min(dto.getAgeFilterRange1(), dto.getAgeFilterRange2());
+            int maxAge = Math.max(dto.getAgeFilterRange1(), dto.getAgeFilterRange2());
+
+            LocalDate today = LocalDate.now();
+
+            LocalDate maxBirthdate = today.minusYears(minAge); // más jóvenes
+            LocalDate minBirthdate = today.minusYears(maxAge); // más viejos
+
+            predicates.add(
+                    cb.between(
+                            root.get("birthdate"),
+                            minBirthdate,
+                            maxBirthdate
+                    )
+            );
         }
 
         return predicates;

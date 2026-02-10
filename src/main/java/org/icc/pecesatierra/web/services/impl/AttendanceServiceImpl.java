@@ -71,7 +71,7 @@ public class AttendanceServiceImpl implements AttendanceService {
                     .attendanceDate(attendanceRequestDto.getAttendanceDate())
                     .invalid(false)
                     .note(attendanceRequestDto.getNote())
-                    .registeredById(user.getMember().getId())
+                    .registeredById(user.getMember())
                     .build();
 
             attendanceRepository.save(attendance);
@@ -91,7 +91,7 @@ public class AttendanceServiceImpl implements AttendanceService {
 
         attendance.setInvalid(true);
         attendance.setInvalidAt(LocalDateTime.now());
-        attendance.setInvalidatorId(user.getMember().getId());
+        attendance.setInvalidatorId(user.getMember());
         attendance.setInvalidReason(attendanceInvalidRequestDto.getInvalidReason());
 
         return attendanceMapper.toDto(attendanceRepository.save(attendance));

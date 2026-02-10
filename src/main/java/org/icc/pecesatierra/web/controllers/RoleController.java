@@ -19,27 +19,27 @@ public class RoleController extends BaseController  {
 
     private final RoleService roleService;
 
-    @PreAuthorize("hasAuthority('CREATE_ROLE') && @securityService.isActive(authentication)")
+    @PreAuthorize("hasAuthority('CREATE_ROLE') || hasAuthority('ADMINISTRATOR') && @securityService.isActive(authentication)")
     @PostMapping
     public ResponseEntity<RoleResponseDto> create(@Valid @RequestBody RoleRequestDto roleRequestDto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(roleService.create(roleRequestDto));
     }
 
-    @PreAuthorize("hasAuthority('UPDATE_ROLE') && @securityService.isActive(authentication)")
+    @PreAuthorize("hasAuthority('UPDATE_ROLE') || hasAuthority('ADMINISTRATOR') && @securityService.isActive(authentication)")
     @PutMapping("/{roleId}")
     public ResponseEntity<RoleResponseDto> update(@Valid @RequestBody RoleRequestDto roleRequestDto,
                                                   @PathVariable String roleId) {
         return ResponseEntity.ok(roleService.update(roleRequestDto, roleId));
     }
 
-    @PreAuthorize("hasAuthority('DELETE_ROLE') && @securityService.isActive(authentication)")
+    @PreAuthorize("hasAuthority('DELETE_ROLE') || hasAuthority('ADMINISTRATOR') && @securityService.isActive(authentication)")
     @DeleteMapping("/{roleId}")
     public ResponseEntity<Void> delete(@PathVariable String roleId) {
         roleService.delete(roleId);
         return ResponseEntity.noContent().build();
     }
 
-    @PreAuthorize("hasAuthority('VIEW_ROLE_PANEL') && @securityService.isActive(authentication)")
+    @PreAuthorize("hasAuthority('VIEW_ROLE_PANEL') || hasAuthority('ADMINISTRATOR') && @securityService.isActive(authentication)")
     @GetMapping
     public ResponseEntity<List<RoleResponseDto>> findAll() {
         return ResponseEntity.ok(roleService.findAll());

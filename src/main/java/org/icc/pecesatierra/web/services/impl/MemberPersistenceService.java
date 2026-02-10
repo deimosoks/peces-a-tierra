@@ -37,7 +37,7 @@ public class MemberPersistenceService {
             member.setPictureProfileUrl(pictureData.get("url"));
             member.setPublicId(pictureData.get("publicId"));
         }
-        return memberMapper.toDto(memberRepository.save(member));
+        return memberMapper.toDto(memberRepository.save(member), false);
     }
 
     @Transactional
@@ -49,7 +49,7 @@ public class MemberPersistenceService {
             member.setPictureProfileUrl(picData.get("url"));
             member.setPublicId(picData.get("publicId"));
         }
-        return memberMapper.toDto(memberRepository.save(member));
+        return memberMapper.toDto(memberRepository.save(member), true);
     }
 
 }

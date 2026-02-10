@@ -19,7 +19,7 @@ public class AttendanceController extends BaseController {
 
     private final AttendanceService attendanceService;
 
-    @PreAuthorize("hasAuthority('REGISTER_ATTENDANCE') && @securityService.isActive(authentication)")
+    @PreAuthorize("hasAuthority('REGISTER_ATTENDANCE') || hasAuthority('ADMINISTRATOR') && @securityService.isActive(authentication)")
     @PostMapping
     public ResponseEntity<Void> create(@RequestBody @Valid List<AttendanceRequestDto> attendances,
                                        @AuthenticationPrincipal User user) {
@@ -27,7 +27,7 @@ public class AttendanceController extends BaseController {
         return ResponseEntity.ok().build();
     }
 
-    @PreAuthorize("hasAuthority('MANAGE_ATTENDANCE') && @securityService.isActive(authentication)")
+    @PreAuthorize("hasAuthority('MANAGE_ATTENDANCE') || hasAuthority('ADMINISTRATOR') && @securityService.isActive(authentication)")
     @PostMapping("/search")
     public ResponseEntity<AttendancePagesResponseDto> findAll(@RequestBody(
                                                                       required = false
@@ -39,7 +39,7 @@ public class AttendanceController extends BaseController {
         return ResponseEntity.ok(attendanceService.findAll(page, attendanceFiltersRequestDto));
     }
 
-    @PreAuthorize("hasAuthority('MANAGE_ATTENDANCE') && @securityService.isActive(authentication)")
+    @PreAuthorize("hasAuthority('MANAGE_ATTENDANCE') || hasAuthority('ADMINISTRATOR') && @securityService.isActive(authentication)")
     @PatchMapping("/invalidate")
     public ResponseEntity<AttendanceResponseDto> invalidate(@RequestBody @Valid AttendanceInvalidRequestDto attendanceInvalidRequestDto,
                                                             @AuthenticationPrincipal User user) {

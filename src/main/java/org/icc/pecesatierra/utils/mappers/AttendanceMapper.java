@@ -16,11 +16,6 @@ public class AttendanceMapper {
 
     public AttendanceResponseDto toDto(Attendance attendance) {
 
-        Member registeredBy = memberRepository.findById(attendance.getRegisteredById()).orElse(null);
-        Member invalidatedBy = attendance.getInvalidatorId() != null
-                ? memberRepository.findById(attendance.getInvalidatorId()).orElse(null)
-                : null;
-
         return AttendanceResponseDto.builder()
                 .id(
                         AttendanceIdResponseDto.builder()
@@ -35,10 +30,10 @@ public class AttendanceMapper {
                 .attendanceDate(attendance.getAttendanceDate())
                 .invalid(attendance.isInvalid())
                 .note(attendance.getNote())
-                .registeredBy(registeredBy != null ? registeredBy.getCompleteName() : "desconocido.")
+                .registeredBy(attendance.getRegisteredById() != null ? attendance.getRegisteredById().getCompleteName() : "desconocido.")
                 .invalidReason(attendance.getInvalidReason())
                 .invalidAt(attendance.getInvalidAt())
-                .invalidatedBy(invalidatedBy != null ? invalidatedBy.getCompleteName() : "desconocido.")
+                .invalidatedBy(attendance.getInvalidatorId() != null ? attendance.getInvalidatorId().getCompleteName() : "desconocido.")
                 .build();
     }
 

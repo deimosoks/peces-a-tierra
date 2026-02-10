@@ -16,7 +16,7 @@ public class DashboardController extends BaseController  {
 
     private final DashboardService dashboardService;
 
-    @PreAuthorize("hasAuthority('MANAGE_DASHBOARD') && @securityService.isActive(authentication)")
+    @PreAuthorize("hasAuthority('MANAGE_DASHBOARD') || hasAuthority('ADMINISTRATOR') && @securityService.isActive(authentication)")
     @PostMapping
     public ResponseEntity<DashboardResponseDto> dashboard() {
         return ResponseEntity.ok(dashboardService.dashboard());

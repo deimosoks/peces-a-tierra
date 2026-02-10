@@ -21,7 +21,7 @@ public class ReportController extends BaseController  {
 
     private final ReportService reportService;
 
-    @PreAuthorize("hasAuthority('MANAGE_REPORT')  && @securityService.isActive(authentication)")
+    @PreAuthorize("hasAuthority('MANAGE_REPORT') || hasAuthority('ADMINISTRATOR') && @securityService.isActive(authentication)")
     @PostMapping
     public ResponseEntity<List<ReportResponseDto>> generate(@RequestBody ReportRequestDto reportRequestDto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(reportService.generate(reportRequestDto));

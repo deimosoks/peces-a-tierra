@@ -19,33 +19,33 @@ public class ServiceController extends BaseController  {
 
     private final ServiceService serviceService;
 
-    @PreAuthorize("hasAuthority('CREATE_SERVICE') && @securityService.isActive(authentication)")
+    @PreAuthorize("hasAuthority('CREATE_SERVICE') || hasAuthority('ADMINISTRATOR') && @securityService.isActive(authentication)")
     @PostMapping
     public ResponseEntity<ServiceResponseDto> create(@Valid @RequestBody ServiceRequestDto serviceRequestDto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(serviceService.create(serviceRequestDto));
     }
 
-    @PreAuthorize("hasAuthority('UPDATE_SERVICE') && @securityService.isActive(authentication)")
+    @PreAuthorize("hasAuthority('UPDATE_SERVICE') || hasAuthority('ADMINISTRATOR') && @securityService.isActive(authentication)")
     @PutMapping("/{serviceId}")
     public ResponseEntity<ServiceResponseDto> update(@Valid @RequestBody ServiceRequestDto serviceRequestDto,
                                                      @PathVariable String serviceId) {
         return ResponseEntity.ok(serviceService.update(serviceRequestDto, serviceId));
     }
 
-    @PreAuthorize("hasAuthority('DELETE_SERVICE') && @securityService.isActive(authentication)")
+    @PreAuthorize("hasAuthority('DELETE_SERVICE') || hasAuthority('ADMINISTRATOR') && @securityService.isActive(authentication)")
     @DeleteMapping("/{serviceId}")
     public ResponseEntity<ServiceResponseDto> delete(@PathVariable String serviceId) {
         serviceService.delete(serviceId);
         return ResponseEntity.noContent().build();
     }
 
-    @PreAuthorize("(hasAuthority('VIEW_SERVICE_PANEL') || hasAuthority('REGISTER_ATTENDANCE')) && @securityService.isActive(authentication)")
+    @PreAuthorize("(hasAuthority('VIEW_SERVICE_PANEL') || hasAuthority('REGISTER_ATTENDANCE')) || hasAuthority('ADMINISTRATOR') && @securityService.isActive(authentication)")
     @GetMapping
     public ResponseEntity<List<ServiceResponseDto>> findAll(@RequestParam boolean onlyActive) {
         return ResponseEntity.ok(serviceService.findAll(onlyActive));
     }
 
-    @PreAuthorize("hasAuthority('UPDATE_SERVICE') && @securityService.isActive(authentication)")
+    @PreAuthorize("hasAuthority('UPDATE_SERVICE') || hasAuthority('ADMINISTRATOR') && @securityService.isActive(authentication)")
     @PatchMapping("/{serviceId}")
     public ResponseEntity<Boolean> updateState(@PathVariable String serviceId,
                                                @RequestParam boolean active) {

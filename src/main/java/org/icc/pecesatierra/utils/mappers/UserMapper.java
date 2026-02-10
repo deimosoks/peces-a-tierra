@@ -25,7 +25,7 @@ public class UserMapper {
                                 .active(user.isActive())
                                 .createdAt(user.getCreatedAt())
                                 .updateAt(user.getUpdatedAt())
-                                .memberResponseDto(memberMapper.toDto(user.getMember()))
+                                .memberResponseDto(memberMapper.toDto(user.getMember(), false))
                                 .roles(user.getRoles().stream().map(userRole -> {
                                         Member givenBy = memberRepository.findById(userRole.getGiverId()).orElse(null);
                                         return RoleResponseDto.builder()

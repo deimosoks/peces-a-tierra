@@ -18,13 +18,13 @@ public class UserController extends BaseController  {
 
     private final UserService userService;
 
-    @PreAuthorize("hasAuthority('VIEW_USER_PANEL') && @securityService.isActive(authentication)")
+    @PreAuthorize("hasAuthority('VIEW_USER_PANEL') || hasAuthority('ADMINISTRATOR') && @securityService.isActive(authentication)")
     @PostMapping("/report")
     public ResponseEntity<UserReportResponseDto> report() {
         return ResponseEntity.ok(userService.report());
     }
 
-    @PreAuthorize("hasAuthority('CREATE_USER') && @securityService.isActive(authentication)")
+    @PreAuthorize("hasAuthority('CREATE_USER') || hasAuthority('ADMINISTRATOR') && @securityService.isActive(authentication)")
     @PostMapping
     public ResponseEntity<UserResponseDto> create(@RequestBody @Valid UserRequestDto userRequestDto,
                                                   @AuthenticationPrincipal User givenBy) {
@@ -37,7 +37,7 @@ public class UserController extends BaseController  {
         return ResponseEntity.ok(userService.me(user));
     }
 
-    @PreAuthorize("hasAuthority('VIEW_USER_PANEL') && @securityService.isActive(authentication)")
+    @PreAuthorize("hasAuthority('VIEW_USER_PANEL') || hasAuthority('ADMINISTRATOR') && @securityService.isActive(authentication)")
     @GetMapping
     public ResponseEntity<UserPagesResponseDto> findAll(@RequestParam(
                                                                 required = false,
@@ -50,7 +50,7 @@ public class UserController extends BaseController  {
         return ResponseEntity.ok(userService.findAll(page, query));
     }
 
-    @PreAuthorize("hasAuthority('UPDATE_USER') && @securityService.isActive(authentication)")
+    @PreAuthorize("hasAuthority('UPDATE_USER') || hasAuthority('ADMINISTRATOR') && @securityService.isActive(authentication)")
     @PutMapping("/{userId}")
     public ResponseEntity<UserResponseDto> update(@RequestBody @Valid UserRequestDto userRequestDto,
                                                   @PathVariable String userId,
@@ -58,7 +58,7 @@ public class UserController extends BaseController  {
         return ResponseEntity.ok(userService.update(userRequestDto, userId, user));
     }
 
-    @PreAuthorize("hasAuthority('UPDATE_USER') && @securityService.isActive(authentication)")
+    @PreAuthorize("hasAuthority('UPDATE_USER') || hasAuthority('ADMINISTRATOR') && @securityService.isActive(authentication)")
     @PatchMapping("/{userId}")
     public ResponseEntity<Boolean> updateActive(@PathVariable String userId,
                                                 @RequestParam boolean active,
@@ -66,7 +66,7 @@ public class UserController extends BaseController  {
         return ResponseEntity.ok(userService.updateActive(user, userId, active));
     }
 
-    @PreAuthorize("hasAuthority('DELETE_USER') && @securityService.isActive(authentication)")
+    @PreAuthorize("hasAuthority('DELETE_USER') || hasAuthority('ADMINISTRATOR') && @securityService.isActive(authentication)")
     @DeleteMapping("/{userId}")
     public ResponseEntity<Void> delete(@AuthenticationPrincipal User user,
                                        @PathVariable String userId) {

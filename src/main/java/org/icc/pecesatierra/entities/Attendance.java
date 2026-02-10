@@ -29,14 +29,18 @@ public class Attendance {
     @Column(nullable = false)
     private boolean invalid;
 
-    @Column(nullable = false)
-    private String registeredById;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(nullable = false)
+    private Member registeredById;
 
     private String note;
 
     private String invalidReason;
     private LocalDateTime invalidAt;
-    private String invalidatorId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "invalidator_id")
+    private Member invalidatorId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("serviceId")

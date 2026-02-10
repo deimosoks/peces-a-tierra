@@ -5,6 +5,7 @@ import org.apache.tika.Tika;
 import org.icc.pecesatierra.exceptions.InvalidImageFormatException;
 import org.icc.pecesatierra.exceptions.ServerErrorException;
 import org.icc.pecesatierra.web.services.CloudinaryService;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 

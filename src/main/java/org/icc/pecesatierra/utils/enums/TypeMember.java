@@ -5,6 +5,7 @@ public enum TypeMember {
     INICIANTE,
     VISITANTE,
     MIEMBRO,
-    SIMPATIZANTE
+    SIMPATIZANTE,
+    OTRA_IGLESIA
 
 }

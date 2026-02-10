@@ -33,7 +33,7 @@ public class DashboardServiceImpl implements DashboardService {
 
         List<MemberResponseDto> memberBirthdays =
                 memberRepository.findMembersWithBirthdayInMonth(LocalDateTime.now().getMonthValue())
-                        .stream().map(memberMapper::toDto).toList();
+                        .stream().map(member -> memberMapper.toDto(member, false)).toList();
 
         long lastServiceAssistance = attendanceRepository.countAttendanceLastService();
 
