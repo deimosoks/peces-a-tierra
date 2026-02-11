@@ -1,6 +1,6 @@
 {
   "configVersion": 1,
-  "timestamp": 1769719276397,
+  "timestamp": 1770793532337,
   "index": "/index.html",
   "assetGroups": [
     {
@@ -18,10 +18,10 @@
         "/chunk-KFVPZZ6B.js",
         "/chunk-QXSLYJU6.js",
         "/index.html",
-        "/main-TEV52477.js",
+        "/main-SQEJC2V6.js",
         "/manifest.webmanifest",
         "/polyfills-6ISPNSXF.js",
-        "/styles-6NBNQMCN.css"
+        "/styles-UJE5TDKK.css"
       ],
       "patterns": []
     },
@@ -40,6 +40,7 @@
         "/icons/icon-72x72.png",
         "/icons/icon-96x96.png",
         "/img/bible-login.png",
+        "/img/certificate-template.jpg",
         "/img/logo-login.png",
         "/img/logoicc.png",
         "/img/sidebar-logo.jpg"
@@ -62,14 +63,15 @@
     "/icons/icon-72x72.png": "7ad221f636ee5b093c12480e68d0c7be2c23e91d",
     "/icons/icon-96x96.png": "7792ffb39a2b94d902647dc259422c8082ea6029",
     "/img/bible-login.png": "05a373af68fa9653e0aff302760e7766aacfc26b",
+    "/img/certificate-template.jpg": "e37c9ef6921513ab419aa7bebd0dba6950896eb3",
     "/img/logo-login.png": "1e52dbbff63a2b22afa9c9bd024dca0c53586ec1",
     "/img/logoicc.png": "cfc65c3c0124d7adc4ab251a394cf7711c96afc7",
     "/img/sidebar-logo.jpg": "7ed783d95622306f76ffc58962874ccf2810ea9f",
-    "/index.html": "fdfb3ec7ebf7b3d9a9b4cc5059d38019a9fcda12",
-    "/main-TEV52477.js": "bd359f45963ba981748b40781a3b795ce8299c35",
+    "/index.html": "fde953a613745bd08b5966a2da10281906fe5820",
+    "/main-SQEJC2V6.js": "748861c52f65ed34109aa7e8d96bc1cab4bde9ce",
     "/manifest.webmanifest": "acd0a3eb8a775f5c7976aef2d024c2714705cb7d",
     "/polyfills-6ISPNSXF.js": "b15ba4d1036f2db285649ff775f184bcdcd0b08a",
-    "/styles-6NBNQMCN.css": "7b89f4b68764ab21c495b393f1c703c7f50a5d8b"
+    "/styles-UJE5TDKK.css": "3e38e7ef00d9a5e9f55fc0afaf9e76b55821a306"
   },
   "navigationUrls": [
     {

@@ -30,7 +30,7 @@ public class Attendance {
     private boolean invalid;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(nullable = false)
+    @JoinColumn(name = "registered_by_id", nullable = false)
     private Member registeredById;
 
     private String note;

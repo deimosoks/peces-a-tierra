@@ -13,6 +13,8 @@ import org.mapstruct.MappingTarget;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -70,7 +72,7 @@ public class MemberMapper {
         private String longitude;
         */
         if (member.getBirthdate() != null){
-            memberResponseDto.age(LocalDate.now().getYear() - member.getBirthdate().getYear());
+            memberResponseDto.age((int)ChronoUnit.YEARS.between(member.getBirthdate(), LocalDateTime.now()));
         }
 
         if (withNotes) {
@@ -100,7 +102,7 @@ public class MemberMapper {
         memberExportDto.cc(member.getCc());
 
         if (member.getBirthdate() != null){
-            memberExportDto.age(LocalDate.now().getYear() - member.getBirthdate().getYear());
+            memberExportDto.age((int)ChronoUnit.YEARS.between(member.getBirthdate(), LocalDateTime.now()));
         }
 
 //        memberExportDto.neighborhood(member.getNeighborhood());
