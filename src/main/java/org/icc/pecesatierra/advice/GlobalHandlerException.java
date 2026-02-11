@@ -295,6 +295,48 @@ public class GlobalHandlerException {
         return new ResponseEntity<>(errorResponseDto, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
+    @ExceptionHandler(BaptismNotFoundException.class)
+    public ResponseEntity<ErrorResponseDto> handlerBaptismNotFoundException(HttpServletRequest httpServletRequest,
+                                                                           BaptismNotFoundException exception) {
+        ErrorResponseDto errorResponseDto = ErrorResponseDto.builder()
+                .localDateTime(LocalDateTime.now())
+                .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                .error(HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase())
+                .message(exception.getMessage())
+                .path(httpServletRequest.getRequestURI())
+                .build();
+
+        return new ResponseEntity<>(errorResponseDto, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler(MemberNoteNotFoundException.class)
+    public ResponseEntity<ErrorResponseDto> handlerMemberNoteNotFoundException(HttpServletRequest httpServletRequest,
+                                                                            MemberNoteNotFoundException exception) {
+        ErrorResponseDto errorResponseDto = ErrorResponseDto.builder()
+                .localDateTime(LocalDateTime.now())
+                .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                .error(HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase())
+                .message(exception.getMessage())
+                .path(httpServletRequest.getRequestURI())
+                .build();
+
+        return new ResponseEntity<>(errorResponseDto, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler(MemberAlreadyHasRegisteredBaptismActiveException.class)
+    public ResponseEntity<ErrorResponseDto> handlerMemberAlreadyHasRegisteredBaptismActiveException(HttpServletRequest httpServletRequest,
+                                                                               MemberAlreadyHasRegisteredBaptismActiveException exception) {
+        ErrorResponseDto errorResponseDto = ErrorResponseDto.builder()
+                .localDateTime(LocalDateTime.now())
+                .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                .error(HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase())
+                .message(exception.getMessage())
+                .path(httpServletRequest.getRequestURI())
+                .build();
+
+        return new ResponseEntity<>(errorResponseDto, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponseDto> handlerMethodArgumentNotValidException(HttpServletRequest httpServletRequest,
                                                                            MethodArgumentNotValidException exception) {

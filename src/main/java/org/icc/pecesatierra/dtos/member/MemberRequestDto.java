@@ -34,7 +34,6 @@ public class MemberRequestDto {
     private String cc;
 
     private MultipartFile pictureProfile;
-
     //address
     private String neighborhood;
     private String city;

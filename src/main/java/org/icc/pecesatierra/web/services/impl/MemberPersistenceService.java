@@ -28,10 +28,17 @@ public class MemberPersistenceService {
                 .createdAt(LocalDateTime.now())
                 .cc(dto.getCc())
                 .cellphone(dto.getCellphone())
-                .address(dto.getAddress())
+//                .address(dto.getAddress())
                 .birthdate(dto.getBirthdate())
                 .active(true)
                 .build();
+        member.setNeighborhood(dto.getNeighborhood());
+        member.setCity(dto.getCity());
+        member.setMunicipality(dto.getMunicipality());
+        member.setDistrict(dto.getDistrict());
+        member.setPostalCode(dto.getPostalCode());
+        member.setLatitude(dto.getLatitude());
+        member.setLongitude(dto.getLongitude());
 
         if (pictureData.get("url") != null) {
             member.setPictureProfileUrl(pictureData.get("url"));

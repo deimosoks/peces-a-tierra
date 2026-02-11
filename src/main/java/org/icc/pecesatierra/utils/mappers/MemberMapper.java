@@ -52,13 +52,13 @@ public class MemberMapper {
         memberResponseDto.pictureProfileUrl(member.getPictureProfileUrl());
         memberResponseDto.active(member.isActive());
 
-        memberResponseDto.neighborhood(member.getNeighborhood());
-        memberResponseDto.city(member.getCity());
-        memberResponseDto.municipality(member.getMunicipality());
-        memberResponseDto.district(member.getDistrict());
-        memberResponseDto.postalCode(member.getPostalCode());
-        memberResponseDto.latitude(member.getLatitude());
-        memberResponseDto.latitude(member.getLatitude());
+//        memberResponseDto.neighborhood(member.getNeighborhood());
+//        memberResponseDto.city(member.getCity());
+//        memberResponseDto.municipality(member.getMunicipality());
+//        memberResponseDto.district(member.getDistrict());
+//        memberResponseDto.postalCode(member.getPostalCode());
+//        memberResponseDto.latitude(member.getLatitude());
+//        memberResponseDto.latitude(member.getLatitude());
 
         /* address
         private String neighborhood;
@@ -99,13 +99,17 @@ public class MemberMapper {
         memberExportDto.birthdate(member.getBirthdate());
         memberExportDto.cc(member.getCc());
 
-        memberExportDto.neighborhood(member.getNeighborhood());
-        memberExportDto.city(member.getCity());
-        memberExportDto.municipality(member.getMunicipality());
-        memberExportDto.district(member.getDistrict());
-        memberExportDto.postalCode(member.getPostalCode());
-        memberExportDto.latitude(member.getLatitude());
-        memberExportDto.latitude(member.getLatitude());
+        if (member.getBirthdate() != null){
+            memberExportDto.age(LocalDate.now().getYear() - member.getBirthdate().getYear());
+        }
+
+//        memberExportDto.neighborhood(member.getNeighborhood());
+//        memberExportDto.city(member.getCity());
+//        memberExportDto.municipality(member.getMunicipality());
+//        memberExportDto.district(member.getDistrict());
+//        memberExportDto.postalCode(member.getPostalCode());
+//        memberExportDto.latitude(member.getLatitude());
+//        memberExportDto.latitude(member.getLatitude());
 
         return memberExportDto.build();
     }

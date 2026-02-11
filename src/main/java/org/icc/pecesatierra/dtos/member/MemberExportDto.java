@@ -21,15 +21,7 @@ public class MemberExportDto {
     private String cellphone;
     private String address;
     private LocalDate birthdate;
+    private Integer age;
     private String cc;
-
-    //address
-    private String neighborhood;
-    private String city;
-    private String municipality;
-    private String district;
-    private String postalCode;
-    private String latitude;
-    private String longitude;
 
 }

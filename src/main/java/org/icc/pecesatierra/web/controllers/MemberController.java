@@ -35,7 +35,7 @@ public class MemberController extends BaseController {
         return ResponseEntity.ok(memberService.update(memberRequestDto, memberId));
     }
 
-    @PreAuthorize("(hasAuthority('VIEW_MEMBER_PANEL') || hasAuthority('MANAGE_ATTENDANCE') || hasAuthority('REGISTER_ATTENDANCE')) || hasAuthority('ADMINISTRATOR') && @securityService.isActive(authentication)")
+    @PreAuthorize("hasAuthority('VIEW_MEMBER_PANEL') || (hasAuthority('VIEW_BAPTISM_PANEL') || hasAuthority('MANAGE_ATTENDANCE') || hasAuthority('REGISTER_ATTENDANCE')) || hasAuthority('ADMINISTRATOR') && @securityService.isActive(authentication)")
     @PostMapping("/search")
     public ResponseEntity<MemberPagesResponseDto> findAll(@RequestBody(
                                                                   required = false

@@ -40,12 +40,13 @@ public class Member {
 
     private String cc;
     private String cellphone;
-    private String address;
     private LocalDate birthdate;
+
     private String pictureProfileUrl;
     private String publicId;
-
     //address
+    private String address;
+    //address for search
     private String neighborhood;
     private String city;
     private String municipality;

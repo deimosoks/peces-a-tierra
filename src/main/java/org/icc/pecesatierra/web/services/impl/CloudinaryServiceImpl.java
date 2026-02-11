@@ -19,11 +19,11 @@ public class CloudinaryServiceImpl implements CloudinaryService {
     private final Cloudinary cloudinary;
 
     @Override
-    public Map<String, String> uploadMemberPhoto(MultipartFile file) throws IOException {
+    public Map<String, String> uploadPhoto(MultipartFile file, String folderLocation) throws IOException {
         Map uploadResult = cloudinary.uploader().upload(
                 file.getBytes(),
                 ObjectUtils.asMap(
-                        "folder", "members/photos",
+                        "folder", folderLocation,
                         "resource_type", "image",
                         "use_filename", true,
                         "unique_filename", true

@@ -58,7 +58,7 @@ public class MemberServiceImpl implements MemberService {
     @Override
     public MemberResponseDto create(MemberRequestDto memberRequestDto) {
 
-        Map<String, String> pictureData = pictureUtils.validateAndSavePicture(memberRequestDto.getPictureProfile());
+        Map<String, String> pictureData = pictureUtils.validateAndSavePicture(memberRequestDto.getPictureProfile(), "members/photos");
 
         try {
             return memberPersistenceService.save(memberRequestDto, pictureData);
@@ -81,7 +81,7 @@ public class MemberServiceImpl implements MemberService {
         Map<String, String> newPictureData = null;
 
         if (memberRequestDto.getPictureProfile() != null) {
-            newPictureData = pictureUtils.validateAndSavePicture(memberRequestDto.getPictureProfile());
+            newPictureData = pictureUtils.validateAndSavePicture(memberRequestDto.getPictureProfile(), "members/photos");
         }
 
         try {
