@@ -4,18 +4,18 @@ import lombok.RequiredArgsConstructor;
 import org.icc.pecesatierra.dtos.member.MemberExportDto;
 import org.icc.pecesatierra.dtos.member.MemberRequestDto;
 import org.icc.pecesatierra.dtos.member.MemberResponseDto;
-import org.icc.pecesatierra.dtos.notes.MemberNoteResponseDto;
 import org.icc.pecesatierra.entities.Member;
-import org.icc.pecesatierra.utils.enums.CategoryMember;
-import org.icc.pecesatierra.utils.enums.TypeMember;
-import org.mapstruct.Mapper;
-import org.mapstruct.MappingTarget;
+import org.icc.pecesatierra.entities.MemberCategory;
+import org.icc.pecesatierra.entities.MemberType;
+import org.icc.pecesatierra.exceptions.MemberCategoryNotFoundException;
+import org.icc.pecesatierra.exceptions.MemberTypeNotFoundException;
+import org.icc.pecesatierra.repositories.MemberCategoryRepository;
+import org.icc.pecesatierra.repositories.MemberTypeRepository;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.Set;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 //@Mapper(componentModel = "spring")
@@ -29,6 +29,10 @@ public class MemberMapper {
     //    void updateEntityFromDto(MemberRequestDto memberRequestDto, @MappingTarget Member member);
 
     private final MemberNotesMapper memberNotesMapper;
+    private final MemberCategoryMapper memberCategoryMapper;
+    private final MemberTypeMapper memberTypeMapper;
+    private final MemberCategoryRepository memberCategoryRepository;
+    private final MemberTypeRepository memberTypeRepository;
 
     public MemberResponseDto toDto(Member member, boolean withNotes) {
         if (member == null) {
@@ -39,12 +43,17 @@ public class MemberMapper {
 
         memberResponseDto.id(member.getId());
         memberResponseDto.completeName(member.getCompleteName());
-        if (member.getType() != null) {
-            memberResponseDto.type(Enum.valueOf(TypeMember.class, member.getType()));
-        }
-        if (member.getCategory() != null) {
-            memberResponseDto.category(Enum.valueOf(CategoryMember.class, member.getCategory()));
-        }
+
+//        if (member.getType() != null) {
+//            memberResponseDto.type(Enum.valueOf(TypeMember.class, member.getType()));
+//        }
+//        if (member.getCategory() != null) {
+//            memberResponseDto.category(Enum.valueOf(CategoryMember.class, member.getCategory()));
+//        }
+
+        memberResponseDto.category(memberCategoryMapper.toDto(member.getCategoryId()));
+        memberResponseDto.type(memberTypeMapper.toDto(member.getTypeId()));
+
         memberResponseDto.cellphone(member.getCellphone());
         memberResponseDto.address(member.getAddress());
         memberResponseDto.birthdate(member.getBirthdate());
@@ -71,8 +80,8 @@ public class MemberMapper {
         private String latitude;
         private String longitude;
         */
-        if (member.getBirthdate() != null){
-            memberResponseDto.age((int)ChronoUnit.YEARS.between(member.getBirthdate(), LocalDateTime.now()));
+        if (member.getBirthdate() != null) {
+            memberResponseDto.age((int) ChronoUnit.YEARS.between(member.getBirthdate(), LocalDateTime.now()));
         }
 
         if (withNotes) {
@@ -90,19 +99,23 @@ public class MemberMapper {
         MemberExportDto.MemberExportDtoBuilder memberExportDto = MemberExportDto.builder();
 
         memberExportDto.completeName(member.getCompleteName());
-        if (member.getType() != null) {
-            memberExportDto.type(Enum.valueOf(TypeMember.class, member.getType()));
-        }
-        if (member.getCategory() != null) {
-            memberExportDto.category(Enum.valueOf(CategoryMember.class, member.getCategory()));
-        }
+//        if (member.getType() != null) {
+//            memberExportDto.type(Enum.valueOf(TypeMember.class, member.getType()));
+//        }
+//        if (member.getCategory() != null) {
+//            memberExportDto.category(Enum.valueOf(CategoryMember.class, member.getCategory()));
+//        }
+
+        memberExportDto.type(member.getTypeId().getName());
+        memberExportDto.category(member.getCategoryId().getName());
+
         memberExportDto.cellphone(member.getCellphone());
         memberExportDto.address(member.getAddress());
         memberExportDto.birthdate(member.getBirthdate());
         memberExportDto.cc(member.getCc());
 
-        if (member.getBirthdate() != null){
-            memberExportDto.age((int)ChronoUnit.YEARS.between(member.getBirthdate(), LocalDateTime.now()));
+        if (member.getBirthdate() != null) {
+            memberExportDto.age((int) ChronoUnit.YEARS.between(member.getBirthdate(), LocalDateTime.now()));
         }
 
 //        memberExportDto.neighborhood(member.getNeighborhood());
@@ -121,16 +134,18 @@ public class MemberMapper {
             return;
         }
 
-        if (memberRequestDto.getType() != null) {
-            member.setType(memberRequestDto.getType().name());
-        } else {
-            member.setType(null);
+        if (!Objects.equals(memberRequestDto.getTypeId(), member.getTypeId().getId())) {
+            MemberCategory memberCategory = memberCategoryRepository.findById(memberRequestDto.getCategoryId())
+                    .orElseThrow(() -> new MemberCategoryNotFoundException("Categoria invalida."));
+            member.setCategoryId(memberCategory);
         }
-        if (memberRequestDto.getCategory() != null) {
-            member.setCategory(memberRequestDto.getCategory().name());
-        } else {
-            member.setCategory(null);
+
+        if (!Objects.equals(memberRequestDto.getCategoryId(), member.getTypeId().getId())) {
+            MemberType memberType = memberTypeRepository.findById(memberRequestDto.getTypeId())
+                    .orElseThrow(() -> new MemberTypeNotFoundException("Tipo invalido."));
+            member.setTypeId(memberType);
         }
+
         member.setCompleteName(memberRequestDto.getCompleteName());
         member.setCc(memberRequestDto.getCc());
         member.setCellphone(memberRequestDto.getCellphone());

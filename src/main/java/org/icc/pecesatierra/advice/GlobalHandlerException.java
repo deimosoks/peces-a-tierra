@@ -255,7 +255,7 @@ public class GlobalHandlerException {
 
     @ExceptionHandler(DeactivateYourselfException.class)
     public ResponseEntity<ErrorResponseDto> handlerDeactivateYourselfException(HttpServletRequest httpServletRequest,
-                                                                            DeactivateYourselfException exception) {
+                                                                               DeactivateYourselfException exception) {
         ErrorResponseDto errorResponseDto = ErrorResponseDto.builder()
                 .localDateTime(LocalDateTime.now())
                 .status(HttpStatus.BAD_REQUEST.value())
@@ -269,7 +269,7 @@ public class GlobalHandlerException {
 
     @ExceptionHandler(ServerErrorException.class)
     public ResponseEntity<ErrorResponseDto> handlerServerErrorException(HttpServletRequest httpServletRequest,
-                                                                               ServerErrorException exception) {
+                                                                        ServerErrorException exception) {
         ErrorResponseDto errorResponseDto = ErrorResponseDto.builder()
                 .localDateTime(LocalDateTime.now())
                 .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
@@ -297,7 +297,7 @@ public class GlobalHandlerException {
 
     @ExceptionHandler(BaptismNotFoundException.class)
     public ResponseEntity<ErrorResponseDto> handlerBaptismNotFoundException(HttpServletRequest httpServletRequest,
-                                                                           BaptismNotFoundException exception) {
+                                                                            BaptismNotFoundException exception) {
         ErrorResponseDto errorResponseDto = ErrorResponseDto.builder()
                 .localDateTime(LocalDateTime.now())
                 .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
@@ -311,7 +311,7 @@ public class GlobalHandlerException {
 
     @ExceptionHandler(MemberNoteNotFoundException.class)
     public ResponseEntity<ErrorResponseDto> handlerMemberNoteNotFoundException(HttpServletRequest httpServletRequest,
-                                                                            MemberNoteNotFoundException exception) {
+                                                                               MemberNoteNotFoundException exception) {
         ErrorResponseDto errorResponseDto = ErrorResponseDto.builder()
                 .localDateTime(LocalDateTime.now())
                 .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
@@ -325,7 +325,91 @@ public class GlobalHandlerException {
 
     @ExceptionHandler(MemberAlreadyHasRegisteredBaptismActiveException.class)
     public ResponseEntity<ErrorResponseDto> handlerMemberAlreadyHasRegisteredBaptismActiveException(HttpServletRequest httpServletRequest,
-                                                                               MemberAlreadyHasRegisteredBaptismActiveException exception) {
+                                                                                                    MemberAlreadyHasRegisteredBaptismActiveException exception) {
+        ErrorResponseDto errorResponseDto = ErrorResponseDto.builder()
+                .localDateTime(LocalDateTime.now())
+                .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                .error(HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase())
+                .message(exception.getMessage())
+                .path(httpServletRequest.getRequestURI())
+                .build();
+
+        return new ResponseEntity<>(errorResponseDto, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler(MemberCategoryInUseException.class)
+    public ResponseEntity<ErrorResponseDto> handlerMemberCategoryInUseException(HttpServletRequest httpServletRequest,
+                                                                                MemberCategoryInUseException exception) {
+        ErrorResponseDto errorResponseDto = ErrorResponseDto.builder()
+                .localDateTime(LocalDateTime.now())
+                .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                .error(HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase())
+                .message(exception.getMessage())
+                .path(httpServletRequest.getRequestURI())
+                .build();
+
+        return new ResponseEntity<>(errorResponseDto, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler(MemberCategoryNotFoundException.class)
+    public ResponseEntity<ErrorResponseDto> handlerMemberCategoryNotFoundException(HttpServletRequest httpServletRequest,
+                                                                                   MemberCategoryNotFoundException exception) {
+        ErrorResponseDto errorResponseDto = ErrorResponseDto.builder()
+                .localDateTime(LocalDateTime.now())
+                .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                .error(HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase())
+                .message(exception.getMessage())
+                .path(httpServletRequest.getRequestURI())
+                .build();
+
+        return new ResponseEntity<>(errorResponseDto, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler(MemberTypeInUseException.class)
+    public ResponseEntity<ErrorResponseDto> handlerMemberTypeInUseException(HttpServletRequest httpServletRequest,
+                                                                            MemberTypeInUseException exception) {
+        ErrorResponseDto errorResponseDto = ErrorResponseDto.builder()
+                .localDateTime(LocalDateTime.now())
+                .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                .error(HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase())
+                .message(exception.getMessage())
+                .path(httpServletRequest.getRequestURI())
+                .build();
+
+        return new ResponseEntity<>(errorResponseDto, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler(MemberTypeNotFoundException.class)
+    public ResponseEntity<ErrorResponseDto> handlerMemberTypeNotFoundException(HttpServletRequest httpServletRequest,
+                                                                               MemberTypeNotFoundException exception) {
+        ErrorResponseDto errorResponseDto = ErrorResponseDto.builder()
+                .localDateTime(LocalDateTime.now())
+                .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                .error(HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase())
+                .message(exception.getMessage())
+                .path(httpServletRequest.getRequestURI())
+                .build();
+
+        return new ResponseEntity<>(errorResponseDto, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler(CategoryWithNameAlreadyExistsException.class)
+    public ResponseEntity<ErrorResponseDto> handlerCategoryWithNameAlreadyExistsException(HttpServletRequest httpServletRequest,
+                                                                                          CategoryWithNameAlreadyExistsException exception) {
+        ErrorResponseDto errorResponseDto = ErrorResponseDto.builder()
+                .localDateTime(LocalDateTime.now())
+                .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                .error(HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase())
+                .message(exception.getMessage())
+                .path(httpServletRequest.getRequestURI())
+                .build();
+
+        return new ResponseEntity<>(errorResponseDto, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler(TypeWithNameAlreadyExistsException.class)
+    public ResponseEntity<ErrorResponseDto> handlerCategoryTypeWithNameAlreadyExistsException(HttpServletRequest httpServletRequest,
+                                                                                              TypeWithNameAlreadyExistsException exception) {
         ErrorResponseDto errorResponseDto = ErrorResponseDto.builder()
                 .localDateTime(LocalDateTime.now())
                 .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
@@ -339,7 +423,7 @@ public class GlobalHandlerException {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponseDto> handlerMethodArgumentNotValidException(HttpServletRequest httpServletRequest,
-                                                                           MethodArgumentNotValidException exception) {
+                                                                                   MethodArgumentNotValidException exception) {
         ErrorResponseDto errorResponseDto = ErrorResponseDto.builder()
                 .localDateTime(LocalDateTime.now())
                 .status(HttpStatus.BAD_REQUEST.value())
@@ -350,6 +434,23 @@ public class GlobalHandlerException {
                         .getDefaultMessage())
                 .path(httpServletRequest.getRequestURI())
                 .build();
+
+        return new ResponseEntity<>(errorResponseDto, HttpStatus.BAD_REQUEST);
+    }
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ErrorResponseDto> handlerGenericException(HttpServletRequest httpServletRequest,
+                                                                                   Exception exception) {
+        ErrorResponseDto errorResponseDto = ErrorResponseDto.builder()
+                .localDateTime(LocalDateTime.now())
+                .status(HttpStatus.BAD_REQUEST.value())
+                .error(HttpStatus.BAD_REQUEST.getReasonPhrase())
+                .message("Error inesperado, por favor intente mas tarde.")
+                .path(httpServletRequest.getRequestURI())
+                .build();
+
+        System.out.println("==========================");
+        System.out.println("Exception: " + exception.getMessage());
+        System.out.println("==========================");
 
         return new ResponseEntity<>(errorResponseDto, HttpStatus.BAD_REQUEST);
     }

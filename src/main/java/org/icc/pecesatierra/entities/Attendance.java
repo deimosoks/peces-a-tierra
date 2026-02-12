@@ -17,11 +17,13 @@ public class Attendance {
     @EmbeddedId
     private AttendanceId id;
 
-    @Column(nullable = false)
-    private String memberCategory;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(nullable = false, name = "member_category")
+    private MemberCategory memberCategory;
 
-    @Column(nullable = false)
-    private String memberType;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(nullable = false, name = "member_type")
+    private MemberType memberType;
 
     @Column(nullable = false)
     private LocalDateTime attendanceDate;

@@ -2,6 +2,7 @@ package org.icc.pecesatierra.dtos.member;
 
 import lombok.*;
 import org.icc.pecesatierra.dtos.notes.MemberNoteResponseDto;
+import org.icc.pecesatierra.entities.MemberCategory;
 import org.icc.pecesatierra.utils.enums.CategoryMember;
 import org.icc.pecesatierra.utils.enums.TypeMember;
 
@@ -18,8 +19,12 @@ public class MemberResponseDto {
 
     private String id;
     private String completeName;
-    private TypeMember type;
-    private CategoryMember category;
+//    private TypeMember type;
+//    private CategoryMember category;
+
+    private MemberTypeResponseDto type;
+    private MemberCategoryResponseDto category;
+
     private String cellphone;
     private String address;
     private LocalDate birthdate;

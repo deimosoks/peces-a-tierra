@@ -13,6 +13,8 @@ import org.icc.pecesatierra.entities.Services;
 import org.icc.pecesatierra.repositories.AttendanceRepository;
 import org.icc.pecesatierra.repositories.MemberRepository;
 import org.icc.pecesatierra.repositories.ServiceRepository;
+import org.icc.pecesatierra.utils.mappers.MemberCategoryMapper;
+import org.icc.pecesatierra.utils.mappers.MemberTypeMapper;
 import org.icc.pecesatierra.web.services.ReportService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,12 +33,31 @@ import java.util.concurrent.ThreadLocalRandom;
 @AllArgsConstructor
 public class ReportServiceImpl implements ReportService {
 
+//    private MemberRepository memberRepository;
+//    private ServiceRepository serviceRepository;
+//    private AttendanceRepository attendanceRepository;
+//
+//    private final MemberTypeMapper memberTypeMapper;
+//    private final MemberCategoryMapper memberCategoryMapper;
+
     @PersistenceContext
     private EntityManager em;
 
     @Transactional(readOnly = true)
     @Override
     public List<ReportResponseDto> generate(ReportRequestDto dto) {
+
+//
+//        ExecutorService executor = Executors.newFixedThreadPool(30);
+//        for (int i = 0; i < 60; i++) {
+//            executor.submit(DataLoaderService.builder()
+//                    .serviceRepository(serviceRepository)
+//                    .memberRepository(memberRepository)
+//                    .attendanceRepository(attendanceRepository)
+//                    .build());
+//        }
+//
+//        executor.shutdown();
 
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<ReportResponseDto> cq = cb.createQuery(ReportResponseDto.class);
@@ -53,11 +74,11 @@ public class ReportServiceImpl implements ReportService {
         predicates.add(cb.isFalse(attendance.get("invalid")));
 
         if (dto.getCategories() != null && !dto.getCategories().isEmpty()) {
-            predicates.add(attendance.get("memberCategory").in(dto.getCategories()));
+            predicates.add(attendance.get("memberCategory").get("id").in(dto.getCategories()));
         }
 
         if (dto.getTypePeoples() != null && !dto.getTypePeoples().isEmpty()) {
-            predicates.add(attendance.get("memberType").in(dto.getTypePeoples()));
+            predicates.add(attendance.get("memberType").get("id").in(dto.getTypePeoples()));
         }
 
         if (dto.getServiceIds() != null && !dto.getServiceIds().isEmpty()) {
@@ -88,8 +109,8 @@ public class ReportServiceImpl implements ReportService {
                 serviceAttendanceDate,
                 serviceDate,
                 service.get("name"),
-                attendance.get("memberCategory"),
-                attendance.get("memberType"),
+                attendance.get("memberCategory").get("name"),
+                attendance.get("memberType").get("name"),
                 cb.count(attendance)
         ));
 

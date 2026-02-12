@@ -21,11 +21,11 @@ public class Member {
     @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
 
-    @Column(nullable = false)
-    private String type;
-
-    @Column(nullable = false)
-    private String category;
+//    @Column(nullable = false)
+//    private String type;
+//
+//    @Column(nullable = false)
+//    private String category;
 
     @Column(nullable = false)
     private String completeName;
@@ -54,6 +54,15 @@ public class Member {
     private String postalCode;
     private String latitude;
     private String longitude;
+
+    @ManyToOne
+    @JoinColumn(name = "type_id")
+    private MemberType typeId;
+
+    @ManyToOne
+    @JoinColumn(name = "category_id")
+    private MemberCategory categoryId;
+
 
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @Builder.Default

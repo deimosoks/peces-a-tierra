@@ -5,6 +5,7 @@ import org.icc.pecesatierra.dtos.attendance.AttendanceIdResponseDto;
 import org.icc.pecesatierra.dtos.attendance.AttendanceResponseDto;
 import org.icc.pecesatierra.entities.Attendance;
 import org.icc.pecesatierra.entities.Member;
+import org.icc.pecesatierra.entities.MemberCategory;
 import org.icc.pecesatierra.repositories.MemberRepository;
 import org.springframework.stereotype.Component;
 
@@ -12,7 +13,8 @@ import org.springframework.stereotype.Component;
 @Component
 public class AttendanceMapper {
 
-    private final MemberRepository memberRepository;
+    private final MemberTypeMapper memberTypeMapper;
+    private final MemberCategoryMapper memberCategoryMapper;
 
     public AttendanceResponseDto toDto(Attendance attendance) {
 
@@ -25,8 +27,8 @@ public class AttendanceMapper {
                                 .build())
                 .serviceName(attendance.getServices().getName())
                 .memberCompleteName(attendance.getMember().getCompleteName())
-                .memberCategory(attendance.getMemberCategory())
-                .memberType(attendance.getMemberType())
+                .memberCategory(memberCategoryMapper.toDto(attendance.getMemberCategory()))
+                .memberType(memberTypeMapper.toDto(attendance.getMemberType()))
                 .attendanceDate(attendance.getAttendanceDate())
                 .invalid(attendance.isInvalid())
                 .note(attendance.getNote())

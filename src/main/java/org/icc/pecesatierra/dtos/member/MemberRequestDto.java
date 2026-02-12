@@ -20,10 +20,10 @@ public class MemberRequestDto {
     private String completeName;
 
     @NotNull(message = "Tipo de integrante invalido.")
-    private TypeMember type;
+    private String typeId;
 
     @NotNull(message = "Tipo de categoria invalida.")
-    private CategoryMember category;
+    private String categoryId;
 
     private String cellphone;
 

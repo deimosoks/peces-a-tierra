@@ -4,7 +4,13 @@ import lombok.AllArgsConstructor;
 import org.icc.pecesatierra.dtos.member.MemberRequestDto;
 import org.icc.pecesatierra.dtos.member.MemberResponseDto;
 import org.icc.pecesatierra.entities.Member;
+import org.icc.pecesatierra.entities.MemberCategory;
+import org.icc.pecesatierra.entities.MemberType;
+import org.icc.pecesatierra.exceptions.MemberCategoryNotFoundException;
+import org.icc.pecesatierra.exceptions.MemberTypeNotFoundException;
+import org.icc.pecesatierra.repositories.MemberCategoryRepository;
 import org.icc.pecesatierra.repositories.MemberRepository;
+import org.icc.pecesatierra.repositories.MemberTypeRepository;
 import org.icc.pecesatierra.utils.mappers.MemberMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,12 +24,14 @@ public class MemberPersistenceService {
 
     private final MemberRepository memberRepository;
     private final MemberMapper memberMapper;
+    private final MemberCategoryRepository memberCategoryRepository;
+    private final MemberTypeRepository memberTypeRepository;
 
     @Transactional
     public MemberResponseDto save(MemberRequestDto dto, Map<String, String> pictureData) {
         Member member = Member.builder()
-                .type(dto.getType().toString())
-                .category(dto.getCategory().toString())
+//                .type(dto.getTypeId().toString())
+//                .category(dto.getCategoryId().toString())
                 .completeName(dto.getCompleteName())
                 .createdAt(LocalDateTime.now())
                 .cc(dto.getCc())
@@ -39,6 +47,15 @@ public class MemberPersistenceService {
         member.setPostalCode(dto.getPostalCode());
         member.setLatitude(dto.getLatitude());
         member.setLongitude(dto.getLongitude());
+
+        MemberCategory memberCategory = memberCategoryRepository.findById(dto.getCategoryId())
+                .orElseThrow(()-> new MemberCategoryNotFoundException("Categoria invalida."));
+
+        MemberType memberType = memberTypeRepository.findById(dto.getTypeId())
+                .orElseThrow(()-> new MemberTypeNotFoundException("Tipo invalido."));
+
+        member.setCategoryId(memberCategory);
+        member.setTypeId(memberType);
 
         if (pictureData.get("url") != null) {
             member.setPictureProfileUrl(pictureData.get("url"));

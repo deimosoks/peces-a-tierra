@@ -16,8 +16,10 @@ import java.time.LocalDateTime;
 public class MemberExportDto {
 
     private String completeName;
-    private TypeMember type;
-    private CategoryMember category;
+//    private TypeMember type;
+//    private CategoryMember category;
+    private String type;
+    private String category;
     private String cellphone;
     private String address;
     private LocalDate birthdate;

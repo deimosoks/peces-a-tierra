@@ -216,10 +216,10 @@ public class MemberServiceImpl implements MemberService {
 
         // --- Filtros Existentes ---
         if (dto.getMemberType() != null && !dto.getMemberType().isEmpty()) {
-            predicates.add(root.get("type").in(dto.getMemberType()));
+            predicates.add(root.get("typeId").get("id").in(dto.getMemberType()));
         }
         if (dto.getMemberCategory() != null && !dto.getMemberCategory().isEmpty()) {
-            predicates.add(root.get("category").in(dto.getMemberCategory()));
+            predicates.add(root.get("categoryId").get("id").in(dto.getMemberCategory()));
         }
         if (Boolean.TRUE.equals(dto.getOnlyActive())) {
             predicates.add(cb.equal(root.get("active"), true));
