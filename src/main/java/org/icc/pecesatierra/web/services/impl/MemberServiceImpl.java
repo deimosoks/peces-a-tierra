@@ -229,6 +229,10 @@ public class MemberServiceImpl implements MemberService {
             predicates.add(root.get("subcategoryId").get("id").in(dto.getSubCategory()));
         }
 
+        if (dto.getGender() != null && !dto.getGender().isEmpty()){
+            predicates.add(cb.equal(root.get("gender"), dto.getGender()));
+        }
+
         if (Boolean.TRUE.equals(dto.getOnlyActive())) {
             predicates.add(cb.equal(root.get("active"), true));
         }

@@ -5,6 +5,7 @@ import org.icc.pecesatierra.dtos.error.ErrorResponseDto;
 import org.icc.pecesatierra.exceptions.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -469,6 +470,20 @@ public class GlobalHandlerException {
     @ExceptionHandler(MemberSubCategoryInUseException.class)
     public ResponseEntity<ErrorResponseDto> handlerMemberSubCategoryInUseException(HttpServletRequest httpServletRequest,
                                                                                       MemberSubCategoryInUseException exception) {
+        ErrorResponseDto errorResponseDto = ErrorResponseDto.builder()
+                .localDateTime(LocalDateTime.now())
+                .status(HttpStatus.BAD_REQUEST.value())
+                .error(HttpStatus.BAD_REQUEST.getReasonPhrase())
+                .message(exception.getMessage())
+                .path(httpServletRequest.getRequestURI())
+                .build();
+
+        return new ResponseEntity<>(errorResponseDto, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity<ErrorResponseDto> handlerBadCredentialsException(HttpServletRequest httpServletRequest,
+                                                                                   BadCredentialsException exception) {
         ErrorResponseDto errorResponseDto = ErrorResponseDto.builder()
                 .localDateTime(LocalDateTime.now())
                 .status(HttpStatus.BAD_REQUEST.value())

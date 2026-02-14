@@ -68,6 +68,7 @@ public class MemberMapper {
         memberResponseDto.updatedAt(member.getUpdatedAt());
         memberResponseDto.pictureProfileUrl(member.getPictureProfileUrl());
         memberResponseDto.active(member.isActive());
+        memberResponseDto.gender(member.getGender());
 
         if (member.getSubcategoryId() != null){
             memberResponseDto.subCategory(memberSubCategoryMapper.toDto(member.getSubcategoryId()));
@@ -118,7 +119,7 @@ public class MemberMapper {
 
         memberExportDto.type(member.getTypeId().getName());
         memberExportDto.category(member.getCategoryId().getName());
-
+        memberExportDto.gender(member.getGender());
         memberExportDto.cellphone(member.getCellphone());
         memberExportDto.address(member.getAddress());
         memberExportDto.birthdate(member.getBirthdate());
@@ -175,6 +176,7 @@ public class MemberMapper {
         member.setCellphone(memberRequestDto.getCellphone());
         member.setAddress(memberRequestDto.getAddress());
         member.setBirthdate(memberRequestDto.getBirthdate());
+        member.setGender(memberRequestDto.getGender().toString());
 
         member.setNeighborhood(memberRequestDto.getNeighborhood());
         member.setCity(memberRequestDto.getCity());

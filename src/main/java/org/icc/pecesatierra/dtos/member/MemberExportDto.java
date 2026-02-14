@@ -2,11 +2,8 @@ package org.icc.pecesatierra.dtos.member;
 
 
 import lombok.*;
-import org.icc.pecesatierra.utils.enums.CategoryMember;
-import org.icc.pecesatierra.utils.enums.TypeMember;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 @Builder
 @Getter
@@ -16,8 +13,6 @@ import java.time.LocalDateTime;
 public class MemberExportDto {
 
     private String completeName;
-//    private TypeMember type;
-//    private CategoryMember category;
     private String type;
     private String category;
     private String cellphone;
@@ -26,5 +21,6 @@ public class MemberExportDto {
     private LocalDate birthdate;
     private Integer age;
     private String cc;
+    private String gender;
 
 }

@@ -3,8 +3,7 @@ package org.icc.pecesatierra.dtos.member;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
-import org.icc.pecesatierra.utils.enums.CategoryMember;
-import org.icc.pecesatierra.utils.enums.TypeMember;
+import org.icc.pecesatierra.utils.enums.Gender;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
@@ -44,5 +43,6 @@ public class MemberRequestDto {
     private String postalCode;
     private String latitude;
     private String longitude;
+    private Gender gender;
 
 }

@@ -54,6 +54,7 @@ public class Member {
     private String postalCode;
     private String latitude;
     private String longitude;
+    private String gender;
 
     @ManyToOne
     @JoinColumn(name = "type_id")

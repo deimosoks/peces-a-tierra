@@ -2,9 +2,7 @@ package org.icc.pecesatierra.dtos.member;
 
 import lombok.*;
 import org.icc.pecesatierra.dtos.notes.MemberNoteResponseDto;
-import org.icc.pecesatierra.entities.MemberCategory;
-import org.icc.pecesatierra.utils.enums.CategoryMember;
-import org.icc.pecesatierra.utils.enums.TypeMember;
+import org.icc.pecesatierra.utils.enums.Gender;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -31,6 +29,7 @@ public class MemberResponseDto {
     private String cc;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private String gender;
     private String pictureProfileUrl;
     private Integer age;
     private boolean active;

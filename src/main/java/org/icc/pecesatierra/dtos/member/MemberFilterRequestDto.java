@@ -22,7 +22,7 @@ public class MemberFilterRequestDto {
     private Boolean hasBirthdate;
     private Integer ageFilterRange1;
     private Integer ageFilterRange2;
-
+    private String gender;
     private String location;
 
 }
