@@ -34,6 +34,7 @@ public class MemberResponseDto {
     private String pictureProfileUrl;
     private Integer age;
     private boolean active;
+    private MemberSubCategoryResponseDto subCategory;
     private Set<MemberNoteResponseDto> notes;
 
 }

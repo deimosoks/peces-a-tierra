@@ -35,6 +35,10 @@ public class Attendance {
     @JoinColumn(name = "registered_by_id", nullable = false)
     private Member registeredById;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "sub_category_id")
+    private MemberSubCategory memberSubCategory;
+
     private String note;
 
     private String invalidReason;

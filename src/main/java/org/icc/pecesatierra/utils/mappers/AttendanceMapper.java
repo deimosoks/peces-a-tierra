@@ -15,6 +15,7 @@ public class AttendanceMapper {
 
     private final MemberTypeMapper memberTypeMapper;
     private final MemberCategoryMapper memberCategoryMapper;
+    private final MemberSubCategoryMapper memberSubCategoryMapper;
 
     public AttendanceResponseDto toDto(Attendance attendance) {
 
@@ -29,6 +30,7 @@ public class AttendanceMapper {
                 .memberCompleteName(attendance.getMember().getCompleteName())
                 .memberCategory(memberCategoryMapper.toDto(attendance.getMemberCategory()))
                 .memberType(memberTypeMapper.toDto(attendance.getMemberType()))
+                .subCategory(memberSubCategoryMapper.toDto(attendance.getMemberSubCategory()))
                 .attendanceDate(attendance.getAttendanceDate())
                 .invalid(attendance.isInvalid())
                 .note(attendance.getNote())

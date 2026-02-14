@@ -70,6 +70,7 @@ public class AttendanceServiceImpl implements AttendanceService {
                     .memberType(member.getTypeId())
                     .attendanceDate(attendanceRequestDto.getAttendanceDate())
                     .invalid(false)
+                    .memberSubCategory(member.getSubcategoryId())
                     .note(attendanceRequestDto.getNote())
                     .registeredById(user.getMember())
                     .build();

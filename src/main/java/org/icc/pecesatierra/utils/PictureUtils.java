@@ -42,6 +42,7 @@ public class PictureUtils {
             }
 
         } catch (IOException e) {
+            System.out.println(e.getMessage());
             throw new ServerErrorException("Error al procesar su solicitud, por favor intente mas tarde");
         }
 

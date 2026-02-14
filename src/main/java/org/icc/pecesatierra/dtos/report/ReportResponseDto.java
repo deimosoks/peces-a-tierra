@@ -21,6 +21,7 @@ public class ReportResponseDto {
 
     private String category;
     private String typePeople;
+    private String subCategory;
 
     private Long total;
 }

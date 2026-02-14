@@ -1,21 +1,16 @@
 package org.icc.pecesatierra.dtos.member;
 
-import jakarta.validation.constraints.NotBlank;
 import lombok.*;
-
-import java.util.List;
-import java.util.Set;
 
 @Builder
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class MemberCategoryResponseDto {
+public class MemberSubCategoryResponseDto {
 
     private String id;
     private String name;
     private String color;
-    private Set<MemberSubCategoryResponseDto> subCategories;
 
 }

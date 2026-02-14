@@ -25,6 +25,8 @@ public class MemberRequestDto {
     @NotNull(message = "Tipo de categoria invalida.")
     private String categoryId;
 
+    private String subCategoryId;
+
     private String cellphone;
 
     private LocalDate birthdate;

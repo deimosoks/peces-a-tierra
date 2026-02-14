@@ -9,6 +9,7 @@ import org.icc.pecesatierra.exceptions.MemberCategoryInUseException;
 import org.icc.pecesatierra.exceptions.MemberCategoryNotFoundException;
 import org.icc.pecesatierra.repositories.MemberCategoryRepository;
 import org.icc.pecesatierra.repositories.MemberRepository;
+import org.icc.pecesatierra.repositories.MemberSubCategoryRepository;
 import org.icc.pecesatierra.utils.mappers.MemberCategoryMapper;
 import org.icc.pecesatierra.web.services.MemberCategoryService;
 import org.springframework.stereotype.Service;
@@ -23,6 +24,7 @@ public class MemberCategoryServiceImpl implements MemberCategoryService {
     private final MemberCategoryRepository memberCategoryRepository;
     private final MemberCategoryMapper memberCategoryMapper;
     private final MemberRepository memberRepository;
+    private final MemberSubCategoryRepository memberSubCategoryRepository;
 
     @Transactional
     @Override
@@ -56,6 +58,8 @@ public class MemberCategoryServiceImpl implements MemberCategoryService {
         if (memberRepository.existsMemberByCategoryId(memberCategory)){
             throw new MemberCategoryInUseException("Esta categoria esta en uso asi que no puede ser eliminada.");
         }
+
+//        if (memberSubCategoryRepository.existsByCategory(memberCategory)){}
 
         memberCategoryRepository.delete(memberCategory);
 

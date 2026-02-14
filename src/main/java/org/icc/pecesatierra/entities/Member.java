@@ -68,4 +68,9 @@ public class Member {
     @Builder.Default
     private Set<MemberNotes> notes = new HashSet<>();
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "subcategory_id")
+    private MemberSubCategory subcategoryId;
+
+
 }

@@ -35,6 +35,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -66,6 +67,7 @@ public class MemberServiceImpl implements MemberService {
             if (pictureData.get("publicId") != null) {
                 pictureUtils.delete(pictureData.get("publicId"));
             }
+            System.out.println(Arrays.toString(e.getStackTrace()));
             throw new ServerErrorException("Error al procesar su solicitud, por favor intente mas tarde.");
         }
     }
@@ -96,6 +98,7 @@ public class MemberServiceImpl implements MemberService {
             if (newPictureData != null && newPictureData.get("publicId") != null) {
                 pictureUtils.delete(newPictureData.get("publicId"));
             }
+            System.out.println(Arrays.toString(e.getStackTrace()));
             throw new ServerErrorException("Error al procesar su solicitud, por favor intente mas tarde.");
         }
     }
@@ -189,7 +192,7 @@ public class MemberServiceImpl implements MemberService {
     public MemberNoteResponseDto createNote(MemberNoteRequestDto memberNoteRequestDto, User user) {
 
         Member member = memberRepository.findById(memberNoteRequestDto.getMemberId())
-                .orElseThrow(()-> new MemberNoteNotFoundException("Miembro no encontrado."));
+                .orElseThrow(() -> new MemberNoteNotFoundException("Miembro no encontrado."));
 
         MemberNotes memberNotes = MemberNotes.builder()
                 .note(memberNoteRequestDto.getNote())
@@ -205,7 +208,7 @@ public class MemberServiceImpl implements MemberService {
     @Override
     public void deleteNote(String noteId) {
         MemberNotes memberNotes = memberNotesRepositor.findById(noteId)
-                .orElseThrow(()-> new MemberNoteNotFoundException("Nota no encontrada."));
+                .orElseThrow(() -> new MemberNoteNotFoundException("Nota no encontrada."));
         memberNotesRepositor.delete(memberNotes);
     }
 
@@ -221,11 +224,15 @@ public class MemberServiceImpl implements MemberService {
         if (dto.getMemberCategory() != null && !dto.getMemberCategory().isEmpty()) {
             predicates.add(root.get("categoryId").get("id").in(dto.getMemberCategory()));
         }
+
+        if (dto.getSubCategory() != null && !dto.getSubCategory().isEmpty()){
+            predicates.add(root.get("subcategoryId").get("id").in(dto.getSubCategory()));
+        }
+
         if (Boolean.TRUE.equals(dto.getOnlyActive())) {
             predicates.add(cb.equal(root.get("active"), true));
         }
 
-        // --- Filtros Booleanos (Tiene/No Tiene) ---
         if (Boolean.TRUE.equals(dto.getHasCc())) predicates.add(cb.isNotNull(root.get("cc")));
         if (Boolean.TRUE.equals(dto.getHasCellphone())) predicates.add(cb.isNotNull(root.get("cellphone")));
         if (Boolean.TRUE.equals(dto.getHasAddress())) predicates.add(cb.isNotNull(root.get("address")));
@@ -236,16 +243,15 @@ public class MemberServiceImpl implements MemberService {
         if (Boolean.FALSE.equals(dto.getHasAddress())) predicates.add(cb.isNull(root.get("address")));
         if (Boolean.FALSE.equals(dto.getHasBirthdate())) predicates.add(cb.isNull(root.get("birthdate")));
 
-        // --- Búsqueda General ---
         if (dto.getQuery() != null && !dto.getQuery().isBlank()) {
             String searchLike = "%" + dto.getQuery().toLowerCase() + "%";
             predicates.add(cb.or(
                     cb.like(cb.lower(root.get("completeName")), searchLike),
-                    cb.like(root.get("cc"), searchLike)
+                    cb.like(root.get("cc"), searchLike),
+                    cb.like(root.get("cellphone"), searchLike)
             ));
         }
 
-        // --- Filtro de Edad ---
         if (dto.getAgeFilterRange1() != null && dto.getAgeFilterRange2() != null) {
             int minAge = Math.min(dto.getAgeFilterRange1(), dto.getAgeFilterRange2());
             int maxAge = Math.max(dto.getAgeFilterRange1(), dto.getAgeFilterRange2());
@@ -258,7 +264,6 @@ public class MemberServiceImpl implements MemberService {
         if (dto.getLocation() != null && !dto.getLocation().isBlank()) {
             String searchLike = "%" + dto.getLocation().toLowerCase() + "%";
 
-            // Busca coincidencias en cualquiera de estos campos
             predicates.add(cb.or(
                     cb.like(cb.lower(root.get("address")), searchLike),
                     cb.like(cb.lower(root.get("neighborhood")), searchLike),

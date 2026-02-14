@@ -2,6 +2,7 @@ package org.icc.pecesatierra.repositories;
 
 import org.icc.pecesatierra.entities.Member;
 import org.icc.pecesatierra.entities.MemberCategory;
+import org.icc.pecesatierra.entities.MemberSubCategory;
 import org.icc.pecesatierra.entities.MemberType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -21,6 +22,8 @@ public interface MemberRepository extends JpaRepository<Member, String> {
     List<Member> findMembersWithBirthdayInMonth(@Param("currentMonth") int currentMonth);
 
     boolean existsMemberByCategoryId(MemberCategory memberCategory);
+
+    boolean existsMemberBySubcategoryId(MemberSubCategory memberSubCategory);
 
     boolean existsMemberByTypeId(MemberType memberType);
 

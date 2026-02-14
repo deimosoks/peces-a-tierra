@@ -6,10 +6,14 @@ import org.icc.pecesatierra.dtos.member.MemberRequestDto;
 import org.icc.pecesatierra.dtos.member.MemberResponseDto;
 import org.icc.pecesatierra.entities.Member;
 import org.icc.pecesatierra.entities.MemberCategory;
+import org.icc.pecesatierra.entities.MemberSubCategory;
 import org.icc.pecesatierra.entities.MemberType;
 import org.icc.pecesatierra.exceptions.MemberCategoryNotFoundException;
+import org.icc.pecesatierra.exceptions.MemberNoHasCategoryForThisSubCategoryException;
+import org.icc.pecesatierra.exceptions.MemberSubCategoryNotFoundException;
 import org.icc.pecesatierra.exceptions.MemberTypeNotFoundException;
 import org.icc.pecesatierra.repositories.MemberCategoryRepository;
+import org.icc.pecesatierra.repositories.MemberSubCategoryRepository;
 import org.icc.pecesatierra.repositories.MemberTypeRepository;
 import org.springframework.stereotype.Component;
 
@@ -33,6 +37,8 @@ public class MemberMapper {
     private final MemberTypeMapper memberTypeMapper;
     private final MemberCategoryRepository memberCategoryRepository;
     private final MemberTypeRepository memberTypeRepository;
+    private final MemberSubCategoryRepository memberSubCategoryRepository;
+    private final MemberSubCategoryMapper memberSubCategoryMapper;
 
     public MemberResponseDto toDto(Member member, boolean withNotes) {
         if (member == null) {
@@ -62,6 +68,10 @@ public class MemberMapper {
         memberResponseDto.updatedAt(member.getUpdatedAt());
         memberResponseDto.pictureProfileUrl(member.getPictureProfileUrl());
         memberResponseDto.active(member.isActive());
+
+        if (member.getSubcategoryId() != null){
+            memberResponseDto.subCategory(memberSubCategoryMapper.toDto(member.getSubcategoryId()));
+        }
 
 //        memberResponseDto.neighborhood(member.getNeighborhood());
 //        memberResponseDto.city(member.getCity());
@@ -118,6 +128,10 @@ public class MemberMapper {
             memberExportDto.age((int) ChronoUnit.YEARS.between(member.getBirthdate(), LocalDateTime.now()));
         }
 
+        if (member.getSubcategoryId() != null){
+            memberExportDto.subCategory(member.getSubcategoryId().getName());
+        }
+
 //        memberExportDto.neighborhood(member.getNeighborhood());
 //        memberExportDto.city(member.getCity());
 //        memberExportDto.municipality(member.getMunicipality());
@@ -135,15 +149,25 @@ public class MemberMapper {
         }
 
         if (!Objects.equals(memberRequestDto.getTypeId(), member.getTypeId().getId())) {
+            MemberType memberType = memberTypeRepository.findById(memberRequestDto.getTypeId())
+                    .orElseThrow(() -> new MemberTypeNotFoundException("Tipo invalido."));
+            member.setTypeId(memberType);
+        }
+
+        if (!Objects.equals(memberRequestDto.getCategoryId(), member.getTypeId().getId())) {
             MemberCategory memberCategory = memberCategoryRepository.findById(memberRequestDto.getCategoryId())
                     .orElseThrow(() -> new MemberCategoryNotFoundException("Categoria invalida."));
             member.setCategoryId(memberCategory);
         }
+        member.setSubcategoryId(null);
+        if (memberRequestDto.getSubCategoryId() != null && !memberRequestDto.getSubCategoryId().isEmpty()) {
+            MemberSubCategory memberSubCategory = memberSubCategoryRepository.findById(memberRequestDto.getSubCategoryId())
+                    .orElseThrow(() -> new MemberSubCategoryNotFoundException("Sub categoria no encontrada."));
 
-        if (!Objects.equals(memberRequestDto.getCategoryId(), member.getTypeId().getId())) {
-            MemberType memberType = memberTypeRepository.findById(memberRequestDto.getTypeId())
-                    .orElseThrow(() -> new MemberTypeNotFoundException("Tipo invalido."));
-            member.setTypeId(memberType);
+            if (!member.getCategoryId().getId().equals(memberSubCategory.getCategory().getId())) {
+                throw new MemberNoHasCategoryForThisSubCategoryException("Este miembro necesita la categoria " + memberSubCategory.getCategory().getName() + " para poder poder recibir esta sub categoria.");
+            }
+            member.setSubcategoryId(memberSubCategory);
         }
 
         member.setCompleteName(memberRequestDto.getCompleteName());

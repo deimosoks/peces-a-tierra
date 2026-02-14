@@ -3,6 +3,9 @@ package org.icc.pecesatierra.entities;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.HashSet;
+import java.util.Set;
+
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -21,4 +24,9 @@ public class MemberCategory {
 
     @Column(nullable = false, length = 7)
     private String color;
+
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "category", orphanRemoval = true, cascade = CascadeType.ALL)
+    @Builder.Default
+    private Set<MemberSubCategory> subCategories = new HashSet<>();
+
 }

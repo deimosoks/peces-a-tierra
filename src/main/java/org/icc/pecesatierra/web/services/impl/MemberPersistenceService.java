@@ -5,11 +5,15 @@ import org.icc.pecesatierra.dtos.member.MemberRequestDto;
 import org.icc.pecesatierra.dtos.member.MemberResponseDto;
 import org.icc.pecesatierra.entities.Member;
 import org.icc.pecesatierra.entities.MemberCategory;
+import org.icc.pecesatierra.entities.MemberSubCategory;
 import org.icc.pecesatierra.entities.MemberType;
 import org.icc.pecesatierra.exceptions.MemberCategoryNotFoundException;
+import org.icc.pecesatierra.exceptions.MemberNoHasCategoryForThisSubCategoryException;
+import org.icc.pecesatierra.exceptions.MemberSubCategoryNotFoundException;
 import org.icc.pecesatierra.exceptions.MemberTypeNotFoundException;
 import org.icc.pecesatierra.repositories.MemberCategoryRepository;
 import org.icc.pecesatierra.repositories.MemberRepository;
+import org.icc.pecesatierra.repositories.MemberSubCategoryRepository;
 import org.icc.pecesatierra.repositories.MemberTypeRepository;
 import org.icc.pecesatierra.utils.mappers.MemberMapper;
 import org.springframework.stereotype.Service;
@@ -26,6 +30,7 @@ public class MemberPersistenceService {
     private final MemberMapper memberMapper;
     private final MemberCategoryRepository memberCategoryRepository;
     private final MemberTypeRepository memberTypeRepository;
+    private final MemberSubCategoryRepository memberSubCategoryRepository;
 
     @Transactional
     public MemberResponseDto save(MemberRequestDto dto, Map<String, String> pictureData) {
@@ -49,13 +54,23 @@ public class MemberPersistenceService {
         member.setLongitude(dto.getLongitude());
 
         MemberCategory memberCategory = memberCategoryRepository.findById(dto.getCategoryId())
-                .orElseThrow(()-> new MemberCategoryNotFoundException("Categoria invalida."));
+                .orElseThrow(() -> new MemberCategoryNotFoundException("Categoria invalida."));
 
         MemberType memberType = memberTypeRepository.findById(dto.getTypeId())
-                .orElseThrow(()-> new MemberTypeNotFoundException("Tipo invalido."));
+                .orElseThrow(() -> new MemberTypeNotFoundException("Tipo invalido."));
 
         member.setCategoryId(memberCategory);
         member.setTypeId(memberType);
+
+        if (dto.getSubCategoryId() != null) {
+            MemberSubCategory memberSubCategory = memberSubCategoryRepository.findById(dto.getSubCategoryId())
+                    .orElseThrow(() -> new MemberSubCategoryNotFoundException("Sub categoria no encontrada."));
+
+            if (!member.getCategoryId().equals(memberSubCategory.getCategory())) {
+                throw new MemberNoHasCategoryForThisSubCategoryException("Este miembro necesita la categoria " + memberSubCategory.getCategory().getName() + " para poder poder recibir esta sub categoria.");
+            }
+            member.setSubcategoryId(memberSubCategory);
+        }
 
         if (pictureData.get("url") != null) {
             member.setPictureProfileUrl(pictureData.get("url"));

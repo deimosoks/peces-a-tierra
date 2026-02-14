@@ -21,6 +21,7 @@ public class MemberExportDto {
     private String type;
     private String category;
     private String cellphone;
+    private String subCategory;
     private String address;
     private LocalDate birthdate;
     private Integer age;

@@ -13,6 +13,7 @@ public class MemberFilterRequestDto {
 
     private Set<String> memberType;
     private Set<String> memberCategory;
+    private Set<String> subCategory;
     private String query;
     private Boolean onlyActive;
     private Boolean hasCc;

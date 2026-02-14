@@ -2,6 +2,7 @@ package org.icc.pecesatierra.dtos.attendance;
 
 import lombok.*;
 import org.icc.pecesatierra.dtos.member.MemberCategoryResponseDto;
+import org.icc.pecesatierra.dtos.member.MemberSubCategoryResponseDto;
 import org.icc.pecesatierra.dtos.member.MemberTypeResponseDto;
 import org.icc.pecesatierra.entities.MemberCategory;
 import org.icc.pecesatierra.entities.MemberType;
@@ -27,5 +28,6 @@ public class AttendanceResponseDto {
     private String invalidReason;
     private LocalDateTime invalidAt;
     private String invalidatedBy;
+    private MemberSubCategoryResponseDto subCategory;
 
 }
