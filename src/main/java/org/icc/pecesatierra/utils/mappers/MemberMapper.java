@@ -154,7 +154,7 @@ public class MemberMapper {
             member.setTypeId(memberType);
         }
 
-        if (!Objects.equals(memberRequestDto.getCategoryId(), member.getTypeId().getId())) {
+        if (!Objects.equals(memberRequestDto.getCategoryId(), member.getCategoryId().getId())) {
             MemberCategory memberCategory = memberCategoryRepository.findById(memberRequestDto.getCategoryId())
                     .orElseThrow(() -> new MemberCategoryNotFoundException("Categoria invalida."));
             member.setCategoryId(memberCategory);
