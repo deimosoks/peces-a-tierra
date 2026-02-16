@@ -1,6 +1,7 @@
 package org.icc.pecesatierra.dtos.member;
 
 import lombok.*;
+import org.icc.pecesatierra.dtos.branch.BranchResponseDto;
 import org.icc.pecesatierra.dtos.member.category.MemberCategoryResponseDto;
 import org.icc.pecesatierra.dtos.member.category.MemberSubCategoryResponseDto;
 import org.icc.pecesatierra.dtos.member.notes.MemberNoteResponseDto;
@@ -36,5 +37,5 @@ public class MemberResponseDto {
     private MemberSubCategoryResponseDto subCategory;
     private Set<MemberNoteResponseDto> notes;
 
-    private String branchName;
+    private BranchResponseDto branch;
 }

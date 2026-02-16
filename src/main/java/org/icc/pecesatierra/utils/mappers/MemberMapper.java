@@ -39,6 +39,7 @@ public class MemberMapper {
     private final MemberTypeRepository memberTypeRepository;
     private final MemberSubCategoryRepository memberSubCategoryRepository;
     private final MemberSubCategoryMapper memberSubCategoryMapper;
+    private final BranchMapper branchMapper;
 
     public MemberResponseDto toDto(Member member, boolean withNotes) {
         if (member == null) {
@@ -62,7 +63,7 @@ public class MemberMapper {
         memberResponseDto.pictureProfileUrl(member.getPictureProfileUrl());
         memberResponseDto.active(member.isActive());
         memberResponseDto.gender(member.getGender());
-        memberResponseDto.branchName(member.getBranch().getName());
+        memberResponseDto.branch(branchMapper.toDto(member.getBranch()));
 
         if (member.getSubcategoryId() != null){
             memberResponseDto.subCategory(memberSubCategoryMapper.toDto(member.getSubcategoryId()));
