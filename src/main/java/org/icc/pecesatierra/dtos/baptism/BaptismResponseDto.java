@@ -25,5 +25,6 @@ public class BaptismResponseDto {
     private LocalDateTime invalidAt;
     private String invalidatedBy;
     private boolean invalid;
+    private String branchName;
 
 }

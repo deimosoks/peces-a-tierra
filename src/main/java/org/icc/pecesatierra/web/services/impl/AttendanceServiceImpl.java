@@ -7,15 +7,10 @@ import jakarta.persistence.criteria.*;
 import lombok.AllArgsConstructor;
 import org.icc.pecesatierra.dtos.attendance.*;
 import org.icc.pecesatierra.entities.*;
-import org.icc.pecesatierra.exceptions.AttendanceNotFoundException;
-import org.icc.pecesatierra.exceptions.MemberNotFoundException;
-import org.icc.pecesatierra.exceptions.ServicesNotFoundException;
-import org.icc.pecesatierra.repositories.AttendanceRepository;
-import org.icc.pecesatierra.repositories.MemberRepository;
-import org.icc.pecesatierra.repositories.ServiceRepository;
+import org.icc.pecesatierra.exceptions.*;
+import org.icc.pecesatierra.repositories.*;
 import org.icc.pecesatierra.utils.mappers.AttendanceMapper;
 import org.icc.pecesatierra.web.services.AttendanceService;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -31,9 +26,9 @@ import java.util.List;
 public class AttendanceServiceImpl implements AttendanceService {
 
     private final AttendanceRepository attendanceRepository;
-    private final ServiceRepository serviceRepository;
     private final MemberRepository memberRepository;
     private final AttendanceMapper attendanceMapper;
+    private final ServiceEventRepository serviceEventRepository;
 
     @PersistenceContext
     private EntityManager em;
@@ -42,53 +37,65 @@ public class AttendanceServiceImpl implements AttendanceService {
     @Override
     public void create(List<AttendanceRequestDto> attendances, User user) {
 
-        attendances.forEach(attendanceRequestDto -> {
+        if (attendances == null || attendances.isEmpty()) return;
 
-            Services service = serviceRepository.findById(attendanceRequestDto.getServiceId())
-                    .orElseThrow(() -> new ServicesNotFoundException("Este servicio no existe."));
+        ServiceEvent event = serviceEventRepository.findById(attendances.getFirst().getServiceEventId())
+                .orElseThrow(()-> new ServiceEventNotFoundException("Evento no encontrado."));
 
-            if (!service.isActive())
-                throw new ServicesNotFoundException("No puede registrar una asistencia con un servicio inactivo.");
+        if (!event.getServices().isActive()) {
+            throw new ServicesNotFoundException("Servicio inactivo");
+        }
 
-            Member member = memberRepository.findById(attendanceRequestDto.getMemberId())
-                    .orElseThrow(() -> new MemberNotFoundException("Este integrante no existe."));
+        for (AttendanceRequestDto dto : attendances) {
 
-            if (!member.isActive())
-                throw new ServicesNotFoundException("No puede registrar una asistencia con un miembro inactivo.");
+            Member member = memberRepository.findById(dto.getMemberId())
+                    .orElseThrow(() -> new MemberNotFoundException("Miembro no existe."));
 
-            AttendanceId attendanceId = AttendanceId.builder()
-                    .serviceId(service.getId())
-                    .memberId(member.getId())
-                    .serviceDate(attendanceRequestDto.getServiceDate())
-                    .build();
+            if (!member.isActive()) {
+                throw new MemberDeactivatedException("Miembro inactivo.");
+            }
+
+            LocalDateTime arrival = dto.getAttendanceDate();
+
+            if (!user.hasAuthority("ADMINISTRATOR")) {
+                if (arrival.isBefore(event.getStartDateTime()) ||
+                        arrival.isAfter(event.getEndDateTime())) {
+
+                    throw new AttendanceOutOfRangeException(
+                            "Hora fuera del rango del evento");
+                }
+            }
+
+            if (attendanceRepository.existsByMemberAndServiceEvent(member, event)) {
+                continue;
+            }
 
             Attendance attendance = Attendance.builder()
-                    .id(attendanceId)
                     .member(member)
-                    .services(service)
+                    .serviceEvent(event)
+                    .branch(event.getBranch())
+                    .attendanceDate(arrival)
                     .memberCategory(member.getCategoryId())
                     .memberType(member.getTypeId())
-                    .attendanceDate(attendanceRequestDto.getAttendanceDate())
-                    .invalid(false)
                     .memberSubCategory(member.getSubcategoryId())
-                    .note(attendanceRequestDto.getNote())
+                    .note(dto.getNote())
+                    .invalid(false)
                     .registeredById(user.getMember())
                     .build();
 
             attendanceRepository.save(attendance);
-        });
+        }
     }
 
     @Transactional
     @Override
     public AttendanceResponseDto invalidate(AttendanceInvalidRequestDto attendanceInvalidRequestDto, User user) {
-        AttendanceId attendanceIdRequest = AttendanceId.builder()
-                .serviceId(attendanceInvalidRequestDto.getAttendanceId().getServiceId())
-                .memberId(attendanceInvalidRequestDto.getAttendanceId().getMemberId())
-                .serviceDate(attendanceInvalidRequestDto.getAttendanceId().getServiceDate())
-                .build();
-        Attendance attendance = attendanceRepository.findById(attendanceIdRequest)
+        Attendance attendance = attendanceRepository.findById(attendanceInvalidRequestDto.getAttendanceId())
                 .orElseThrow(() -> new AttendanceNotFoundException("Esta asistencia no existe."));
+
+        if (!user.hasAuthority("ADMINISTRATOR") && !user.getMember().getBranch().getId().equals(attendance.getBranch().getId())) {
+            throw new CannotDeleteMemberOutSideYourBranchException("No puedes invalidar una asistencia fuera de tu sede.");
+        }
 
         attendance.setInvalid(true);
         attendance.setInvalidAt(LocalDateTime.now());
@@ -100,19 +107,17 @@ public class AttendanceServiceImpl implements AttendanceService {
 
     @Transactional(readOnly = true)
     @Override
-    public AttendancePagesResponseDto findAll(int page, AttendanceFiltersRequestDto dto) {
-
-        Pageable pageable = PageRequest.of(page, 20, Sort.by("id.serviceDate").descending());
+    public AttendancePagesResponseDto findAll(int page, AttendanceFiltersRequestDto dto, User user) {
+        Pageable pageable = PageRequest.of(page, 20, Sort.by("attendanceDate").descending());
 
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<Attendance> cq = cb.createQuery(Attendance.class);
         Root<Attendance> attendance = cq.from(Attendance.class);
 
-        Fetch<Attendance, Services> serviceFetch = attendance.fetch("services", JoinType.INNER);
-        Fetch<Attendance, Member> memberFetch = attendance.fetch("member", JoinType.INNER);
-
-        Join<Attendance, Services> service = (Join<Attendance, Services>) serviceFetch;
-        Join<Attendance, Member> member = (Join<Attendance, Member>) memberFetch;
+        Join<Attendance, ServiceEvent> serviceEvent = attendance.join("serviceEvent", JoinType.INNER);
+        Join<ServiceEvent, Services> service = serviceEvent.join("services", JoinType.INNER);
+        Join<Attendance, Member> member = attendance.join("member", JoinType.INNER);
+        Join<Attendance, Branch> branch = attendance.join("branch", JoinType.INNER);
 
         List<Predicate> predicates = new ArrayList<>();
 
@@ -121,28 +126,40 @@ public class AttendanceServiceImpl implements AttendanceService {
                 predicates.add(cb.equal(service.get("id"), dto.getServiceId()));
             }
             if (dto.getStartDate() != null) {
-                predicates.add(cb.greaterThanOrEqualTo(attendance.get("id").get("serviceDate"), dto.getStartDate()));
+                predicates.add(cb.greaterThanOrEqualTo(serviceEvent.get("startDateTime"), dto.getStartDate()));
             }
             if (dto.getEndDate() != null) {
-                predicates.add(cb.lessThanOrEqualTo(attendance.get("id").get("serviceDate"), dto.getEndDate()));
+                predicates.add(cb.lessThanOrEqualTo(serviceEvent.get("startDateTime"), dto.getEndDate()));
             }
             if (dto.getMemberId() != null) {
                 predicates.add(cb.equal(member.get("id"), dto.getMemberId()));
             }
+            if (dto.getBranchId() != null) {
+                if (user.hasAuthority("ADMINISTRATOR")) {
+                    predicates.add(cb.equal(branch.get("id"), dto.getBranchId()));
+                } else {
+                    predicates.add(cb.equal(branch.get("id"), user.getMember().getBranch().getId()));
+                }
+            } else if (!user.hasAuthority("ADMINISTRATOR")) {
+                predicates.add(cb.equal(branch.get("id"), user.getMember().getBranch().getId()));
+            }
         }
 
         cq.where(predicates.toArray(new Predicate[0]));
-        cq.orderBy(cb.desc(attendance.get("id").get("serviceDate")));
+        cq.orderBy(cb.desc(attendance.get("attendanceDate")));
 
         TypedQuery<Attendance> query = em.createQuery(cq);
         query.setFirstResult((int) pageable.getOffset());
         query.setMaxResults(pageable.getPageSize());
-
         List<Attendance> results = query.getResultList();
 
+        // Conteo total
         CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
         Root<Attendance> countRoot = countQuery.from(Attendance.class);
-        Join<Attendance, Services> countService = countRoot.join("services", JoinType.LEFT);
+        Join<Attendance, ServiceEvent> countServiceEvent = countRoot.join("serviceEvent", JoinType.INNER);
+        Join<ServiceEvent, Services> countService = countServiceEvent.join("services", JoinType.INNER);
+        Join<Attendance, Member> countMember = countRoot.join("member", JoinType.INNER);
+        Join<Attendance, Branch> countBranch = countRoot.join("branch", JoinType.INNER);
 
         List<Predicate> countPredicates = new ArrayList<>();
         if (dto != null) {
@@ -150,12 +167,25 @@ public class AttendanceServiceImpl implements AttendanceService {
                 countPredicates.add(cb.equal(countService.get("id"), dto.getServiceId()));
             }
             if (dto.getStartDate() != null) {
-                countPredicates.add(cb.greaterThanOrEqualTo(countRoot.get("id").get("serviceDate"), dto.getStartDate()));
+                countPredicates.add(cb.greaterThanOrEqualTo(countServiceEvent.get("startDateTime"), dto.getStartDate()));
             }
             if (dto.getEndDate() != null) {
-                countPredicates.add(cb.lessThanOrEqualTo(countRoot.get("id").get("serviceDate"), dto.getEndDate()));
+                countPredicates.add(cb.lessThanOrEqualTo(countServiceEvent.get("startDateTime"), dto.getEndDate()));
+            }
+            if (dto.getMemberId() != null) {
+                countPredicates.add(cb.equal(countMember.get("id"), dto.getMemberId()));
+            }
+            if (dto.getBranchId() != null) {
+                if (user.hasAuthority("ADMINISTRATOR")) {
+                    countPredicates.add(cb.equal(countBranch.get("id"), dto.getBranchId()));
+                } else {
+                    countPredicates.add(cb.equal(countBranch.get("id"), user.getMember().getBranch().getId()));
+                }
+            } else if (!user.hasAuthority("ADMINISTRATOR")) {
+                countPredicates.add(cb.equal(countBranch.get("id"), user.getMember().getBranch().getId()));
             }
         }
+
         countQuery.select(cb.count(countRoot)).where(countPredicates.toArray(new Predicate[0]));
         Long total = em.createQuery(countQuery).getSingleResult();
 
@@ -166,5 +196,6 @@ public class AttendanceServiceImpl implements AttendanceService {
                 totalPages
         );
     }
+
 
 }

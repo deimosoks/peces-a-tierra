@@ -35,7 +35,7 @@ public class DashboardServiceImpl implements DashboardService {
                 memberRepository.findMembersWithBirthdayInMonth(LocalDateTime.now().getMonthValue())
                         .stream().map(member -> memberMapper.toDto(member, false)).toList();
 
-        long lastServiceAssistance = attendanceRepository.countAttendanceLastService();
+//        long lastServiceAssistance = attendanceRepository.countAttendanceLastService();
 
         List<ReportResponseDto> lastWeekReport = reportService.generate(
                 ReportRequestDto.builder()
@@ -47,7 +47,7 @@ public class DashboardServiceImpl implements DashboardService {
         return DashboardResponseDto.builder()
                 .totalMember(totalMember)
                 .membersBirthdays(memberBirthdays)
-                .lastServiceAssistance(lastServiceAssistance)
+//                .lastServiceAssistance(lastServiceAssistance)
                 .lastWeekReport(lastWeekReport)
                 .build();
     }

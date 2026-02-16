@@ -1,8 +1,6 @@
 package org.icc.pecesatierra.dtos.report;
 
 import lombok.*;
-import org.icc.pecesatierra.dtos.member.MemberCategoryResponseDto;
-import org.icc.pecesatierra.dtos.member.MemberTypeResponseDto;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;

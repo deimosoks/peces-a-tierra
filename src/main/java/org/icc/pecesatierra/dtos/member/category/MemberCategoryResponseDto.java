@@ -1,9 +1,7 @@
-package org.icc.pecesatierra.dtos.member;
+package org.icc.pecesatierra.dtos.member.category;
 
-import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
-import java.util.List;
 import java.util.Set;
 
 @Builder

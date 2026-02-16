@@ -57,6 +57,11 @@ public class User implements UserDetails {
                 .collect(Collectors.toSet());
     }
 
+    public boolean hasAuthority(String authority) {
+        return getAuthorities().stream()
+                .anyMatch(a -> Objects.equals(a.getAuthority(), authority));
+    }
+
     @Override
     public String getPassword() {
         return passwordHash;

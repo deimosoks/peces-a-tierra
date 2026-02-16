@@ -1,4 +1,4 @@
-package org.icc.pecesatierra.dtos.member;
+package org.icc.pecesatierra.dtos.member.category;
 
 import lombok.*;
 
@@ -7,8 +7,10 @@ import lombok.*;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class MemberTypeResponseDto {
+public class MemberSubCategoryResponseDto {
+
     private String id;
     private String name;
     private String color;
+
 }

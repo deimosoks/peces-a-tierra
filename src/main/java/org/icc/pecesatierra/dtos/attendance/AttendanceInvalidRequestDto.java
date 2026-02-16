@@ -13,7 +13,7 @@ import lombok.*;
 public class AttendanceInvalidRequestDto {
 
     @NotNull(message = "Id de asistencia es obligatorio.")
-    private AttendanceIdRequestDto attendanceId;
+    private String attendanceId;
 
     @NotBlank(message = "Debe ingresar una razón valida.")
     @Size(max = 255, message = "La razón debe tener un maximo de 255 caracteres.")

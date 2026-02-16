@@ -1,35 +1,31 @@
 package org.icc.pecesatierra.repositories;
 
-import org.icc.pecesatierra.entities.Attendance;
-import org.icc.pecesatierra.entities.AttendanceId;
-import org.icc.pecesatierra.entities.Member;
-import org.icc.pecesatierra.entities.Services;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+import org.icc.pecesatierra.entities.*;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 
 @Repository
-public interface AttendanceRepository extends JpaRepository<Attendance, AttendanceId> {
+public interface AttendanceRepository extends JpaRepository<Attendance, String> {
 
-    @Query("""
-                SELECT COUNT(a)
-                FROM Attendance a
-                WHERE invalid = false AND
-                a.id.serviceDate = (
-                    SELECT MAX(a2.id.serviceDate)
-                    FROM Attendance a2
-                )
-            """)
-    long countAttendanceLastService();
+//    @Query("""
+//                SELECT COUNT(a)
+//                FROM Attendance a
+//                WHERE invalid = false AND
+//                a.id.serviceDate = (
+//                    SELECT MAX(a2.id.serviceDate)
+//                    FROM Attendance a2
+//                )
+//            """)
+//    long countAttendanceLastService();
 
 
     boolean existsByMember(Member member);
 
-    boolean existsByServices(Services service);
+    boolean existsByMemberAndServiceEvent(Member member, ServiceEvent event);
+
+    boolean existsAttendanceByBranch(Branch branch);
 
 }

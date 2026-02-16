@@ -1,7 +1,7 @@
 package org.icc.pecesatierra.web.services;
 
-import org.icc.pecesatierra.dtos.member.MemberCategoryRequestDto;
-import org.icc.pecesatierra.dtos.member.MemberCategoryResponseDto;
+import org.icc.pecesatierra.dtos.member.category.MemberCategoryRequestDto;
+import org.icc.pecesatierra.dtos.member.category.MemberCategoryResponseDto;
 
 import java.util.List;
 

@@ -1,7 +1,7 @@
 package org.icc.pecesatierra.utils.mappers;
 
 import lombok.AllArgsConstructor;
-import org.icc.pecesatierra.dtos.notes.MemberNoteResponseDto;
+import org.icc.pecesatierra.dtos.member.notes.MemberNoteResponseDto;
 import org.icc.pecesatierra.entities.MemberNotes;
 import org.springframework.stereotype.Component;
 

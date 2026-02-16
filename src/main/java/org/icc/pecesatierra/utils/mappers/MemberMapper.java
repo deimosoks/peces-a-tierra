@@ -50,13 +50,6 @@ public class MemberMapper {
         memberResponseDto.id(member.getId());
         memberResponseDto.completeName(member.getCompleteName());
 
-//        if (member.getType() != null) {
-//            memberResponseDto.type(Enum.valueOf(TypeMember.class, member.getType()));
-//        }
-//        if (member.getCategory() != null) {
-//            memberResponseDto.category(Enum.valueOf(CategoryMember.class, member.getCategory()));
-//        }
-
         memberResponseDto.category(memberCategoryMapper.toDto(member.getCategoryId()));
         memberResponseDto.type(memberTypeMapper.toDto(member.getTypeId()));
 
@@ -69,28 +62,12 @@ public class MemberMapper {
         memberResponseDto.pictureProfileUrl(member.getPictureProfileUrl());
         memberResponseDto.active(member.isActive());
         memberResponseDto.gender(member.getGender());
+        memberResponseDto.branchName(member.getBranch().getName());
 
         if (member.getSubcategoryId() != null){
             memberResponseDto.subCategory(memberSubCategoryMapper.toDto(member.getSubcategoryId()));
         }
 
-//        memberResponseDto.neighborhood(member.getNeighborhood());
-//        memberResponseDto.city(member.getCity());
-//        memberResponseDto.municipality(member.getMunicipality());
-//        memberResponseDto.district(member.getDistrict());
-//        memberResponseDto.postalCode(member.getPostalCode());
-//        memberResponseDto.latitude(member.getLatitude());
-//        memberResponseDto.latitude(member.getLatitude());
-
-        /* address
-        private String neighborhood;
-        private String city;
-        private String municipality;
-        private String district;
-        private String postalCode;
-        private String latitude;
-        private String longitude;
-        */
         if (member.getBirthdate() != null) {
             memberResponseDto.age((int) ChronoUnit.YEARS.between(member.getBirthdate(), LocalDateTime.now()));
         }

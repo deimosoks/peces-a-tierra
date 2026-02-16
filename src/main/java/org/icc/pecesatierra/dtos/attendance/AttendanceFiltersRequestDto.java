@@ -14,6 +14,7 @@ public class AttendanceFiltersRequestDto {
     private String serviceId;
     private LocalDateTime startDate;
     private LocalDateTime endDate;
+    private String branchId;
     private String memberId;
 
 }

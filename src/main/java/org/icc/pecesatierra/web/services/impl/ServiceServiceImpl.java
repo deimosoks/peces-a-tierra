@@ -6,9 +6,11 @@ import org.icc.pecesatierra.dtos.service.ServiceResponseDto;
 import org.icc.pecesatierra.entities.Services;
 import org.icc.pecesatierra.exceptions.ServiceHasHistoricalRecordException;
 import org.icc.pecesatierra.exceptions.ServicesNotFoundException;
+import org.icc.pecesatierra.repositories.ServiceEventRepository;
 import org.icc.pecesatierra.utils.mappers.ServiceMapper;
 import org.icc.pecesatierra.repositories.AttendanceRepository;
 import org.icc.pecesatierra.repositories.ServiceRepository;
+import org.icc.pecesatierra.web.services.ServiceEventService;
 import org.icc.pecesatierra.web.services.ServiceService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,6 +25,7 @@ public class ServiceServiceImpl implements ServiceService {
     private final ServiceRepository serviceRepository;
     private final ServiceMapper serviceMapper;
     private final AttendanceRepository attendanceRepository;
+    private final ServiceEventRepository serviceEventRepository;
 
     @Transactional
     @Override
@@ -57,8 +60,8 @@ public class ServiceServiceImpl implements ServiceService {
         Services services = serviceRepository.findById(serviceId)
                 .orElseThrow(() -> new ServicesNotFoundException("Este servicio no existe."));
 
-        if (attendanceRepository.existsByServices(services))
-            throw new ServiceHasHistoricalRecordException("Este servicio tiene asistencias registradas asi que no puede ser eliminado, considere desactivarlo.");
+        if (serviceEventRepository.existsByServices(services))
+            throw new ServiceHasHistoricalRecordException("Este servicio tiene registro histórico asi que no puede ser eliminado, considere desactivarlo.");
 
         serviceRepository.delete(services);
     }

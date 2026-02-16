@@ -35,8 +35,9 @@ public class AttendanceController extends BaseController {
                                                               @RequestParam(
                                                                       required = false,
                                                                       defaultValue = "0"
-                                                              ) int page) {
-        return ResponseEntity.ok(attendanceService.findAll(page, attendanceFiltersRequestDto));
+                                                              ) int page,
+                                                              @AuthenticationPrincipal User user) {
+        return ResponseEntity.ok(attendanceService.findAll(page, attendanceFiltersRequestDto, user));
     }
 
     @PreAuthorize("hasAuthority('MANAGE_ATTENDANCE') || hasAuthority('ADMINISTRATOR') && @securityService.isActive(authentication)")

@@ -1,7 +1,7 @@
 package org.icc.pecesatierra.web.services;
 
-import org.icc.pecesatierra.dtos.member.MemberSubCategoryRequestDto;
-import org.icc.pecesatierra.dtos.member.MemberSubCategoryResponseDto;
+import org.icc.pecesatierra.dtos.member.category.MemberSubCategoryRequestDto;
+import org.icc.pecesatierra.dtos.member.category.MemberSubCategoryResponseDto;
 
 public interface MemberSubCategoryService {
 

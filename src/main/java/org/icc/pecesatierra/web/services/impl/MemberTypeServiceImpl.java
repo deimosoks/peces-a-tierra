@@ -2,8 +2,8 @@ package org.icc.pecesatierra.web.services.impl;
 
 
 import lombok.RequiredArgsConstructor;
-import org.icc.pecesatierra.dtos.member.MemberTypeRequestDto;
-import org.icc.pecesatierra.dtos.member.MemberTypeResponseDto;
+import org.icc.pecesatierra.dtos.member.type.MemberTypeRequestDto;
+import org.icc.pecesatierra.dtos.member.type.MemberTypeResponseDto;
 import org.icc.pecesatierra.entities.MemberType;
 import org.icc.pecesatierra.exceptions.MemberTypeInUseException;
 import org.icc.pecesatierra.exceptions.TypeWithNameAlreadyExistsException;

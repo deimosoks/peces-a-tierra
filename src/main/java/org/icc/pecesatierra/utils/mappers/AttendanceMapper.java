@@ -1,12 +1,8 @@
 package org.icc.pecesatierra.utils.mappers;
 
 import lombok.AllArgsConstructor;
-import org.icc.pecesatierra.dtos.attendance.AttendanceIdResponseDto;
 import org.icc.pecesatierra.dtos.attendance.AttendanceResponseDto;
 import org.icc.pecesatierra.entities.Attendance;
-import org.icc.pecesatierra.entities.Member;
-import org.icc.pecesatierra.entities.MemberCategory;
-import org.icc.pecesatierra.repositories.MemberRepository;
 import org.springframework.stereotype.Component;
 
 @AllArgsConstructor
@@ -20,18 +16,14 @@ public class AttendanceMapper {
     public AttendanceResponseDto toDto(Attendance attendance) {
 
         return AttendanceResponseDto.builder()
-                .id(
-                        AttendanceIdResponseDto.builder()
-                                .memberId(attendance.getId().getMemberId())
-                                .serviceId(attendance.getId().getServiceId())
-                                .serviceDate(attendance.getId().getServiceDate())
-                                .build())
-                .serviceName(attendance.getServices().getName())
+                .id(String.valueOf(attendance.getId()))
+                .serviceName(attendance.getServiceEvent().getServices().getName())
                 .memberCompleteName(attendance.getMember().getCompleteName())
                 .memberCategory(memberCategoryMapper.toDto(attendance.getMemberCategory()))
                 .memberType(memberTypeMapper.toDto(attendance.getMemberType()))
                 .subCategory(memberSubCategoryMapper.toDto(attendance.getMemberSubCategory()))
                 .attendanceDate(attendance.getAttendanceDate())
+                .branchName(attendance.getBranch().getName())
                 .invalid(attendance.isInvalid())
                 .note(attendance.getNote())
                 .registeredBy(attendance.getRegisteredById() != null ? attendance.getRegisteredById().getCompleteName() : "desconocido.")

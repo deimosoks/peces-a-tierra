@@ -1,8 +1,10 @@
 package org.icc.pecesatierra.dtos.member;
 
 import lombok.*;
-import org.icc.pecesatierra.dtos.notes.MemberNoteResponseDto;
-import org.icc.pecesatierra.utils.enums.Gender;
+import org.icc.pecesatierra.dtos.member.category.MemberCategoryResponseDto;
+import org.icc.pecesatierra.dtos.member.category.MemberSubCategoryResponseDto;
+import org.icc.pecesatierra.dtos.member.notes.MemberNoteResponseDto;
+import org.icc.pecesatierra.dtos.member.type.MemberTypeResponseDto;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -17,8 +19,6 @@ public class MemberResponseDto {
 
     private String id;
     private String completeName;
-//    private TypeMember type;
-//    private CategoryMember category;
 
     private MemberTypeResponseDto type;
     private MemberCategoryResponseDto category;
@@ -36,4 +36,5 @@ public class MemberResponseDto {
     private MemberSubCategoryResponseDto subCategory;
     private Set<MemberNoteResponseDto> notes;
 
+    private String branchName;
 }

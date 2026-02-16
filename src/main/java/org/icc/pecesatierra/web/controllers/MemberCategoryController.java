@@ -2,8 +2,8 @@ package org.icc.pecesatierra.web.controllers;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.icc.pecesatierra.dtos.member.MemberCategoryRequestDto;
-import org.icc.pecesatierra.dtos.member.MemberCategoryResponseDto;
+import org.icc.pecesatierra.dtos.member.category.MemberCategoryRequestDto;
+import org.icc.pecesatierra.dtos.member.category.MemberCategoryResponseDto;
 import org.icc.pecesatierra.web.services.MemberCategoryService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

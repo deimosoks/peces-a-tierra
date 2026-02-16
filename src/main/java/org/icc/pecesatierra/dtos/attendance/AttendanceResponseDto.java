@@ -1,11 +1,9 @@
 package org.icc.pecesatierra.dtos.attendance;
 
 import lombok.*;
-import org.icc.pecesatierra.dtos.member.MemberCategoryResponseDto;
-import org.icc.pecesatierra.dtos.member.MemberSubCategoryResponseDto;
-import org.icc.pecesatierra.dtos.member.MemberTypeResponseDto;
-import org.icc.pecesatierra.entities.MemberCategory;
-import org.icc.pecesatierra.entities.MemberType;
+import org.icc.pecesatierra.dtos.member.category.MemberCategoryResponseDto;
+import org.icc.pecesatierra.dtos.member.category.MemberSubCategoryResponseDto;
+import org.icc.pecesatierra.dtos.member.type.MemberTypeResponseDto;
 
 import java.time.LocalDateTime;
 
@@ -16,12 +14,13 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class AttendanceResponseDto {
 
-    private AttendanceIdResponseDto id;
+    private String id;
     private String serviceName;
     private String memberCompleteName;
     private MemberCategoryResponseDto memberCategory;
     private MemberTypeResponseDto memberType;
     private LocalDateTime attendanceDate;
+    private String branchName;
     private boolean invalid;
     private String note;
     private String registeredBy;

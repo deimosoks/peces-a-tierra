@@ -17,6 +17,7 @@ public class BaptismMapper {
                 .note(baptism.getNote())
                 .address(baptism.getAddress())
                 .createdAt(baptism.getCreatedAt())
+                .branchName(baptism.getBaptizedMember().getBranch().getName())
                 .registeredBy(baptism.getRegisteredBy().getCompleteName())
                 .invalidReason(baptism.getInvalidReason())
                 .invalidAt(baptism.getInvalidAt())

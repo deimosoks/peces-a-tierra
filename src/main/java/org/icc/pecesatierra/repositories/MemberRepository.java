@@ -1,9 +1,6 @@
 package org.icc.pecesatierra.repositories;
 
-import org.icc.pecesatierra.entities.Member;
-import org.icc.pecesatierra.entities.MemberCategory;
-import org.icc.pecesatierra.entities.MemberSubCategory;
-import org.icc.pecesatierra.entities.MemberType;
+import org.icc.pecesatierra.entities.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -26,5 +23,7 @@ public interface MemberRepository extends JpaRepository<Member, String> {
     boolean existsMemberBySubcategoryId(MemberSubCategory memberSubCategory);
 
     boolean existsMemberByTypeId(MemberType memberType);
+
+    boolean existsMemberByBranch(Branch branch);
 
 }

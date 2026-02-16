@@ -16,5 +16,6 @@ public class BaptismFilterRequestDto {
     private LocalDate endDate;
     private String query;
     private boolean active;
+    private String branchId;
 
 }

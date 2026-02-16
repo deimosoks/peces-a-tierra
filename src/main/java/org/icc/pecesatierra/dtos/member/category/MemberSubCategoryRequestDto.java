@@ -1,4 +1,4 @@
-package org.icc.pecesatierra.dtos.member;
+package org.icc.pecesatierra.dtos.member.category;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
@@ -8,10 +8,15 @@ import lombok.*;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class MemberTypeRequestDto {
+public class MemberSubCategoryRequestDto {
+
     @NotBlank
     private String name;
 
     @NotBlank
     private String color;
+
+    @NotBlank
+    private String categoryId;
+
 }

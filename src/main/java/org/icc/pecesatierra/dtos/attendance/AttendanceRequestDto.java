@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 public class AttendanceRequestDto {
 
     @NotBlank(message = "Id de servicio invalido.")
-    private String serviceId;
+    private String serviceEventId;
 
     @NotBlank(message = "Id de miembro invalido.")
     private String memberId;

@@ -25,6 +25,7 @@ public class UserMapper {
                                 .active(user.isActive())
                                 .createdAt(user.getCreatedAt())
                                 .updateAt(user.getUpdatedAt())
+                                .branchName(user.getMember().getBranch().getName())
                                 .memberResponseDto(memberMapper.toDto(user.getMember(), false))
                                 .roles(user.getRoles().stream().map(userRole -> {
                                         Member givenBy = memberRepository.findById(userRole.getGiverId()).orElse(null);

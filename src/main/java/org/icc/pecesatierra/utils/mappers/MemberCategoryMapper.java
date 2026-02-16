@@ -1,12 +1,9 @@
 package org.icc.pecesatierra.utils.mappers;
 
 import lombok.AllArgsConstructor;
-import org.icc.pecesatierra.dtos.member.MemberCategoryRequestDto;
-import org.icc.pecesatierra.dtos.member.MemberCategoryResponseDto;
+import org.icc.pecesatierra.dtos.member.category.MemberCategoryRequestDto;
+import org.icc.pecesatierra.dtos.member.category.MemberCategoryResponseDto;
 import org.icc.pecesatierra.entities.MemberCategory;
-import org.icc.pecesatierra.entities.MemberSubCategory;
-import org.mapstruct.Mapper;
-import org.mapstruct.MappingTarget;
 import org.springframework.stereotype.Component;
 
 import java.util.stream.Collectors;

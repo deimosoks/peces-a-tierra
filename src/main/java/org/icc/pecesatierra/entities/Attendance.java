@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -14,8 +15,9 @@ import java.time.LocalDateTime;
 @Table(name = "attendance")
 public class Attendance {
 
-    @EmbeddedId
-    private AttendanceId id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private String id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(nullable = false, name = "member_category")
@@ -28,12 +30,12 @@ public class Attendance {
     @Column(nullable = false)
     private LocalDateTime attendanceDate;
 
-    @Column(nullable = false)
-    private boolean invalid;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "registered_by_id", nullable = false)
     private Member registeredById;
+
+    @Column(nullable = false)
+    private boolean invalid;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "sub_category_id")
@@ -49,12 +51,14 @@ public class Attendance {
     private Member invalidatorId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @MapsId("serviceId")
-    @JoinColumn(name = "service_id", nullable = false)
-    private Services services;
+    @JoinColumn(name = "branch_id", nullable = false)
+    private Branch branch;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @MapsId("memberId")
+    @JoinColumn(name = "service_event_id", nullable = false)
+    private ServiceEvent serviceEvent;
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
 

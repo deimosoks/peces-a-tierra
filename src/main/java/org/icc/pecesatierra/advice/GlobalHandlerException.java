@@ -495,22 +495,120 @@ public class GlobalHandlerException {
         return new ResponseEntity<>(errorResponseDto, HttpStatus.BAD_REQUEST);
     }
 
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponseDto> handlerGenericException(HttpServletRequest httpServletRequest,
-                                                                                   Exception exception) {
+    @ExceptionHandler(AttendanceOutOfRangeException.class)
+    public ResponseEntity<ErrorResponseDto> handlerAttendanceOutOfRangeException(HttpServletRequest httpServletRequest,
+                                                                           AttendanceOutOfRangeException exception) {
         ErrorResponseDto errorResponseDto = ErrorResponseDto.builder()
                 .localDateTime(LocalDateTime.now())
                 .status(HttpStatus.BAD_REQUEST.value())
                 .error(HttpStatus.BAD_REQUEST.getReasonPhrase())
-                .message("Error inesperado, por favor intente mas tarde.")
+                .message(exception.getMessage())
                 .path(httpServletRequest.getRequestURI())
                 .build();
 
-        System.out.println("==========================");
-        System.out.println("Exception: " + exception.getMessage());
-        System.out.println("==========================");
+        return new ResponseEntity<>(errorResponseDto, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(BranchNotFoundException.class)
+    public ResponseEntity<ErrorResponseDto> handlerBranchNotFoundException(HttpServletRequest httpServletRequest,
+                                                                                 BranchNotFoundException exception) {
+        ErrorResponseDto errorResponseDto = ErrorResponseDto.builder()
+                .localDateTime(LocalDateTime.now())
+                .status(HttpStatus.BAD_REQUEST.value())
+                .error(HttpStatus.BAD_REQUEST.getReasonPhrase())
+                .message(exception.getMessage())
+                .path(httpServletRequest.getRequestURI())
+                .build();
 
         return new ResponseEntity<>(errorResponseDto, HttpStatus.BAD_REQUEST);
     }
+
+    @ExceptionHandler(ExpiredServiceEventCannotBeDeleted.class)
+    public ResponseEntity<ErrorResponseDto> handlerExpiredServiceEventCannotBeDeleted(HttpServletRequest httpServletRequest,
+                                                                                      ExpiredServiceEventCannotBeDeleted exception) {
+        ErrorResponseDto errorResponseDto = ErrorResponseDto.builder()
+                .localDateTime(LocalDateTime.now())
+                .status(HttpStatus.BAD_REQUEST.value())
+                .error(HttpStatus.BAD_REQUEST.getReasonPhrase())
+                .message(exception.getMessage())
+                .path(httpServletRequest.getRequestURI())
+                .build();
+
+        return new ResponseEntity<>(errorResponseDto, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(InvalidDatesException.class)
+    public ResponseEntity<ErrorResponseDto> handlerInvalidDatesException(HttpServletRequest httpServletRequest,
+                                                                         InvalidDatesException exception) {
+        ErrorResponseDto errorResponseDto = ErrorResponseDto.builder()
+                .localDateTime(LocalDateTime.now())
+                .status(HttpStatus.BAD_REQUEST.value())
+                .error(HttpStatus.BAD_REQUEST.getReasonPhrase())
+                .message(exception.getMessage())
+                .path(httpServletRequest.getRequestURI())
+                .build();
+
+        return new ResponseEntity<>(errorResponseDto, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(NoActiveServiceEventException.class)
+    public ResponseEntity<ErrorResponseDto> handlerNoActiveServiceEventException(HttpServletRequest httpServletRequest,
+                                                                         NoActiveServiceEventException exception) {
+        ErrorResponseDto errorResponseDto = ErrorResponseDto.builder()
+                .localDateTime(LocalDateTime.now())
+                .status(HttpStatus.BAD_REQUEST.value())
+                .error(HttpStatus.BAD_REQUEST.getReasonPhrase())
+                .message(exception.getMessage())
+                .path(httpServletRequest.getRequestURI())
+                .build();
+
+        return new ResponseEntity<>(errorResponseDto, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(ServiceEventNotFoundException.class)
+    public ResponseEntity<ErrorResponseDto> handlerServiceEventNotFoundException(HttpServletRequest httpServletRequest,
+                                                                                 ServiceEventNotFoundException exception) {
+        ErrorResponseDto errorResponseDto = ErrorResponseDto.builder()
+                .localDateTime(LocalDateTime.now())
+                .status(HttpStatus.BAD_REQUEST.value())
+                .error(HttpStatus.BAD_REQUEST.getReasonPhrase())
+                .message(exception.getMessage())
+                .path(httpServletRequest.getRequestURI())
+                .build();
+
+        return new ResponseEntity<>(errorResponseDto, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(BranchHasRecordsException.class)
+    public ResponseEntity<ErrorResponseDto> handlerBranchHasRecordsException(HttpServletRequest httpServletRequest,
+                                                                             BranchHasRecordsException exception) {
+        ErrorResponseDto errorResponseDto = ErrorResponseDto.builder()
+                .localDateTime(LocalDateTime.now())
+                .status(HttpStatus.BAD_REQUEST.value())
+                .error(HttpStatus.BAD_REQUEST.getReasonPhrase())
+                .message(exception.getMessage())
+                .path(httpServletRequest.getRequestURI())
+                .build();
+
+        return new ResponseEntity<>(errorResponseDto, HttpStatus.BAD_REQUEST);
+    }
+
+//    @ExceptionHandler(Exception.class)
+//    public ResponseEntity<ErrorResponseDto> handlerGenericException(HttpServletRequest httpServletRequest,
+//                                                                                   Exception exception) {
+//        ErrorResponseDto errorResponseDto = ErrorResponseDto.builder()
+//                .localDateTime(LocalDateTime.now())
+//                .status(HttpStatus.BAD_REQUEST.value())
+//                .error(HttpStatus.BAD_REQUEST.getReasonPhrase())
+//                .message("Error inesperado, por favor intente mas tarde.")
+//                .path(httpServletRequest.getRequestURI())
+//                .build();
+//
+//        System.out.println("==========================");
+//        System.out.println("Exception: " + exception.getMessage());
+//        System.out.println("==========================");
+//
+//        return new ResponseEntity<>(errorResponseDto, HttpStatus.BAD_REQUEST);
+//    }
 
 }

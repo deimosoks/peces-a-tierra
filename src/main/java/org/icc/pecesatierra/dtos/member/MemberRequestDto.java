@@ -44,5 +44,6 @@ public class MemberRequestDto {
     private String latitude;
     private String longitude;
     private Gender gender;
+    private String branchId;
 
 }

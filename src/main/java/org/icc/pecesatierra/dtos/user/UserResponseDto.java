@@ -21,5 +21,6 @@ public class UserResponseDto {
     private LocalDateTime updateAt;
     private MemberResponseDto memberResponseDto;
     private Set<RoleResponseDto> roles;
+    private String branchName;
 
 }

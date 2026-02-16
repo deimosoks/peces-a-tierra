@@ -7,6 +7,6 @@ public interface BaptismService {
 
     BaptismResponseDto create(BaptismRequestDto baptismRequestDto, User user);
     BaptismResponseDto invalid(BaptismInvalidRequestDto baptismInvalidRequestDto, User user);
-    BaptismPagesResponseDto findAll(int page, BaptismFilterRequestDto baptismFilterRequestDto);
+    BaptismPagesResponseDto findAll(int page, BaptismFilterRequestDto baptismFilterRequestDto, User user);
 
 }

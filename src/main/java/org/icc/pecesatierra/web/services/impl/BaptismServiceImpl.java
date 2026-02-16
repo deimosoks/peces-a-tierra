@@ -6,11 +6,10 @@ import jakarta.persistence.criteria.CriteriaBuilder;
 import lombok.AllArgsConstructor;
 import org.icc.pecesatierra.dtos.baptism.*;
 import org.icc.pecesatierra.entities.Baptism;
+import org.icc.pecesatierra.entities.Branch;
 import org.icc.pecesatierra.entities.Member;
 import org.icc.pecesatierra.entities.User;
-import org.icc.pecesatierra.exceptions.BaptismNotFoundException;
-import org.icc.pecesatierra.exceptions.MemberAlreadyHasRegisteredBaptismActiveException;
-import org.icc.pecesatierra.exceptions.MemberNoteNotFoundException;
+import org.icc.pecesatierra.exceptions.*;
 import org.icc.pecesatierra.repositories.BaptismRepository;
 import org.icc.pecesatierra.repositories.MemberRepository;
 import org.icc.pecesatierra.utils.mappers.BaptismMapper;
@@ -22,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.*;
 
@@ -44,10 +44,14 @@ public class BaptismServiceImpl implements BaptismService {
     public BaptismResponseDto create(BaptismRequestDto baptismRequestDto, User user) {
 
         Member member = memberRepository.findById(baptismRequestDto.getMemberId())
-                .orElseThrow(()-> new MemberNoteNotFoundException("Miembro no encontrado."));
+                .orElseThrow(() -> new MemberNoteNotFoundException("Miembro no encontrado."));
 
-        if (baptismRepository.existsByBaptizedMemberAndInvalidFalse(member)){
+        if (baptismRepository.existsByBaptizedMemberAndInvalidFalse(member)) {
             throw new MemberAlreadyHasRegisteredBaptismActiveException("Este integrante ya tiene un bautismo valido registrado.");
+        }
+
+        if (!user.hasAuthority("ADMINISTRATOR") && !member.getBranch().equals(user.getMember().getBranch())) {
+            throw new CannotRegisterBaptismOutsideYourBranch("No puedes registrar bautismos a integrantes fuera de tu sede.");
         }
 
         Baptism baptism = Baptism.builder()
@@ -57,7 +61,6 @@ public class BaptismServiceImpl implements BaptismService {
                 .createdAt(LocalDateTime.now())
                 .registeredBy(user.getMember())
                 .address(baptismRequestDto.getAddress())
-                //TODO: implementar picture url.
                 .neighborhood(baptismRequestDto.getNeighborhood())
                 .city(baptismRequestDto.getCity())
                 .municipality(baptismRequestDto.getCity())
@@ -76,7 +79,11 @@ public class BaptismServiceImpl implements BaptismService {
     public BaptismResponseDto invalid(BaptismInvalidRequestDto baptismInvalidRequestDto, User user) {
 
         Baptism baptism = baptismRepository.findById(baptismInvalidRequestDto.getBaptismId())
-                .orElseThrow(()-> new BaptismNotFoundException("Bautismo no encontrado."));
+                .orElseThrow(() -> new BaptismNotFoundException("Bautismo no encontrado."));
+
+        if (!user.hasAuthority("ADMINISTRATOR") && !baptism.getBaptizedMember().getBranch().equals(user.getMember().getBranch())) {
+            throw new CannotCreateMembersOutsideYourBranch("No puedes registrar bautismos a integrantes fuera de tu sede.");
+        }
 
         baptism.setInvalid(true);
         baptism.setInvalidatorId(user.getMember());
@@ -88,7 +95,7 @@ public class BaptismServiceImpl implements BaptismService {
 
     @Transactional(readOnly = true)
     @Override
-    public BaptismPagesResponseDto findAll(int page, BaptismFilterRequestDto dto) {
+    public BaptismPagesResponseDto findAll(int page, BaptismFilterRequestDto dto, User user) {
 
         Pageable pageable = PageRequest.of(page, 20, Sort.by("date").descending());
 
@@ -105,6 +112,16 @@ public class BaptismServiceImpl implements BaptismService {
         List<Predicate> predicates = new ArrayList<>();
 
         if (dto != null) {
+
+            if (dto.getBranchId() != null) {
+                if (user.hasAuthority("ADMINISTRATOR")) {
+                    predicates.add(cb.equal(baptizedMember.get("branch"), dto.getBranchId()));
+                } else {
+                    predicates.add(cb.equal(baptizedMember.get("branch"), user.getMember().getBranch()));
+                }
+            } else if (!user.hasAuthority("ADMINISTRATOR")) {
+                predicates.add(cb.equal(baptizedMember.get("branch"), user.getMember().getBranch()));
+            }
 
             // memberId
             if (dto.getMemberId() != null) {

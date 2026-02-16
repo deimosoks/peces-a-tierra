@@ -1,4 +1,4 @@
-package org.icc.pecesatierra.dtos.notes;
+package org.icc.pecesatierra.dtos.member.notes;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;

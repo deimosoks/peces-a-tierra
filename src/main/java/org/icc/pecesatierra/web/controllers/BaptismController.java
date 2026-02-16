@@ -35,7 +35,8 @@ public class BaptismController {
     @PostMapping("/search")
     @PreAuthorize("hasAuthority('VIEW_BAPTISM_PANEL') || hasAuthority('ADMINISTRATOR') && @securityService.isActive(authentication)")
     public ResponseEntity<BaptismPagesResponseDto> search(@Valid @RequestBody BaptismFilterRequestDto baptismFilterRequestDto,
-                                                          @RequestParam int page){
-        return ResponseEntity.ok(baptismService.findAll(page, baptismFilterRequestDto));
+                                                          @RequestParam int page,
+                                                          @AuthenticationPrincipal User user){
+        return ResponseEntity.ok(baptismService.findAll(page, baptismFilterRequestDto, user));
     }
 }

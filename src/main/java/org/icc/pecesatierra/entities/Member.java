@@ -21,12 +21,6 @@ public class Member {
     @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
 
-//    @Column(nullable = false)
-//    private String type;
-//
-//    @Column(nullable = false)
-//    private String category;
-
     @Column(nullable = false)
     private String completeName;
 
@@ -64,6 +58,9 @@ public class Member {
     @JoinColumn(name = "category_id")
     private MemberCategory categoryId;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "branch_id")
+    private Branch branch;
 
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @Builder.Default

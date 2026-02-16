@@ -1,27 +1,27 @@
 package org.icc.pecesatierra.web.services;
 
 import org.icc.pecesatierra.dtos.member.*;
-import org.icc.pecesatierra.dtos.notes.MemberNoteRequestDto;
-import org.icc.pecesatierra.dtos.notes.MemberNoteResponseDto;
+import org.icc.pecesatierra.dtos.member.notes.MemberNoteRequestDto;
+import org.icc.pecesatierra.dtos.member.notes.MemberNoteResponseDto;
 import org.icc.pecesatierra.entities.User;
 
 import java.util.List;
 
 public interface MemberService {
-    MemberResponseDto create(MemberRequestDto memberRequestDto);
+    MemberResponseDto create(MemberRequestDto memberRequestDto, User user);
 
-    MemberResponseDto update(MemberRequestDto memberRequestDto, String memberId);
+    MemberResponseDto update(MemberRequestDto memberRequestDto, String memberId, User user);
 
-    MemberPagesResponseDto findAll(int page, MemberFilterRequestDto memberFilterRequestDto);
+    MemberPagesResponseDto findAll(int page, MemberFilterRequestDto memberFilterRequestDto, User user);
 
-    void delete(String memberId);
+    void delete(String memberId, User user);
 
-    List<MemberExportDto> findAllData(MemberFilterRequestDto dto);
+    List<MemberExportDto> findAllData(MemberFilterRequestDto dto, User user);
 
-    boolean updateActive(String memberId, boolean active);
+    boolean updateActive(String memberId, boolean active, User user);
 
     MemberNoteResponseDto createNote(MemberNoteRequestDto memberNoteRequestDto, User user);
 
-    void deleteNote(String noteId);
+    void deleteNote(String noteId, User user);
 
 }

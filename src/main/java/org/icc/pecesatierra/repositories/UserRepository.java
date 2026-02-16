@@ -16,6 +16,7 @@ public interface UserRepository extends JpaRepository<User, String> {
 
     @EntityGraph(attributePaths = {
             "member",
+            "member.branch",
             "roles",
             "roles.role",
             "roles.role.permissions",

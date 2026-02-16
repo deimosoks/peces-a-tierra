@@ -3,18 +3,9 @@ package org.icc.pecesatierra.web.services.impl;
 import lombok.AllArgsConstructor;
 import org.icc.pecesatierra.dtos.member.MemberRequestDto;
 import org.icc.pecesatierra.dtos.member.MemberResponseDto;
-import org.icc.pecesatierra.entities.Member;
-import org.icc.pecesatierra.entities.MemberCategory;
-import org.icc.pecesatierra.entities.MemberSubCategory;
-import org.icc.pecesatierra.entities.MemberType;
-import org.icc.pecesatierra.exceptions.MemberCategoryNotFoundException;
-import org.icc.pecesatierra.exceptions.MemberNoHasCategoryForThisSubCategoryException;
-import org.icc.pecesatierra.exceptions.MemberSubCategoryNotFoundException;
-import org.icc.pecesatierra.exceptions.MemberTypeNotFoundException;
-import org.icc.pecesatierra.repositories.MemberCategoryRepository;
-import org.icc.pecesatierra.repositories.MemberRepository;
-import org.icc.pecesatierra.repositories.MemberSubCategoryRepository;
-import org.icc.pecesatierra.repositories.MemberTypeRepository;
+import org.icc.pecesatierra.entities.*;
+import org.icc.pecesatierra.exceptions.*;
+import org.icc.pecesatierra.repositories.*;
 import org.icc.pecesatierra.utils.mappers.MemberMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,17 +22,16 @@ public class MemberPersistenceService {
     private final MemberCategoryRepository memberCategoryRepository;
     private final MemberTypeRepository memberTypeRepository;
     private final MemberSubCategoryRepository memberSubCategoryRepository;
+    private final BranchRepository branchRepository;
 
     @Transactional
-    public MemberResponseDto save(MemberRequestDto dto, Map<String, String> pictureData) {
+    public MemberResponseDto save(MemberRequestDto dto, Map<String, String> pictureData, User user) {
+
         Member member = Member.builder()
-//                .type(dto.getTypeId().toString())
-//                .category(dto.getCategoryId().toString())
                 .completeName(dto.getCompleteName())
                 .createdAt(LocalDateTime.now())
                 .cc(dto.getCc())
                 .cellphone(dto.getCellphone())
-//                .address(dto.getAddress())
                 .birthdate(dto.getBirthdate())
                 .active(true)
                 .build();
@@ -53,16 +43,27 @@ public class MemberPersistenceService {
         member.setLatitude(dto.getLatitude());
         member.setLongitude(dto.getLongitude());
 
+        if (user.hasAuthority("ADMINISTRATOR") && dto.getBranchId() != null) {
+            Branch branch = branchRepository.findById(dto.getBranchId())
+                    .orElseThrow(()-> new BranchNotFoundException("Sede no encontrada."));
+            member.setBranch(branch);
+        }else {
+            member.setBranch(user.getMember().getBranch());
+        }
+
         MemberCategory memberCategory = memberCategoryRepository.findById(dto.getCategoryId())
                 .orElseThrow(() -> new MemberCategoryNotFoundException("Categoria invalida."));
 
         MemberType memberType = memberTypeRepository.findById(dto.getTypeId())
                 .orElseThrow(() -> new MemberTypeNotFoundException("Tipo invalido."));
 
+//        Branch branch = branchRepository.findById(dto.getBranchId())
+//                        .orElseThrow(()-> new BranchNotFoundException("Sede no encontrada."));
+
         member.setCategoryId(memberCategory);
         member.setTypeId(memberType);
 
-        if (dto.getSubCategoryId() != null) {
+        if (dto.getSubCategoryId() != null && !dto.getSubCategoryId().isEmpty()) {
             MemberSubCategory memberSubCategory = memberSubCategoryRepository.findById(dto.getSubCategoryId())
                     .orElseThrow(() -> new MemberSubCategoryNotFoundException("Sub categoria no encontrada."));
 
@@ -80,9 +81,19 @@ public class MemberPersistenceService {
     }
 
     @Transactional
-    public MemberResponseDto update(Member member, MemberRequestDto dto, Map<String, String> picData) {
+    public MemberResponseDto update(Member member, MemberRequestDto dto, Map<String, String> picData, User user) {
         memberMapper.updateEntityFromDto(dto, member);
         member.setUpdatedAt(LocalDateTime.now());
+
+        if (!user.hasAuthority("ADMINISTRATOR") && !user.getMember().getBranch().getId().equals(member.getBranch().getId())) {
+            throw new CannotCreateMembersOutsideYourBranch("No puedes actualizar miembros fuera de tu sede.");
+        }
+
+        if (user.hasAuthority("ADMINISTRATOR") && dto.getBranchId() != null){
+            Branch branch = branchRepository.findById(dto.getBranchId())
+                    .orElseThrow(()-> new BranchNotFoundException("Sede no encontrada."));
+            member.setBranch(branch);
+        }
 
         if (picData != null && picData.get("url") != null) {
             member.setPictureProfileUrl(picData.get("url"));

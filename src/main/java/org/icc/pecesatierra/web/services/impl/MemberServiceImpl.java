@@ -9,15 +9,12 @@ import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import lombok.AllArgsConstructor;
 import org.icc.pecesatierra.dtos.member.*;
-import org.icc.pecesatierra.dtos.notes.MemberNoteRequestDto;
-import org.icc.pecesatierra.dtos.notes.MemberNoteResponseDto;
+import org.icc.pecesatierra.dtos.member.notes.MemberNoteRequestDto;
+import org.icc.pecesatierra.dtos.member.notes.MemberNoteResponseDto;
 import org.icc.pecesatierra.entities.Member;
 import org.icc.pecesatierra.entities.MemberNotes;
 import org.icc.pecesatierra.entities.User;
-import org.icc.pecesatierra.exceptions.MemberHasHistoricalRecordException;
-import org.icc.pecesatierra.exceptions.MemberNotFoundException;
-import org.icc.pecesatierra.exceptions.MemberNoteNotFoundException;
-import org.icc.pecesatierra.exceptions.ServerErrorException;
+import org.icc.pecesatierra.exceptions.*;
 import org.icc.pecesatierra.repositories.MemberNotesRepository;
 import org.icc.pecesatierra.utils.mappers.MemberMapper;
 import org.icc.pecesatierra.repositories.AttendanceRepository;
@@ -28,7 +25,6 @@ import org.icc.pecesatierra.utils.PictureUtils;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -57,12 +53,12 @@ public class MemberServiceImpl implements MemberService {
 
     @Transactional
     @Override
-    public MemberResponseDto create(MemberRequestDto memberRequestDto) {
+    public MemberResponseDto create(MemberRequestDto memberRequestDto, User user) {
 
         Map<String, String> pictureData = pictureUtils.validateAndSavePicture(memberRequestDto.getPictureProfile(), "members/photos");
 
         try {
-            return memberPersistenceService.save(memberRequestDto, pictureData);
+            return memberPersistenceService.save(memberRequestDto, pictureData, user);
         } catch (Exception e) {
             if (pictureData.get("publicId") != null) {
                 pictureUtils.delete(pictureData.get("publicId"));
@@ -74,7 +70,7 @@ public class MemberServiceImpl implements MemberService {
 
     @Transactional
     @Override
-    public MemberResponseDto update(MemberRequestDto memberRequestDto, String memberId) {
+    public MemberResponseDto update(MemberRequestDto memberRequestDto, String memberId, User user) {
 
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new MemberNotFoundException("Este integrante no existe."));
@@ -87,7 +83,7 @@ public class MemberServiceImpl implements MemberService {
         }
 
         try {
-            MemberResponseDto response = memberPersistenceService.update(member, memberRequestDto, newPictureData);
+            MemberResponseDto response = memberPersistenceService.update(member, memberRequestDto, newPictureData, user);
 
             if (newPictureData != null && oldPublicId != null) {
                 pictureUtils.delete(oldPublicId);
@@ -105,14 +101,14 @@ public class MemberServiceImpl implements MemberService {
 
     @Transactional(readOnly = true)
     @Override
-    public MemberPagesResponseDto findAll(int page, MemberFilterRequestDto dto) {
+    public MemberPagesResponseDto findAll(int page, MemberFilterRequestDto dto, User user) {
         Pageable pageable = PageRequest.of(page, 20, Sort.by("completeName").ascending());
         CriteriaBuilder cb = em.getCriteriaBuilder();
 
         CriteriaQuery<Member> cq = cb.createQuery(Member.class);
         Root<Member> member = cq.from(Member.class);
 
-        List<Predicate> predicates = buildPredicates(dto, cb, member);
+        List<Predicate> predicates = buildPredicates(dto, cb, member, user);
 
         cq.where(predicates.toArray(new Predicate[0]));
         cq.orderBy(cb.asc(member.get("completeName")));
@@ -126,7 +122,7 @@ public class MemberServiceImpl implements MemberService {
         CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
         Root<Member> countRoot = countQuery.from(Member.class);
 
-        List<Predicate> countPredicates = buildPredicates(dto, cb, countRoot);
+        List<Predicate> countPredicates = buildPredicates(dto, cb, countRoot, user);
 
         countQuery.select(cb.count(countRoot)).where(countPredicates.toArray(new Predicate[0]));
         Long total = em.createQuery(countQuery).getSingleResult();
@@ -141,12 +137,12 @@ public class MemberServiceImpl implements MemberService {
 
     @Transactional(readOnly = true)
     @Override
-    public List<MemberExportDto> findAllData(MemberFilterRequestDto dto) {
+    public List<MemberExportDto> findAllData(MemberFilterRequestDto dto, User user) {
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<Member> cq = cb.createQuery(Member.class);
         Root<Member> member = cq.from(Member.class);
 
-        List<Predicate> predicates = buildPredicates(dto, cb, member);
+        List<Predicate> predicates = buildPredicates(dto, cb, member, user);
 
         cq.where(predicates.toArray(new Predicate[0]));
         cq.orderBy(cb.asc(member.get("completeName")));
@@ -160,12 +156,16 @@ public class MemberServiceImpl implements MemberService {
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public void delete(String memberId) {
+    public void delete(String memberId, User user) {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new MemberNotFoundException("Este integrante no existe."));
 
         if (attendanceRepository.existsByMember(member))
             throw new MemberHasHistoricalRecordException("Este integrante tiene historial de asistencias registrado asi que no puede ser eliminado del sistema, considere desactivarlo.");
+
+        if (!user.hasAuthority("ADMINISTRATOR") && !user.getMember().getBranch().getId().equals(member.getBranch().getId())) {
+            throw new CannotDeleteMemberOutSideYourBranchException("No puedes borrar un miembro fuera de tu sede.");
+        }
 
         String pictureUrl = member.getPictureProfileUrl();
 
@@ -176,9 +176,13 @@ public class MemberServiceImpl implements MemberService {
 
     @Transactional
     @Override
-    public boolean updateActive(String memberId, boolean active) {
+    public boolean updateActive(String memberId, boolean active, User user) {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new MemberNotFoundException("Este integrante no existe."));
+
+        if (!user.hasAuthority("ADMINISTRATOR") && !user.getMember().getBranch().getId().equals(member.getBranch().getId())) {
+            throw new CannotDeleteMemberOutSideYourBranchException("No puedes actualizar un miembro fuera de tu sede.");
+        }
 
         member.setActive(active);
 
@@ -194,6 +198,10 @@ public class MemberServiceImpl implements MemberService {
         Member member = memberRepository.findById(memberNoteRequestDto.getMemberId())
                 .orElseThrow(() -> new MemberNoteNotFoundException("Miembro no encontrado."));
 
+        if (!user.hasAuthority("ADMINISTRATOR") && !user.getMember().getBranch().getId().equals(member.getBranch().getId())) {
+            throw new CannotDeleteMemberOutSideYourBranchException("No puedes crear notas a un miembro fuera de tu sede.");
+        }
+
         MemberNotes memberNotes = MemberNotes.builder()
                 .note(memberNoteRequestDto.getNote())
                 .createdAt(LocalDateTime.now())
@@ -206,13 +214,18 @@ public class MemberServiceImpl implements MemberService {
 
     @Transactional
     @Override
-    public void deleteNote(String noteId) {
+    public void deleteNote(String noteId, User user) {
         MemberNotes memberNotes = memberNotesRepositor.findById(noteId)
                 .orElseThrow(() -> new MemberNoteNotFoundException("Nota no encontrada."));
+
+        if (!user.hasAuthority("ADMINISTRATOR") && !user.getMember().getBranch().getId().equals(memberNotes.getMember().getBranch().getId())) {
+            throw new CannotDeleteMemberOutSideYourBranchException("No puedes borrar notas a un miembro fuera de tu sede.");
+        }
+
         memberNotesRepositor.delete(memberNotes);
     }
 
-    private List<Predicate> buildPredicates(MemberFilterRequestDto dto, CriteriaBuilder cb, Root<Member> root) {
+    private List<Predicate> buildPredicates(MemberFilterRequestDto dto, CriteriaBuilder cb, Root<Member> root, User user) {
         List<Predicate> predicates = new ArrayList<>();
 
         if (dto == null) return predicates;
@@ -225,11 +238,20 @@ public class MemberServiceImpl implements MemberService {
             predicates.add(root.get("categoryId").get("id").in(dto.getMemberCategory()));
         }
 
-        if (dto.getSubCategory() != null && !dto.getSubCategory().isEmpty()){
+//        if (user.hasAuthority("ADMINISTRATOR") && dto.getBranchId() != null){}
+
+        if (!user.hasAuthority("ADMINISTRATOR")) {
+            predicates.add(cb.equal(root.get("branch").get("id"), user.getMember().getBranch().getId()));
+        }
+        if (user.hasAuthority("ADMINISTRATOR") && dto.getBranchId() != null) {
+            predicates.add(root.get("branch").get("id").in(dto.getBranchId()));
+        }
+
+        if (dto.getSubCategory() != null && !dto.getSubCategory().isEmpty()) {
             predicates.add(root.get("subcategoryId").get("id").in(dto.getSubCategory()));
         }
 
-        if (dto.getGender() != null && !dto.getGender().isEmpty()){
+        if (dto.getGender() != null && !dto.getGender().isEmpty()) {
             predicates.add(cb.equal(root.get("gender"), dto.getGender()));
         }
 
