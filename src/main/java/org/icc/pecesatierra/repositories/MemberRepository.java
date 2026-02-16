@@ -26,4 +26,10 @@ public interface MemberRepository extends JpaRepository<Member, String> {
 
     boolean existsMemberByBranch(Branch branch);
 
+    long countByBranch(Branch branch);
+
+    @Query("SELECT m FROM Member m WHERE FUNCTION('DATE_PART', 'month', m.birthdate) = :currentMonth AND m.branch = :branch")
+    List<Member> findMembersWithBirthdayInMonthAndBranch(@Param("currentMonth") int currentMonth,
+            @Param("branch") Branch branch);
+
 }

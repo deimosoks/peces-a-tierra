@@ -20,4 +20,7 @@ public class ReportRequestDto {
     private String userId;
     private boolean onlyActive;
 
+    private List<String> branchIds;
+    private List<String> groupBy;
+
 }

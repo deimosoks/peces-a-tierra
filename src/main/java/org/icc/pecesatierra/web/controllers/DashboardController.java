@@ -12,11 +12,11 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/dashboards")
 @AllArgsConstructor
-public class DashboardController extends BaseController  {
+public class DashboardController extends BaseController {
 
     private final DashboardService dashboardService;
 
-    @PreAuthorize("hasAuthority('MANAGE_DASHBOARD') || hasAuthority('ADMINISTRATOR') && @securityService.isActive(authentication)")
+    @PreAuthorize("isAuthenticated()")
     @PostMapping
     public ResponseEntity<DashboardResponseDto> dashboard() {
         return ResponseEntity.ok(dashboardService.dashboard());

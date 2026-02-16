@@ -21,8 +21,7 @@ public class ReportResponseDto {
     private String typePeople;
     private String subCategory;
 
+    private String branchName;
+
     private Long total;
 }
-
-
-

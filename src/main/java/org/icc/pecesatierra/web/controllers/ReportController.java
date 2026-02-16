@@ -17,20 +17,20 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/reports")
 @AllArgsConstructor
-public class ReportController extends BaseController  {
+public class ReportController extends BaseController {
 
     private final ReportService reportService;
 
-    @PreAuthorize("hasAuthority('MANAGE_REPORT') || hasAuthority('ADMINISTRATOR') && @securityService.isActive(authentication)")
+    @PreAuthorize("isAuthenticated()")
     @PostMapping
     public ResponseEntity<List<ReportResponseDto>> generate(@RequestBody ReportRequestDto reportRequestDto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(reportService.generate(reportRequestDto));
     }
 }
 
-//List<String> typePeople
-//List<String> category
-//List<Long> serviceIds;
-//LocalDateTime startDate
-//LocalDateTime endDate
-//String userId
+// List<String> typePeople
+// List<String> category
+// List<Long> serviceIds;
+// LocalDateTime startDate
+// LocalDateTime endDate
+// String userId
