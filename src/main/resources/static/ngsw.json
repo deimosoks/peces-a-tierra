@@ -1,6 +1,6 @@
 {
   "configVersion": 1,
-  "timestamp": 1771349510862,
+  "timestamp": 1771357043541,
   "index": "/index.html",
   "assetGroups": [
     {
@@ -23,7 +23,7 @@
         "/chunk-V7AEG7LX.js",
         "/chunk-Y3BFN5UB.js",
         "/index.html",
-        "/main-Y5WR5PCB.js",
+        "/main-HDRJOHM6.js",
         "/manifest.webmanifest",
         "/polyfills-6ISPNSXF.js",
         "/styles-NMH2BFA2.css"
@@ -77,8 +77,8 @@
     "/img/logo-login.png": "1e52dbbff63a2b22afa9c9bd024dca0c53586ec1",
     "/img/logoicc.png": "cfc65c3c0124d7adc4ab251a394cf7711c96afc7",
     "/img/sidebar-logo.jpg": "7ed783d95622306f76ffc58962874ccf2810ea9f",
-    "/index.html": "13ca47725aa0b291d15ccfd1898eda87bc8ce600",
-    "/main-Y5WR5PCB.js": "c00bd6ff6d39d783865f8038bc4d943a36fdb189",
+    "/index.html": "155fc1379da759616f3d7cfb9417c21b549df41e",
+    "/main-HDRJOHM6.js": "beac4d6d813705bdc913aeafb660d73c7f8d22b9",
     "/manifest.webmanifest": "acd0a3eb8a775f5c7976aef2d024c2714705cb7d",
     "/polyfills-6ISPNSXF.js": "b15ba4d1036f2db285649ff775f184bcdcd0b08a",
     "/styles-NMH2BFA2.css": "e6ff48e26387ef277f0a132af184543677a79521"

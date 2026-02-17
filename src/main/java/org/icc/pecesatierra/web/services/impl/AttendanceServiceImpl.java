@@ -62,7 +62,7 @@ public class AttendanceServiceImpl implements AttendanceService {
                         arrival.isAfter(event.getEndDateTime())) {
 
                     throw new AttendanceOutOfRangeException(
-                            "Hora fuera del rango del evento");
+                            "No puede registrar asistencias en un evento finalizado.");
                 }
             }
 
