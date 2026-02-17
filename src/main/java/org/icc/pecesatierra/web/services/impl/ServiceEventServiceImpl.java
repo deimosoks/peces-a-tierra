@@ -36,8 +36,14 @@ public class ServiceEventServiceImpl implements ServiceEventService {
             throw new InvalidDatesException("La fecha de inicio no puede ser después de la fecha de finalización.");
         }
 
-        Branch branch = branchRepository.findById(serviceEventRequestDto.getBranchId())
-                .orElseThrow(() -> new BranchNotFoundException("Sede no encontrada."));
+        Branch branch;
+
+        if (user.hasAuthority("ADMINISTRATOR") && serviceEventRequestDto.getBranchId() != null) {
+            branch = branchRepository.findById(serviceEventRequestDto.getBranchId())
+                    .orElseThrow(() -> new BranchNotFoundException("Sede no encontrada."));
+        } else {
+            branch = user.getMember().getBranch();
+        }
 
         Services service = serviceRepository.findById(serviceEventRequestDto.getServiceId())
                 .orElseThrow(() -> new ServicesNotFoundException("Servicio no encontrado."));
@@ -55,9 +61,13 @@ public class ServiceEventServiceImpl implements ServiceEventService {
 
     @Transactional
     @Override
-    public void cancel(String serviceEventId) {
+    public void cancel(String serviceEventId, User user) {
         ServiceEvent serviceEvent = serviceEventRepository.findById(serviceEventId)
                 .orElseThrow(() -> new ServiceEventNotFoundException("Evento no encontrado."));
+
+        if (!user.hasAuthority("ADMINISTRATOR") && !user.getMember().getBranch().getId().equals(serviceEvent.getBranch().getId())){
+            throw new CannotCancelEventOutsideYouBranch("No puedes cancelar eventos fuera de tu sede");
+        }
 
         if (serviceEvent.getStartDateTime().isBefore(LocalDateTime.now())) {
             throw new ExpiredServiceEventCannotBeDeleted("No puedes cancelar un evento que ya inicio o expiro.");
@@ -69,8 +79,11 @@ public class ServiceEventServiceImpl implements ServiceEventService {
 
     @Transactional(readOnly = true)
     @Override
-    public List<ServiceEventResponseDto> findAll() {
-        return serviceEventRepository.findAll().stream().map(serviceEventMapper::toDto).toList();
+    public List<ServiceEventResponseDto> findAll(User user) {
+        return user.hasAuthority("ADMINISTRATOR") ?
+                serviceEventRepository.findAll().stream().map(serviceEventMapper::toDto).toList()
+                :
+                serviceEventRepository.findByBranch(user.getMember().getBranch()).stream().map(serviceEventMapper::toDto).toList();
     }
 
     @Transactional(readOnly = true)

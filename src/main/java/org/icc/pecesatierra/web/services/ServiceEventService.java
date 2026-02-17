@@ -9,8 +9,8 @@ import java.util.List;
 
 public interface ServiceEventService {
     ServiceEventResponseDto create(ServiceEventRequestDto serviceEventRequestDto, User user);
-    void cancel(String serviceEventId);
-    List<ServiceEventResponseDto> findAll();
+    void cancel(String serviceEventId, User user);
+    List<ServiceEventResponseDto> findAll(User user);
     ServiceEvent getActiveEventForBranch(String branchId);
     List<ServiceEventResponseDto> getActiveEventForUser(User user);
 }

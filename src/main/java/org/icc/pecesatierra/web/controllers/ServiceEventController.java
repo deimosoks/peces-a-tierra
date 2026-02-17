@@ -31,15 +31,16 @@ public class ServiceEventController {
 
     @DeleteMapping("/{serviceEventId}")
     @PreAuthorize("hasAuthority('CANCEL_EVENTS') || hasAuthority('ADMINISTRATOR') && @securityService.isActive(authentication)")
-    public ResponseEntity<Void> cancel(@PathVariable String serviceEventId){
-        serviceEventService.cancel(serviceEventId);
+    public ResponseEntity<Void> cancel(@PathVariable String serviceEventId,
+                                       @AuthenticationPrincipal User user){
+        serviceEventService.cancel(serviceEventId, user);
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping
     @PreAuthorize("hasAuthority('VIEW_EVENTS_PANEL') || hasAuthority('ADMINISTRATOR') && @securityService.isActive(authentication)")
-    public ResponseEntity<List<ServiceEventResponseDto>> findAll(){
-        return ResponseEntity.ok(serviceEventService.findAll());
+    public ResponseEntity<List<ServiceEventResponseDto>> findAll(@AuthenticationPrincipal User user){
+        return ResponseEntity.ok(serviceEventService.findAll(user));
     }
 
     @GetMapping("/active")

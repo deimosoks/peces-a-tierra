@@ -16,7 +16,6 @@ public class ServiceEventRequestDto {
     @NotBlank
     private String serviceId;
 
-    @NotBlank
     private String branchId;
 
     @NotNull

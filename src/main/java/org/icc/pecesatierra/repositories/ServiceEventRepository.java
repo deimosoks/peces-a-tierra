@@ -1,5 +1,6 @@
 package org.icc.pecesatierra.repositories;
 
+import org.icc.pecesatierra.entities.Branch;
 import org.icc.pecesatierra.entities.Member;
 import org.icc.pecesatierra.entities.ServiceEvent;
 import org.icc.pecesatierra.entities.Services;
@@ -26,5 +27,7 @@ public interface ServiceEventRepository extends JpaRepository<ServiceEvent, Stri
     );
 
     boolean existsByServices(Services service);
+
+    List<ServiceEvent> findByBranch(Branch branch);
 
 }
