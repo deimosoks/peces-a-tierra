@@ -115,7 +115,7 @@ public class BaptismServiceImpl implements BaptismService {
 
             if (dto.getBranchId() != null) {
                 if (user.hasAuthority("ADMINISTRATOR")) {
-                    predicates.add(cb.equal(baptizedMember.get("branch"), dto.getBranchId()));
+                    predicates.add(cb.equal(baptizedMember.get("branch").get("id"), dto.getBranchId()));
                 } else {
                     predicates.add(cb.equal(baptizedMember.get("branch"), user.getMember().getBranch()));
                 }
