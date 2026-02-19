@@ -593,6 +593,20 @@ public class GlobalHandlerException {
         return new ResponseEntity<>(errorResponseDto, HttpStatus.BAD_REQUEST);
     }
 
+    @ExceptionHandler(CannotUpdateUserWithMemberOutSideYourBranch.class)
+    public ResponseEntity<ErrorResponseDto> handlerCannotUpdateUserWithMemberOutSideYourBranch(HttpServletRequest httpServletRequest,
+                                                                                               CannotUpdateUserWithMemberOutSideYourBranch exception) {
+        ErrorResponseDto errorResponseDto = ErrorResponseDto.builder()
+                .localDateTime(LocalDateTime.now())
+                .status(HttpStatus.BAD_REQUEST.value())
+                .error(HttpStatus.BAD_REQUEST.getReasonPhrase())
+                .message(exception.getMessage())
+                .path(httpServletRequest.getRequestURI())
+                .build();
+
+        return new ResponseEntity<>(errorResponseDto, HttpStatus.BAD_REQUEST);
+    }
+
 //    @ExceptionHandler(Exception.class)
 //    public ResponseEntity<ErrorResponseDto> handlerGenericException(HttpServletRequest httpServletRequest,
 //                                                                                   Exception exception) {

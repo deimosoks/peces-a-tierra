@@ -47,7 +47,7 @@ public class UserServiceImpl implements UserService {
         Member member = memberRepository.findById(userRequestDto.getMemberId())
                 .orElseThrow(() -> new MemberNotFoundException("Este integrante no existe."));
 
-        if (!givenBy.hasAuthority("ADMINISTRATOR") && givenBy.getMember().getBranch().getId().equals(member.getBranch().getId())) {
+        if (!givenBy.hasAuthority("ADMINISTRATOR") && !member.getBranch().getId().equals(givenBy.getMember().getBranch().getId())) {
             throw new CannotCreateUsersWithMembersOutsideYourBranch("No puedes registrar usuarios a miembros fuera de tu sede.");
         }
 
@@ -131,7 +131,7 @@ public class UserServiceImpl implements UserService {
                 && userRepository.existsByMemberId(userRequestDto.getMemberId()))
             throw new MemberAlreadyRegisteredWithUserException("Este integrante ya esta relacionado a un usuario.");
 
-        if (!user.hasAuthority("ADMINISTRATOR") && !givenBy.getMember().getBranch().getId().equals(member.getBranch().getId())){
+        if (!givenBy.hasAuthority("ADMINISTRATOR") && !user.getMember().getBranch().getId().equals(givenBy.getMember().getBranch().getId())){
             throw new CannotUpdateUserWithMemberOutSideYourBranch("No puedes actualizar un usuario que tiene un miembro fuera de tu sede.");
         }
 
@@ -191,7 +191,7 @@ public class UserServiceImpl implements UserService {
             throw new DeactivateYourselfException("No puedes desactivarte a ti mismo.");
         }
 
-        if (!user.hasAuthority("ADMINISTRATOR") && !user.getMember().getBranch().getId().equals(user.getMember().getBranch().getId())){
+        if (!user.hasAuthority("ADMINISTRATOR") && !user.getMember().getBranch().getId().equals(userToUpdate.getMember().getBranch().getId())){
             throw new CannotUpdateUserWithMemberOutSideYourBranch("No puedes actualizar un usuario que tiene un miembro fuera de tu sede.");
         }
 
@@ -210,7 +210,7 @@ public class UserServiceImpl implements UserService {
         User userToDelete = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("Este usuario no existe."));
 
-        if (!user.hasAuthority("ADMINISTRATOR") && !user.getMember().getBranch().getId().equals(user.getMember().getBranch().getId())){
+        if (!user.hasAuthority("ADMINISTRATOR") && !user.getMember().getBranch().getId().equals(userToDelete.getMember().getBranch().getId())){
             throw new CannotUpdateUserWithMemberOutSideYourBranch("No puedes actualizar un usuario que tiene un miembro fuera de tu sede.");
         }
 
