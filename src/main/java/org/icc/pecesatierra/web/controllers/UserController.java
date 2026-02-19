@@ -20,8 +20,8 @@ public class UserController extends BaseController  {
 
     @PreAuthorize("hasAuthority('VIEW_USER_PANEL') || hasAuthority('ADMINISTRATOR') && @securityService.isActive(authentication)")
     @PostMapping("/report")
-    public ResponseEntity<UserReportResponseDto> report() {
-        return ResponseEntity.ok(userService.report());
+    public ResponseEntity<UserReportResponseDto> report(@AuthenticationPrincipal User user) {
+        return ResponseEntity.ok(userService.report(user));
     }
 
     @PreAuthorize("hasAuthority('CREATE_USER') || hasAuthority('ADMINISTRATOR') && @securityService.isActive(authentication)")

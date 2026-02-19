@@ -129,7 +129,11 @@ public class UserServiceImpl implements UserService {
 
         if (!userRequestDto.getMemberId().equals(user.getMember().getId())
                 && userRepository.existsByMemberId(userRequestDto.getMemberId()))
-            throw new MemberAlreadyRegisteredWithUserException("Este integrante ya esta relacionado a un usario..");
+            throw new MemberAlreadyRegisteredWithUserException("Este integrante ya esta relacionado a un usuario.");
+
+        if (!user.hasAuthority("ADMINISTRATOR") && !givenBy.getMember().getBranch().getId().equals(member.getBranch().getId())){
+            throw new CannotUpdateUserWithMemberOutSideYourBranch("No puedes actualizar un usuario que tiene un miembro fuera de tu sede.");
+        }
 
         if (userRequestDto.getMemberId() != null) {
             user.setMember(member);
@@ -187,6 +191,10 @@ public class UserServiceImpl implements UserService {
             throw new DeactivateYourselfException("No puedes desactivarte a ti mismo.");
         }
 
+        if (!user.hasAuthority("ADMINISTRATOR") && !user.getMember().getBranch().getId().equals(user.getMember().getBranch().getId())){
+            throw new CannotUpdateUserWithMemberOutSideYourBranch("No puedes actualizar un usuario que tiene un miembro fuera de tu sede.");
+        }
+
         userToUpdate.setUpdatedAt(LocalDateTime.now());
 
         userToUpdate.setActive(active);
@@ -202,6 +210,10 @@ public class UserServiceImpl implements UserService {
         User userToDelete = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("Este usuario no existe."));
 
+        if (!user.hasAuthority("ADMINISTRATOR") && !user.getMember().getBranch().getId().equals(user.getMember().getBranch().getId())){
+            throw new CannotUpdateUserWithMemberOutSideYourBranch("No puedes actualizar un usuario que tiene un miembro fuera de tu sede.");
+        }
+
         if (user.getId().equals(userToDelete.getId())) {
             throw new DeactivateYourselfException("No puedes borrar tu propio usuario.");
         }
@@ -211,10 +223,10 @@ public class UserServiceImpl implements UserService {
 
     @Transactional(readOnly = true)
     @Override
-    public UserReportResponseDto report() {
+    public UserReportResponseDto report(User user) {
 
-        long totalUsers = userRepository.count();
-        long totalUsersActives = userRepository.countByActiveTrue();
+        long totalUsers = user.hasAuthority("ADMINISTRATOR") ? userRepository.count() : userRepository.countByMemberBranch(user.getMember().getBranch());
+        long totalUsersActives = user.hasAuthority("ADMINISTRATOR") ? userRepository.countByActiveTrue() : userRepository.countByActiveTrueAndMemberBranch(user.getMember().getBranch());
 
         return UserReportResponseDto.builder()
                 .totalUsers(totalUsers)

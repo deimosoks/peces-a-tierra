@@ -17,6 +17,6 @@ public interface UserService {
 
     void delete(User user, String userId);
 
-    UserReportResponseDto report();
+    UserReportResponseDto report(User user);
 
 }

@@ -67,6 +67,10 @@ public interface UserRepository extends JpaRepository<User, String> {
 
     long count();
 
+    long countByMemberBranch(Branch branch);
+
+    long countByActiveTrueAndMemberBranch(Branch branch);
+
     long countByActiveTrue();
 
     boolean existsByMemberId(String memberId);
