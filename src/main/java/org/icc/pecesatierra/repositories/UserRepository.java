@@ -1,6 +1,7 @@
 package org.icc.pecesatierra.repositories;
 
 import jakarta.persistence.QueryHint;
+import org.icc.pecesatierra.entities.Branch;
 import org.icc.pecesatierra.entities.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -10,6 +11,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.jpa.repository.QueryHints;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface UserRepository extends JpaRepository<User, String> {
@@ -35,21 +37,40 @@ public interface UserRepository extends JpaRepository<User, String> {
                 SELECT DISTINCT u FROM User u
                 JOIN u.member m
                 WHERE
-                    LOWER(u.username) LIKE LOWER(CONCAT('%', :query, '%'))
-                    OR LOWER(m.completeName) LIKE LOWER(CONCAT('%', :query, '%'))
-            """, countQuery = """
-                SELECT COUNT(DISTINCT u) FROM User u
-                JOIN u.member m
-                WHERE
-                    LOWER(u.username) LIKE LOWER(CONCAT('%', :query, '%'))
-                    OR LOWER(m.completeName) LIKE LOWER(CONCAT('%', :query, '%'))
-            """)
-    Page<User> findAll(@Param("query") String query, Pageable pageable);
+                    (
+                        LOWER(u.username) LIKE LOWER(CONCAT('%', :query, '%'))
+                        OR LOWER(m.completeName) LIKE LOWER(CONCAT('%', :query, '%'))
+                    )
+                    AND (
+                        :branchId IS NULL
+                        OR :branchId = ''
+                        OR m.branch.id = :branchId
+                    )
+            """,
+            countQuery = """
+                        SELECT COUNT(DISTINCT u) FROM User u
+                        JOIN u.member m
+                        WHERE
+                            (
+                                LOWER(u.username) LIKE LOWER(CONCAT('%', :query, '%'))
+                                OR LOWER(m.completeName) LIKE LOWER(CONCAT('%', :query, '%'))
+                            )
+                            AND (
+                                :branchId IS NULL
+                                OR :branchId = ''
+                                OR m.branch.id = :branchId
+                            )
+                    """)
+    Page<User> findAll(@Param("query") String query,
+                       @Param("branchId") String branchId,
+                       Pageable pageable);
 
     long count();
 
     long countByActiveTrue();
 
     boolean existsByMemberId(String memberId);
+
+    Page<User> findByMemberBranch(Branch branch, Pageable pageable);
 
 }

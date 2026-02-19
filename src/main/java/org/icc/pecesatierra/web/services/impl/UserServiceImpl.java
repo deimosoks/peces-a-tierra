@@ -47,6 +47,10 @@ public class UserServiceImpl implements UserService {
         Member member = memberRepository.findById(userRequestDto.getMemberId())
                 .orElseThrow(() -> new MemberNotFoundException("Este integrante no existe."));
 
+        if (!givenBy.hasAuthority("ADMINISTRATOR") && givenBy.getMember().getBranch().getId().equals(member.getBranch().getId())) {
+            throw new CannotCreateUsersWithMembersOutsideYourBranch("No puedes registrar usuarios a miembros fuera de tu sede.");
+        }
+
         User user = User.builder()
                 .username(userRequestDto.getUsername())
                 .member(member)
@@ -92,11 +96,14 @@ public class UserServiceImpl implements UserService {
 
     @Transactional(readOnly = true)
     @Override
-    public UserPagesResponseDto findAll(int page, String query) {
+    public UserPagesResponseDto findAll(int page, String query, User user, String branchId) {
 
         Pageable pageable = PageRequest.of(page, 20, Sort.by("id").ascending());
 
-        Page<User> users = userRepository.findAll(query, pageable);
+        Page<User> users = user.hasAuthority("ADMINISTRATOR") ?
+                userRepository.findAll(query, branchId, pageable)
+                :
+                userRepository.findByMemberBranch(user.getMember().getBranch(), pageable);
 
         int totalPages = users.getTotalPages();
 

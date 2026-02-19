@@ -1,8 +1,14 @@
 package org.icc.pecesatierra.web.services.impl;
 
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.TypedQuery;
+import jakarta.persistence.criteria.*;
 import lombok.RequiredArgsConstructor;
 import org.icc.pecesatierra.dtos.service.event.ServiceEventRequestDto;
 import org.icc.pecesatierra.dtos.service.event.ServiceEventResponseDto;
+import org.icc.pecesatierra.dtos.service.event.ServiceEventsFilterRequestDto;
+import org.icc.pecesatierra.dtos.service.event.ServiceEventPagesResponseDto;
 import org.icc.pecesatierra.entities.Branch;
 import org.icc.pecesatierra.entities.ServiceEvent;
 import org.icc.pecesatierra.entities.Services;
@@ -13,10 +19,14 @@ import org.icc.pecesatierra.repositories.ServiceEventRepository;
 import org.icc.pecesatierra.repositories.ServiceRepository;
 import org.icc.pecesatierra.utils.mappers.ServiceEventMapper;
 import org.icc.pecesatierra.web.services.ServiceEventService;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -27,6 +37,9 @@ public class ServiceEventServiceImpl implements ServiceEventService {
     private final ServiceEventMapper serviceEventMapper;
     private final ServiceRepository serviceRepository;
     private final BranchRepository branchRepository;
+
+    @PersistenceContext
+    private EntityManager em;
 
     @Transactional
     @Override
@@ -65,7 +78,7 @@ public class ServiceEventServiceImpl implements ServiceEventService {
         ServiceEvent serviceEvent = serviceEventRepository.findById(serviceEventId)
                 .orElseThrow(() -> new ServiceEventNotFoundException("Evento no encontrado."));
 
-        if (!user.hasAuthority("ADMINISTRATOR") && !user.getMember().getBranch().getId().equals(serviceEvent.getBranch().getId())){
+        if (!user.hasAuthority("ADMINISTRATOR") && !user.getMember().getBranch().getId().equals(serviceEvent.getBranch().getId())) {
             throw new CannotCancelEventOutsideYouBranch("No puedes cancelar eventos fuera de tu sede");
         }
 
@@ -79,12 +92,64 @@ public class ServiceEventServiceImpl implements ServiceEventService {
 
     @Transactional(readOnly = true)
     @Override
-    public List<ServiceEventResponseDto> findAll(User user) {
-        return user.hasAuthority("ADMINISTRATOR") ?
-                serviceEventRepository.findAll().stream().map(serviceEventMapper::toDto).toList()
-                :
-                serviceEventRepository.findByBranch(user.getMember().getBranch()).stream().map(serviceEventMapper::toDto).toList();
+    public List<ServiceEventResponseDto> findForCalendar(
+            ServiceEventsFilterRequestDto dto,
+            User user
+    ) {
+
+        if (dto.getStartDate() == null || dto.getEndDate() == null) {
+            throw new IllegalArgumentException("StartDate and EndDate are required for calendar view");
+        }
+
+        CriteriaBuilder cb = em.getCriteriaBuilder();
+        CriteriaQuery<ServiceEvent> cq = cb.createQuery(ServiceEvent.class);
+        Root<ServiceEvent> serviceEvent = cq.from(ServiceEvent.class);
+
+        Join<ServiceEvent, Services> service = serviceEvent.join("services", JoinType.INNER);
+        Join<ServiceEvent, Branch> branch = serviceEvent.join("branch", JoinType.INNER);
+
+        List<Predicate> predicates = new ArrayList<>();
+
+        predicates.add(
+                cb.between(
+                        serviceEvent.get("startDateTime"),
+                        dto.getStartDate(),
+                        dto.getEndDate()
+                )
+        );
+
+        if (dto.getServiceId() != null) {
+            predicates.add(
+                    cb.equal(service.get("id"), dto.getServiceId())
+            );
+        }
+
+        if (dto.getBranchId() != null && user.hasAuthority("ADMINISTRATOR")) {
+
+            predicates.add(
+                    cb.equal(branch.get("id"), dto.getBranchId())
+            );
+
+        } else if (!user.hasAuthority("ADMINISTRATOR")) {
+
+            predicates.add(
+                    cb.equal(
+                            branch.get("id"),
+                            user.getMember().getBranch().getId()
+                    )
+            );
+        }
+
+        cq.where(predicates.toArray(new Predicate[0]));
+        cq.orderBy(cb.asc(serviceEvent.get("startDateTime"))); // calendario necesita orden asc
+
+        List<ServiceEvent> results = em.createQuery(cq).getResultList();
+
+        return results.stream()
+                .map(serviceEventMapper::toDto)
+                .toList();
     }
+
 
     @Transactional(readOnly = true)
     @Override

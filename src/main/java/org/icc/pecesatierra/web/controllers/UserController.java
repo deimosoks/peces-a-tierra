@@ -46,8 +46,12 @@ public class UserController extends BaseController  {
                                                         @RequestParam(
                                                                 required = false,
                                                                 defaultValue = ""
-                                                        ) String query) {
-        return ResponseEntity.ok(userService.findAll(page, query));
+                                                        ) String query,
+                                                        @RequestParam(
+                                                                required = false
+                                                        ) String branchId,
+                                                        @AuthenticationPrincipal User user) {
+        return ResponseEntity.ok(userService.findAll(page, query, user, branchId));
     }
 
     @PreAuthorize("hasAuthority('UPDATE_USER') || hasAuthority('ADMINISTRATOR') && @securityService.isActive(authentication)")

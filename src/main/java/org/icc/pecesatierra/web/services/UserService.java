@@ -9,7 +9,7 @@ public interface UserService {
 
     MeDto me(User user);
 
-    UserPagesResponseDto findAll(int page, String query);
+    UserPagesResponseDto findAll(int page, String query, User user, String branchId);
 
     UserResponseDto update(UserRequestDto userRequestDto, String userId, User givenBy);
 

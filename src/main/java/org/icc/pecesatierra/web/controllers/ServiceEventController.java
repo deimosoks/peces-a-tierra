@@ -2,9 +2,10 @@ package org.icc.pecesatierra.web.controllers;
 
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
 import org.icc.pecesatierra.dtos.service.event.ServiceEventRequestDto;
 import org.icc.pecesatierra.dtos.service.event.ServiceEventResponseDto;
+import org.icc.pecesatierra.dtos.service.event.ServiceEventsFilterRequestDto;
+import org.icc.pecesatierra.dtos.service.event.ServiceEventPagesResponseDto;
 import org.icc.pecesatierra.entities.User;
 import org.icc.pecesatierra.web.services.ServiceEventService;
 import org.springframework.http.HttpStatus;
@@ -37,10 +38,13 @@ public class ServiceEventController {
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping
+    @PostMapping("/calendar")
     @PreAuthorize("hasAuthority('VIEW_EVENTS_PANEL') || hasAuthority('ADMINISTRATOR') && @securityService.isActive(authentication)")
-    public ResponseEntity<List<ServiceEventResponseDto>> findAll(@AuthenticationPrincipal User user){
-        return ResponseEntity.ok(serviceEventService.findAll(user));
+    public ResponseEntity<List<ServiceEventResponseDto>> findForCalendar(@AuthenticationPrincipal User user,
+                                                                         @RequestBody(
+                                                                         required = false
+                                                                 )ServiceEventsFilterRequestDto dto) {
+        return ResponseEntity.ok(serviceEventService.findForCalendar(dto, user));
     }
 
     @GetMapping("/active")
