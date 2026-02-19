@@ -441,7 +441,7 @@ public class GlobalHandlerException {
 
     @ExceptionHandler(MemberNoHasCategoryForThisSubCategoryException.class)
     public ResponseEntity<ErrorResponseDto> handlerMemberNoHasCategoryForThisSubCategoryException(HttpServletRequest httpServletRequest,
-                                                                                   MemberNoHasCategoryForThisSubCategoryException exception) {
+                                                                                                  MemberNoHasCategoryForThisSubCategoryException exception) {
         ErrorResponseDto errorResponseDto = ErrorResponseDto.builder()
                 .localDateTime(LocalDateTime.now())
                 .status(HttpStatus.BAD_REQUEST.value())
@@ -455,7 +455,7 @@ public class GlobalHandlerException {
 
     @ExceptionHandler(MemberSubCategoryNotFoundException.class)
     public ResponseEntity<ErrorResponseDto> handlerMemberSubCategoryNotFoundException(HttpServletRequest httpServletRequest,
-                                                                                                  MemberSubCategoryNotFoundException exception) {
+                                                                                      MemberSubCategoryNotFoundException exception) {
         ErrorResponseDto errorResponseDto = ErrorResponseDto.builder()
                 .localDateTime(LocalDateTime.now())
                 .status(HttpStatus.BAD_REQUEST.value())
@@ -469,7 +469,7 @@ public class GlobalHandlerException {
 
     @ExceptionHandler(MemberSubCategoryInUseException.class)
     public ResponseEntity<ErrorResponseDto> handlerMemberSubCategoryInUseException(HttpServletRequest httpServletRequest,
-                                                                                      MemberSubCategoryInUseException exception) {
+                                                                                   MemberSubCategoryInUseException exception) {
         ErrorResponseDto errorResponseDto = ErrorResponseDto.builder()
                 .localDateTime(LocalDateTime.now())
                 .status(HttpStatus.BAD_REQUEST.value())
@@ -483,7 +483,7 @@ public class GlobalHandlerException {
 
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<ErrorResponseDto> handlerBadCredentialsException(HttpServletRequest httpServletRequest,
-                                                                                   BadCredentialsException exception) {
+                                                                           BadCredentialsException exception) {
         ErrorResponseDto errorResponseDto = ErrorResponseDto.builder()
                 .localDateTime(LocalDateTime.now())
                 .status(HttpStatus.BAD_REQUEST.value())
@@ -497,7 +497,7 @@ public class GlobalHandlerException {
 
     @ExceptionHandler(AttendanceOutOfRangeException.class)
     public ResponseEntity<ErrorResponseDto> handlerAttendanceOutOfRangeException(HttpServletRequest httpServletRequest,
-                                                                           AttendanceOutOfRangeException exception) {
+                                                                                 AttendanceOutOfRangeException exception) {
         ErrorResponseDto errorResponseDto = ErrorResponseDto.builder()
                 .localDateTime(LocalDateTime.now())
                 .status(HttpStatus.BAD_REQUEST.value())
@@ -511,7 +511,7 @@ public class GlobalHandlerException {
 
     @ExceptionHandler(BranchNotFoundException.class)
     public ResponseEntity<ErrorResponseDto> handlerBranchNotFoundException(HttpServletRequest httpServletRequest,
-                                                                                 BranchNotFoundException exception) {
+                                                                           BranchNotFoundException exception) {
         ErrorResponseDto errorResponseDto = ErrorResponseDto.builder()
                 .localDateTime(LocalDateTime.now())
                 .status(HttpStatus.BAD_REQUEST.value())
@@ -553,7 +553,7 @@ public class GlobalHandlerException {
 
     @ExceptionHandler(NoActiveServiceEventException.class)
     public ResponseEntity<ErrorResponseDto> handlerNoActiveServiceEventException(HttpServletRequest httpServletRequest,
-                                                                         NoActiveServiceEventException exception) {
+                                                                                 NoActiveServiceEventException exception) {
         ErrorResponseDto errorResponseDto = ErrorResponseDto.builder()
                 .localDateTime(LocalDateTime.now())
                 .status(HttpStatus.BAD_REQUEST.value())
@@ -596,6 +596,118 @@ public class GlobalHandlerException {
     @ExceptionHandler(CannotUpdateUserWithMemberOutSideYourBranch.class)
     public ResponseEntity<ErrorResponseDto> handlerCannotUpdateUserWithMemberOutSideYourBranch(HttpServletRequest httpServletRequest,
                                                                                                CannotUpdateUserWithMemberOutSideYourBranch exception) {
+        ErrorResponseDto errorResponseDto = ErrorResponseDto.builder()
+                .localDateTime(LocalDateTime.now())
+                .status(HttpStatus.BAD_REQUEST.value())
+                .error(HttpStatus.BAD_REQUEST.getReasonPhrase())
+                .message(exception.getMessage())
+                .path(httpServletRequest.getRequestURI())
+                .build();
+
+        return new ResponseEntity<>(errorResponseDto, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(AlreadyExistsSubCategoryWithName.class)
+    public ResponseEntity<ErrorResponseDto> handlerAlreadyExistsSubCategoryWithName(HttpServletRequest httpServletRequest,
+                                                                                    AlreadyExistsSubCategoryWithName exception) {
+        ErrorResponseDto errorResponseDto = ErrorResponseDto.builder()
+                .localDateTime(LocalDateTime.now())
+                .status(HttpStatus.BAD_REQUEST.value())
+                .error(HttpStatus.BAD_REQUEST.getReasonPhrase())
+                .message(exception.getMessage())
+                .path(httpServletRequest.getRequestURI())
+                .build();
+
+        return new ResponseEntity<>(errorResponseDto, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(CannotCancelEventOutsideYouBranch.class)
+    public ResponseEntity<ErrorResponseDto> handlerAlreadyCannotCancelEventOutsideYouBranch(HttpServletRequest httpServletRequest,
+                                                                                            CannotCancelEventOutsideYouBranch exception) {
+        ErrorResponseDto errorResponseDto = ErrorResponseDto.builder()
+                .localDateTime(LocalDateTime.now())
+                .status(HttpStatus.BAD_REQUEST.value())
+                .error(HttpStatus.BAD_REQUEST.getReasonPhrase())
+                .message(exception.getMessage())
+                .path(httpServletRequest.getRequestURI())
+                .build();
+
+        return new ResponseEntity<>(errorResponseDto, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(CannotCreateMembersOutsideYourBranch.class)
+    public ResponseEntity<ErrorResponseDto> handlerCannotCreateMembersOutsideYourBranch(HttpServletRequest httpServletRequest,
+                                                                                        CannotCreateMembersOutsideYourBranch exception) {
+        ErrorResponseDto errorResponseDto = ErrorResponseDto.builder()
+                .localDateTime(LocalDateTime.now())
+                .status(HttpStatus.BAD_REQUEST.value())
+                .error(HttpStatus.BAD_REQUEST.getReasonPhrase())
+                .message(exception.getMessage())
+                .path(httpServletRequest.getRequestURI())
+                .build();
+
+        return new ResponseEntity<>(errorResponseDto, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(CannotCreateUsersWithMembersOutsideYourBranch.class)
+    public ResponseEntity<ErrorResponseDto> handlerCannotCreateUsersWithMembersOutsideYourBranch(HttpServletRequest httpServletRequest,
+                                                                                                 CannotCreateUsersWithMembersOutsideYourBranch exception) {
+        ErrorResponseDto errorResponseDto = ErrorResponseDto.builder()
+                .localDateTime(LocalDateTime.now())
+                .status(HttpStatus.BAD_REQUEST.value())
+                .error(HttpStatus.BAD_REQUEST.getReasonPhrase())
+                .message(exception.getMessage())
+                .path(httpServletRequest.getRequestURI())
+                .build();
+
+        return new ResponseEntity<>(errorResponseDto, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(CannotDeleteMemberOutSideYourBranchException.class)
+    public ResponseEntity<ErrorResponseDto> handlerCannotDeleteMemberOutSideYourBranchException(HttpServletRequest httpServletRequest,
+                                                                                                CannotDeleteMemberOutSideYourBranchException exception) {
+        ErrorResponseDto errorResponseDto = ErrorResponseDto.builder()
+                .localDateTime(LocalDateTime.now())
+                .status(HttpStatus.BAD_REQUEST.value())
+                .error(HttpStatus.BAD_REQUEST.getReasonPhrase())
+                .message(exception.getMessage())
+                .path(httpServletRequest.getRequestURI())
+                .build();
+
+        return new ResponseEntity<>(errorResponseDto, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(CannotDeleteUserWithMemberOutsideYouBranch.class)
+    public ResponseEntity<ErrorResponseDto> handlerCannotDeleteUserWithMemberOutsideYouBranch(HttpServletRequest httpServletRequest,
+                                                                                              CannotDeleteUserWithMemberOutsideYouBranch exception) {
+        ErrorResponseDto errorResponseDto = ErrorResponseDto.builder()
+                .localDateTime(LocalDateTime.now())
+                .status(HttpStatus.BAD_REQUEST.value())
+                .error(HttpStatus.BAD_REQUEST.getReasonPhrase())
+                .message(exception.getMessage())
+                .path(httpServletRequest.getRequestURI())
+                .build();
+
+        return new ResponseEntity<>(errorResponseDto, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(CannotInvalidBaptismOutsideYourBranch.class)
+    public ResponseEntity<ErrorResponseDto> handlerCannotInvalidBaptismOutsideYourBranch(HttpServletRequest httpServletRequest,
+                                                                                         CannotInvalidBaptismOutsideYourBranch exception) {
+        ErrorResponseDto errorResponseDto = ErrorResponseDto.builder()
+                .localDateTime(LocalDateTime.now())
+                .status(HttpStatus.BAD_REQUEST.value())
+                .error(HttpStatus.BAD_REQUEST.getReasonPhrase())
+                .message(exception.getMessage())
+                .path(httpServletRequest.getRequestURI())
+                .build();
+
+        return new ResponseEntity<>(errorResponseDto, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(CannotRegisterBaptismOutsideYourBranch.class)
+    public ResponseEntity<ErrorResponseDto> handlerCannotRegisterBaptismOutsideYourBranch(HttpServletRequest httpServletRequest,
+                                                                                          CannotRegisterBaptismOutsideYourBranch exception) {
         ErrorResponseDto errorResponseDto = ErrorResponseDto.builder()
                 .localDateTime(LocalDateTime.now())
                 .status(HttpStatus.BAD_REQUEST.value())

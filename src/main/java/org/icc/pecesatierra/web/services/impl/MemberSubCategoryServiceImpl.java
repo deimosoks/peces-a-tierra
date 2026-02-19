@@ -5,6 +5,7 @@ import org.icc.pecesatierra.dtos.member.category.MemberSubCategoryRequestDto;
 import org.icc.pecesatierra.dtos.member.category.MemberSubCategoryResponseDto;
 import org.icc.pecesatierra.entities.MemberCategory;
 import org.icc.pecesatierra.entities.MemberSubCategory;
+import org.icc.pecesatierra.exceptions.AlreadyExistsSubCategoryWithName;
 import org.icc.pecesatierra.exceptions.MemberCategoryNotFoundException;
 import org.icc.pecesatierra.exceptions.MemberSubCategoryInUseException;
 import org.icc.pecesatierra.exceptions.MemberSubCategoryNotFoundException;
@@ -28,8 +29,14 @@ public class MemberSubCategoryServiceImpl implements MemberSubCategoryService {
     @Transactional
     @Override
     public MemberSubCategoryResponseDto create(MemberSubCategoryRequestDto memberSubCategoryRequestDto) {
+
+
         MemberCategory memberCategory = memberCategoryRepository.findById(memberSubCategoryRequestDto.getCategoryId())
                 .orElseThrow(() -> new MemberCategoryNotFoundException("Categoria no encontrada."));
+
+        if (memberSubCategoryRepository.existsByCategoryAndName(memberCategory,memberSubCategoryRequestDto.getName())){
+            throw new AlreadyExistsSubCategoryWithName("Ya existe una sub-categoría con el nombre " + memberSubCategoryRequestDto.getName() + " dentro de la categoria " + memberCategory.getName());
+        }
 
         MemberSubCategory memberSubCategory = MemberSubCategory.builder()
                 .color(memberSubCategoryRequestDto.getColor())
