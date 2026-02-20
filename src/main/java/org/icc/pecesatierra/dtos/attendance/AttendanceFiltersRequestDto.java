@@ -16,5 +16,7 @@ public class AttendanceFiltersRequestDto {
     private LocalDateTime endDate;
     private String branchId;
     private String memberId;
+    private java.util.List<String> category;
+    private java.util.List<String> subCategory;
 
 }

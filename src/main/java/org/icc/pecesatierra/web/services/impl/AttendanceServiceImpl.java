@@ -37,10 +37,11 @@ public class AttendanceServiceImpl implements AttendanceService {
     @Override
     public void create(List<AttendanceRequestDto> attendances, User user) {
 
-        if (attendances == null || attendances.isEmpty()) return;
+        if (attendances == null || attendances.isEmpty())
+            return;
 
         ServiceEvent event = serviceEventRepository.findById(attendances.getFirst().getServiceEventId())
-                .orElseThrow(()-> new ServiceEventNotFoundException("Evento no encontrado."));
+                .orElseThrow(() -> new ServiceEventNotFoundException("Evento no encontrado."));
 
         if (!event.getServices().isActive()) {
             throw new ServicesNotFoundException("Servicio inactivo");
@@ -93,8 +94,10 @@ public class AttendanceServiceImpl implements AttendanceService {
         Attendance attendance = attendanceRepository.findById(attendanceInvalidRequestDto.getAttendanceId())
                 .orElseThrow(() -> new AttendanceNotFoundException("Esta asistencia no existe."));
 
-        if (!user.hasAuthority("ADMINISTRATOR") && !user.getMember().getBranch().getId().equals(attendance.getBranch().getId())) {
-            throw new CannotDeleteMemberOutSideYourBranchException("No puedes invalidar una asistencia fuera de tu sede.");
+        if (!user.hasAuthority("ADMINISTRATOR")
+                && !user.getMember().getBranch().getId().equals(attendance.getBranch().getId())) {
+            throw new CannotDeleteMemberOutSideYourBranchException(
+                    "No puedes invalidar una asistencia fuera de tu sede.");
         }
 
         attendance.setInvalid(true);
@@ -143,6 +146,17 @@ public class AttendanceServiceImpl implements AttendanceService {
             } else if (!user.hasAuthority("ADMINISTRATOR")) {
                 predicates.add(cb.equal(branch.get("id"), user.getMember().getBranch().getId()));
             }
+
+            if (dto.getCategory() != null && !dto.getCategory().isEmpty()) {
+                Join<Attendance, MemberCategory> memberCategoryJoin = attendance.join("memberCategory", JoinType.INNER);
+                predicates.add(memberCategoryJoin.get("name").in(dto.getCategory()));
+            }
+
+            if (dto.getSubCategory() != null && !dto.getSubCategory().isEmpty()) {
+                Join<Attendance, MemberSubCategory> memberSubCategoryJoin = attendance.join("memberSubCategory",
+                        JoinType.INNER);
+                predicates.add(memberSubCategoryJoin.get("name").in(dto.getSubCategory()));
+            }
         }
 
         cq.where(predicates.toArray(new Predicate[0]));
@@ -167,7 +181,8 @@ public class AttendanceServiceImpl implements AttendanceService {
                 countPredicates.add(cb.equal(countService.get("id"), dto.getServiceId()));
             }
             if (dto.getStartDate() != null) {
-                countPredicates.add(cb.greaterThanOrEqualTo(countServiceEvent.get("startDateTime"), dto.getStartDate()));
+                countPredicates
+                        .add(cb.greaterThanOrEqualTo(countServiceEvent.get("startDateTime"), dto.getStartDate()));
             }
             if (dto.getEndDate() != null) {
                 countPredicates.add(cb.lessThanOrEqualTo(countServiceEvent.get("startDateTime"), dto.getEndDate()));
@@ -184,6 +199,18 @@ public class AttendanceServiceImpl implements AttendanceService {
             } else if (!user.hasAuthority("ADMINISTRATOR")) {
                 countPredicates.add(cb.equal(countBranch.get("id"), user.getMember().getBranch().getId()));
             }
+
+            if (dto.getCategory() != null && !dto.getCategory().isEmpty()) {
+                Join<Attendance, MemberCategory> countMemberCategoryJoin = countRoot.join("memberCategory",
+                        JoinType.INNER);
+                countPredicates.add(countMemberCategoryJoin.get("name").in(dto.getCategory()));
+            }
+
+            if (dto.getSubCategory() != null && !dto.getSubCategory().isEmpty()) {
+                Join<Attendance, MemberSubCategory> countMemberSubCategoryJoin = countRoot.join("memberSubCategory",
+                        JoinType.INNER);
+                countPredicates.add(countMemberSubCategoryJoin.get("name").in(dto.getSubCategory()));
+            }
         }
 
         countQuery.select(cb.count(countRoot)).where(countPredicates.toArray(new Predicate[0]));
@@ -193,9 +220,7 @@ public class AttendanceServiceImpl implements AttendanceService {
 
         return new AttendancePagesResponseDto(
                 results.stream().map(attendanceMapper::toDto).toList(),
-                totalPages
-        );
+                totalPages);
     }
-
 
 }
