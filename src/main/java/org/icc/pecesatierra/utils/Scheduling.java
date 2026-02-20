@@ -18,32 +18,56 @@ public class Scheduling {
     private final MemberCategoryRepository memberCategoryRepository;
     private final MemberSubCategoryRepository memberSubCategoryRepository;
 
+    //TODO: implementar reglas dinamicas 
     @Transactional
     @Scheduled(cron = "0 0 2 * * ?", zone = "America/Bogota")
     public void reorganizationOfCategories() {
 
-        // TODO: Implementar configuracion dinamica luego
-        MemberCategory ninos = memberCategoryRepository.findById("22222222-2222-2222-2222-222222222224").get();
-        MemberCategory jovenes = memberCategoryRepository.findById("22222222-2222-2222-2222-222222222223").get();
+        MemberCategory ninos = memberCategoryRepository
+                .findById("22222222-2222-2222-2222-222222222224")
+                .orElseThrow();
 
-        MemberSubCategory ovejitas = memberSubCategoryRepository.findById("4747654d-0986-43e9-9d98-c200e54caadb").get();
-        MemberSubCategory leon = memberSubCategoryRepository.findById("1c3e973d-2371-4940-8916-bc96b3b104f9").get();
-        MemberSubCategory linaje = memberSubCategoryRepository.findById("3fb4a649-1986-440e-9081-fab2918a6284").get();
+        MemberCategory jovenes = memberCategoryRepository
+                .findById("22222222-2222-2222-2222-222222222223")
+                .orElseThrow();
+
+        MemberSubCategory ovejitas = memberSubCategoryRepository
+                .findById("4747654d-0986-43e9-9d98-c200e54caadb")
+                .orElseThrow();
+
+        MemberSubCategory leon = memberSubCategoryRepository
+                .findById("1c3e973d-2371-4940-8916-bc96b3b104f9")
+                .orElseThrow();
+
+        MemberSubCategory linaje = memberSubCategoryRepository
+                .findById("3fb4a649-1986-440e-9081-fab2918a6284")
+                .orElseThrow();
 
         memberRepository.updateByBirthdateRange(
-                ninos.getId(), ovejitas.getId(), 0, 5
+                ninos.getId(),
+                ninos.getId(),
+                ovejitas.getId(),
+                0, 5
         );
 
         memberRepository.updateByBirthdateRange(
-                ninos.getId(), leon.getId(), 6, 9
+                ninos.getId(),
+                ninos.getId(),
+                leon.getId(),
+                6, 9
         );
 
         memberRepository.updateByBirthdateRange(
-                ninos.getId(), linaje.getId(), 10, 14
+                ninos.getId(),
+                ninos.getId(),
+                linaje.getId(),
+                10, 14
         );
 
         memberRepository.updateOlderThan(
-                jovenes.getId(), 14
+                ninos.getId(),
+                jovenes.getId(),
+                14
         );
     }
 }
