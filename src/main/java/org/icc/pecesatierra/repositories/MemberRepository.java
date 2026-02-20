@@ -4,6 +4,7 @@ import org.icc.pecesatierra.entities.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -31,5 +32,37 @@ public interface MemberRepository extends JpaRepository<Member, String> {
     @Query("SELECT m FROM Member m WHERE FUNCTION('DATE_PART', 'month', m.birthdate) = :currentMonth AND m.branch = :branch")
     List<Member> findMembersWithBirthdayInMonthAndBranch(@Param("currentMonth") int currentMonth,
             @Param("branch") Branch branch);
+
+    @Modifying
+    @Query(value = """
+        UPDATE members
+        SET category_id = :categoryId,
+            subcategory_id = :subcategoryId
+        WHERE birthdate IS NOT NULL
+        AND birthdate BETWEEN 
+            CURRENT_DATE - (:maxAge * INTERVAL '1 year')
+        AND
+            CURRENT_DATE - (:minAge * INTERVAL '1 year')
+    """, nativeQuery = true)
+    int updateByBirthdateRange(
+            @Param("categoryId") String categoryId,
+            @Param("subcategoryId") String subcategoryId,
+            @Param("minAge") int minAge,
+            @Param("maxAge") int maxAge
+    );
+
+
+    @Modifying
+    @Query(value = """
+        UPDATE members
+        SET category_id = :categoryId,
+            subcategory_id = NULL
+        WHERE birthdate IS NOT NULL
+        AND birthdate < CURRENT_DATE - (:age * INTERVAL '1 year')
+    """, nativeQuery = true)
+    int updateOlderThan(
+            @Param("categoryId") String categoryId,
+            @Param("age") int age
+    );
 
 }

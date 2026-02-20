@@ -19,6 +19,7 @@ public class AttendanceResponseDto {
     private String memberCompleteName;
     private MemberCategoryResponseDto memberCategory;
     private MemberTypeResponseDto memberType;
+    private LocalDateTime serviceDate;
     private LocalDateTime attendanceDate;
     private String branchName;
     private boolean invalid;

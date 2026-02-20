@@ -11,4 +11,6 @@ public interface MemberSubCategoryRepository extends JpaRepository<MemberSubCate
     boolean existsByCategory(MemberCategory memberCategory);
 
     boolean existsByCategoryAndName(MemberCategory category,String name);
+
+    MemberSubCategory findByName(String name);
 }

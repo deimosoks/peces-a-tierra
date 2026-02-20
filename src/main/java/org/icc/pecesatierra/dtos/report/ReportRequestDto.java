@@ -15,6 +15,7 @@ public class ReportRequestDto {
     private List<String> typePeoples;
     private List<String> categories;
     private List<String> serviceIds;
+    private List<String> subCategories;
     private LocalDateTime startDate;
     private LocalDateTime endDate;
     private String userId;

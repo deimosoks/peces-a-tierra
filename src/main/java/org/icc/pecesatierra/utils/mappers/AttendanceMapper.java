@@ -22,6 +22,7 @@ public class AttendanceMapper {
                 .memberCategory(memberCategoryMapper.toDto(attendance.getMemberCategory()))
                 .memberType(memberTypeMapper.toDto(attendance.getMemberType()))
                 .subCategory(memberSubCategoryMapper.toDto(attendance.getMemberSubCategory()))
+                .serviceDate(attendance.getServiceEvent().getStartDateTime())
                 .attendanceDate(attendance.getAttendanceDate())
                 .branchName(attendance.getBranch().getName())
                 .invalid(attendance.isInvalid())
