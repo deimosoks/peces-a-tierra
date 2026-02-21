@@ -44,7 +44,7 @@ public class AttendanceServiceImpl implements AttendanceService {
                 .orElseThrow(() -> new ServiceEventNotFoundException("Evento no encontrado."));
 
         if (!event.getServices().isActive()) {
-            throw new ServicesNotFoundException("Servicio inactivo");
+            throw new ServiceDeactivatedException("Servicio inactivo");
         }
 
         for (AttendanceRequestDto dto : attendances) {

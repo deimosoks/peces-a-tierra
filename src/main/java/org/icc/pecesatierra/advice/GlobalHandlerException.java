@@ -523,9 +523,9 @@ public class GlobalHandlerException {
         return new ResponseEntity<>(errorResponseDto, HttpStatus.BAD_REQUEST);
     }
 
-    @ExceptionHandler(ExpiredServiceEventCannotBeDeleted.class)
+    @ExceptionHandler(CannotCancellEventsWithRecord.class)
     public ResponseEntity<ErrorResponseDto> handlerExpiredServiceEventCannotBeDeleted(HttpServletRequest httpServletRequest,
-                                                                                      ExpiredServiceEventCannotBeDeleted exception) {
+                                                                                      CannotCancellEventsWithRecord exception) {
         ErrorResponseDto errorResponseDto = ErrorResponseDto.builder()
                 .localDateTime(LocalDateTime.now())
                 .status(HttpStatus.BAD_REQUEST.value())

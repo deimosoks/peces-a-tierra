@@ -28,4 +28,5 @@ public interface AttendanceRepository extends JpaRepository<Attendance, String> 
 
     boolean existsAttendanceByBranch(Branch branch);
 
+    boolean existsByServiceEvent(ServiceEvent serviceEvent);
 }

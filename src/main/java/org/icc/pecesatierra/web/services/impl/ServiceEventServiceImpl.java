@@ -2,26 +2,22 @@ package org.icc.pecesatierra.web.services.impl;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
-import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.*;
 import lombok.RequiredArgsConstructor;
 import org.icc.pecesatierra.dtos.service.event.ServiceEventRequestDto;
 import org.icc.pecesatierra.dtos.service.event.ServiceEventResponseDto;
 import org.icc.pecesatierra.dtos.service.event.ServiceEventsFilterRequestDto;
-import org.icc.pecesatierra.dtos.service.event.ServiceEventPagesResponseDto;
 import org.icc.pecesatierra.entities.Branch;
 import org.icc.pecesatierra.entities.ServiceEvent;
 import org.icc.pecesatierra.entities.Services;
 import org.icc.pecesatierra.entities.User;
 import org.icc.pecesatierra.exceptions.*;
+import org.icc.pecesatierra.repositories.AttendanceRepository;
 import org.icc.pecesatierra.repositories.BranchRepository;
 import org.icc.pecesatierra.repositories.ServiceEventRepository;
 import org.icc.pecesatierra.repositories.ServiceRepository;
 import org.icc.pecesatierra.utils.mappers.ServiceEventMapper;
 import org.icc.pecesatierra.web.services.ServiceEventService;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,6 +33,7 @@ public class ServiceEventServiceImpl implements ServiceEventService {
     private final ServiceEventMapper serviceEventMapper;
     private final ServiceRepository serviceRepository;
     private final BranchRepository branchRepository;
+    private final AttendanceRepository attendanceRepository;
 
     @PersistenceContext
     private EntityManager em;
@@ -82,8 +79,8 @@ public class ServiceEventServiceImpl implements ServiceEventService {
             throw new CannotCancelEventOutsideYouBranch("No puedes cancelar eventos fuera de tu sede");
         }
 
-        if (serviceEvent.getStartDateTime().isBefore(LocalDateTime.now())) {
-            throw new ExpiredServiceEventCannotBeDeleted("No puedes cancelar un evento que ya inicio o expiro.");
+        if (attendanceRepository.existsByServiceEvent(serviceEvent)) {
+            throw new CannotCancellEventsWithRecord("No puede cancelar un evento con asistencias registradas..");
         }
 
         serviceEventRepository.delete(serviceEvent);
