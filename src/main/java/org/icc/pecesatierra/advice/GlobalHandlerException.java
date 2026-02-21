@@ -719,6 +719,34 @@ public class GlobalHandlerException {
         return new ResponseEntity<>(errorResponseDto, HttpStatus.BAD_REQUEST);
     }
 
+    @ExceptionHandler(PasswordDoesNotMatchException.class)
+    public ResponseEntity<ErrorResponseDto> handlerPasswordDoesNotMatchException(HttpServletRequest httpServletRequest,
+                                                                                 PasswordDoesNotMatchException exception) {
+        ErrorResponseDto errorResponseDto = ErrorResponseDto.builder()
+                .localDateTime(LocalDateTime.now())
+                .status(HttpStatus.BAD_REQUEST.value())
+                .error(HttpStatus.BAD_REQUEST.getReasonPhrase())
+                .message(exception.getMessage())
+                .path(httpServletRequest.getRequestURI())
+                .build();
+
+        return new ResponseEntity<>(errorResponseDto, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(PasswordDoesNotMatchWithPasswordRegisterException.class)
+    public ResponseEntity<ErrorResponseDto> handlerPasswordDoesNotMatchWithPasswordRegisterException(HttpServletRequest httpServletRequest,
+                                                                                 PasswordDoesNotMatchWithPasswordRegisterException exception) {
+        ErrorResponseDto errorResponseDto = ErrorResponseDto.builder()
+                .localDateTime(LocalDateTime.now())
+                .status(HttpStatus.BAD_REQUEST.value())
+                .error(HttpStatus.BAD_REQUEST.getReasonPhrase())
+                .message(exception.getMessage())
+                .path(httpServletRequest.getRequestURI())
+                .build();
+
+        return new ResponseEntity<>(errorResponseDto, HttpStatus.BAD_REQUEST);
+    }
+
 //    @ExceptionHandler(Exception.class)
 //    public ResponseEntity<ErrorResponseDto> handlerGenericException(HttpServletRequest httpServletRequest,
 //                                                                                   Exception exception) {

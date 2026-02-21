@@ -6,7 +6,6 @@ import jakarta.persistence.criteria.CriteriaBuilder;
 import lombok.AllArgsConstructor;
 import org.icc.pecesatierra.dtos.baptism.*;
 import org.icc.pecesatierra.entities.Baptism;
-import org.icc.pecesatierra.entities.Branch;
 import org.icc.pecesatierra.entities.Member;
 import org.icc.pecesatierra.entities.User;
 import org.icc.pecesatierra.exceptions.*;

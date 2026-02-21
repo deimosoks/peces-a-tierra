@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.icc.pecesatierra.dtos.auth.AuthRequestDto;
 import org.icc.pecesatierra.dtos.auth.AuthResponseDto;
+import org.icc.pecesatierra.dtos.auth.ChanggePasswordRequest;
 import org.icc.pecesatierra.dtos.auth.RefreshTokenRequestDto;
 import org.icc.pecesatierra.entities.User;
 import org.icc.pecesatierra.web.services.AuthService;
@@ -39,4 +40,12 @@ public class AuthController extends BaseController {
         authService.logout(user, refreshTokenRequestDto);
         return ResponseEntity.ok().build();
     }
+
+    @PostMapping("/changge-password")
+    public ResponseEntity<Void> changgePassword(@AuthenticationPrincipal User user,
+                                                @RequestBody @Valid ChanggePasswordRequest dto){
+        authService.changgePassword(user, dto);
+        return ResponseEntity.ok().build();
+    }
+
 }

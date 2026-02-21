@@ -5,6 +5,8 @@ import org.icc.pecesatierra.dtos.dashboard.DashboardResponseDto;
 import org.icc.pecesatierra.dtos.member.MemberResponseDto;
 import org.icc.pecesatierra.dtos.report.ReportRequestDto;
 import org.icc.pecesatierra.dtos.report.ReportResponseDto;
+import org.icc.pecesatierra.entities.Branch;
+import org.icc.pecesatierra.repositories.BaptismRepository;
 import org.icc.pecesatierra.utils.mappers.MemberMapper;
 import org.icc.pecesatierra.repositories.MemberRepository;
 import org.icc.pecesatierra.web.services.DashboardService;
@@ -13,10 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import org.icc.pecesatierra.entities.User;
-import org.icc.pecesatierra.repositories.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -28,8 +27,7 @@ public class DashboardServiceImpl implements DashboardService {
     private final MemberRepository memberRepository;
     private final MemberMapper memberMapper;
     private final ReportService reportService;
-
-    private final UserRepository userRepository;
+    private final BaptismRepository baptismRepository;
 
     @Transactional(readOnly = true)
     @Override
@@ -39,6 +37,7 @@ public class DashboardServiceImpl implements DashboardService {
             boolean isAdmin = user.hasAuthority("ADMINISTRATOR");
 
             long totalMember;
+            long totalBaptisms = 0;
             List<MemberResponseDto> memberBirthdays;
             ReportRequestDto reportRequest = ReportRequestDto.builder()
                     .startDate(LocalDateTime.now().minusDays(7))
@@ -50,8 +49,9 @@ public class DashboardServiceImpl implements DashboardService {
                 memberBirthdays = memberRepository
                         .findMembersWithBirthdayInMonth(LocalDateTime.now().getMonthValue())
                         .stream().map(member -> memberMapper.toDto(member, false)).toList();
+                totalBaptisms = baptismRepository.count();
             } else {
-                org.icc.pecesatierra.entities.Branch branch = user.getMember().getBranch();
+                Branch branch = user.getMember().getBranch();
                 if (branch == null) {
                     totalMember = 0;
                     memberBirthdays = List.of();
@@ -64,6 +64,7 @@ public class DashboardServiceImpl implements DashboardService {
                             .toList();
 
                     reportRequest.setBranchIds(List.of(branch.getId()));
+                    totalBaptisms = baptismRepository.countByBaptizedMemberBranch(branch);
                 }
             }
 
@@ -73,6 +74,7 @@ public class DashboardServiceImpl implements DashboardService {
                     .totalMember(totalMember)
                     .membersBirthdays(memberBirthdays)
                     .lastWeekReport(lastWeekReport)
+                    .totalBaptisms(totalBaptisms)
                     .build();
         }
         throw new EntityNotFoundException("User not found");

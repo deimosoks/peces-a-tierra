@@ -1,12 +1,10 @@
 package org.icc.pecesatierra.web.services.impl;
 
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.icc.pecesatierra.entities.RefreshToken;
 import org.icc.pecesatierra.entities.User;
 import org.icc.pecesatierra.dtos.auth.*;
-import org.icc.pecesatierra.exceptions.RefreshTokenException;
-import org.icc.pecesatierra.exceptions.UserDeactivatedException;
-import org.icc.pecesatierra.exceptions.UserNotFoundException;
+import org.icc.pecesatierra.exceptions.*;
 import org.icc.pecesatierra.repositories.RefreshTokenRepository;
 import org.icc.pecesatierra.repositories.UserRepository;
 import org.icc.pecesatierra.utils.mappers.RefreshTokenMapper;
@@ -17,20 +15,22 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
 
-    private RefreshTokenService refreshTokenService;
-    private JwtService jwtService;
-    private RefreshTokenRepository refreshTokenRepository;
-    private AuthenticationManager authenticationManager;
-    private UserDetailsService userDetailsService;
-    private UserRepository userRepository;
-    private RefreshTokenMapper refreshTokenMapper;
+    private final RefreshTokenService refreshTokenService;
+    private final JwtService jwtService;
+    private final RefreshTokenRepository refreshTokenRepository;
+    private final AuthenticationManager authenticationManager;
+    private final UserDetailsService userDetailsService;
+    private final UserRepository userRepository;
+    private final RefreshTokenMapper refreshTokenMapper;
+    private final PasswordEncoder passwordEncoder;
 
     @Transactional
     @Override
@@ -48,7 +48,7 @@ public class AuthServiceImpl implements AuthService {
         User user = userRepository.findByUsername(userDetails.getUsername())
                 .orElseThrow(() -> new UserNotFoundException("Este usuario no existe."));
 
-        if (!user.isActive()){
+        if (!user.isActive()) {
             throw new UserDeactivatedException("El usuario con el que si intenta logear esta desactivado.");
         }
 
@@ -84,11 +84,9 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public AuthResponseDto refresh(RefreshTokenRequestDto refreshTokenRequestDto) {
 
-//        refreshTokenService.validate(refreshTokenRequestDto.getRefreshToken());
-
         RefreshToken newRefreshToken = refreshTokenService.validateAndRotate(refreshTokenRequestDto.getRefreshToken());
 
-         String accessToken = jwtService.generateToken(newRefreshToken.getUser());
+        String accessToken = jwtService.generateToken(newRefreshToken.getUser());
 
         AccessTokenDto newAccessTokenDto = AccessTokenDto.builder()
                 .token(accessToken)
@@ -99,5 +97,20 @@ public class AuthServiceImpl implements AuthService {
                 .accessTokenDto(newAccessTokenDto)
                 .refreshTokenDto(refreshTokenMapper.toDto(newRefreshToken))
                 .build();
+    }
+
+    @Transactional
+    @Override
+    public void changgePassword(User user, ChanggePasswordRequest dto) {
+
+        if (!dto.getPassword().equals(dto.getConfirmPassword()))
+            throw new PasswordDoesNotMatchException("Las contraseñas no coinciden.");
+
+        if (!passwordEncoder.matches(dto.getOldPassword(), user.getPasswordHash()))
+            throw new PasswordDoesNotMatchWithPasswordRegisterException("La contraseña anterior no coincide con su contraseña registrada.");
+
+        user.setPasswordHash(passwordEncoder.encode(dto.getPassword()));
+
+        userRepository.save(user);
     }
 }
