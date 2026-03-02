@@ -1,0 +1,64 @@
+package org.icc.pecesatierra.utils.enums;
+
+public enum AppPermission {
+
+    UPDATE_ROLE,
+    DELETE_ROLE,
+    VIEW_ROLE_PANEL,
+    CREATE_ROLE,
+
+    // MEMBER
+    CREATE_MEMBER,
+    UPDATE_MEMBER,
+    DELETE_MEMBER,
+    VIEW_MEMBER_PANEL,
+
+    // USER
+    CREATE_USER,
+    UPDATE_USER,
+    DELETE_USER,
+    VIEW_USER_PANEL,
+
+    // SERVICE
+    CREATE_SERVICE,
+    UPDATE_SERVICE,
+    DELETE_SERVICE,
+    VIEW_SERVICE_PANEL,
+
+    // ATTENDANCE
+    MANAGE_ATTENDANCE,
+    REGISTER_ATTENDANCE,
+
+    // REPORT
+    MANAGE_REPORT,
+
+    // DASHBOARD
+    MANAGE_DASHBOARD,
+
+    // NOTES
+    CREATE_NOTE,
+    DELETE_NOTE,
+
+    // BAPTISM
+    BAPTISM_CREATE,
+    BAPTISM_INVALIDATE,
+    VIEW_BAPTISM_PANEL,
+
+    // EVENTS
+    VIEW_EVENTS_PANEL,
+    REGISTER_EVENTS,
+    CANCEL_EVENTS,
+
+    // BRANCH
+    BRANCH_CREATE,
+    VIEW_BRANCH_PANEL,
+    BRANCH_UPDATE,
+    BRANCH_DELETE,
+
+    // SPECIAL
+    ADMINISTRATOR;
+
+    public String getPermission() {
+        return this.name();
+    }
+}

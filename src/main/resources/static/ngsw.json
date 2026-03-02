@@ -1,0 +1,105 @@
+{
+  "configVersion": 1,
+  "timestamp": 1772416844834,
+  "index": "/index.html",
+  "assetGroups": [
+    {
+      "name": "app",
+      "installMode": "prefetch",
+      "updateMode": "prefetch",
+      "cacheQueryOptions": {
+        "ignoreVary": true
+      },
+      "urls": [
+        "/chunk-56PMMHJG.js",
+        "/chunk-DZCPKJLB.js",
+        "/chunk-F52DAHQQ.js",
+        "/chunk-FDERIQAA.js",
+        "/chunk-FK6H3RFT.js",
+        "/chunk-HXALNZ2F.js",
+        "/chunk-JQDNZCUM.js",
+        "/chunk-KFVPZZ6B.js",
+        "/chunk-MPP7YJHR.js",
+        "/chunk-QXSLYJU6.js",
+        "/chunk-W2JH4KPR.js",
+        "/index.html",
+        "/main-AQMVPUAU.js",
+        "/manifest.webmanifest",
+        "/polyfills-6ISPNSXF.js",
+        "/styles-DPHZZPPL.css"
+      ],
+      "patterns": []
+    },
+    {
+      "name": "assets",
+      "installMode": "lazy",
+      "updateMode": "prefetch",
+      "cacheQueryOptions": {
+        "ignoreVary": true
+      },
+      "urls": [
+        "/icons/icon-128x128.png",
+        "/icons/icon-192x192.png",
+        "/icons/icon-384x384.png",
+        "/icons/icon-512x512.png",
+        "/icons/icon-72x72.png",
+        "/icons/icon-96x96.png",
+        "/img/bible-login.png",
+        "/img/certificate-template.jpg",
+        "/img/logo-login.png",
+        "/img/logoicc.png",
+        "/img/sidebar-logo.jpg"
+      ],
+      "patterns": []
+    }
+  ],
+  "dataGroups": [],
+  "hashTable": {
+    "/chunk-56PMMHJG.js": "f0b2ce2d864798dcefba90eb760245bfe060dc41",
+    "/chunk-DZCPKJLB.js": "a09617cefb9e9a30a02479a19ae002fd8c5d2663",
+    "/chunk-F52DAHQQ.js": "390f5de255aa5d5696fdb0dd76755a8453b9765b",
+    "/chunk-FDERIQAA.js": "15d85ae44d58f9569a95e3112d9ea18d82c7a34d",
+    "/chunk-FK6H3RFT.js": "3c538698719f1cf34410542b8c702bc484e025ee",
+    "/chunk-HXALNZ2F.js": "fab5562f5ebc21077ee5997293848ef093823c66",
+    "/chunk-JQDNZCUM.js": "c7a8ae58534bc1d7e5fa8aa6355727a8419dce3a",
+    "/chunk-KFVPZZ6B.js": "04a7f867f94ebcd80cff6527451ac8513a93d125",
+    "/chunk-MPP7YJHR.js": "79ecd347f0d25322abfe74ec7bb55774b4309573",
+    "/chunk-QXSLYJU6.js": "a59dbc3167887a93088a0f63f808f19fb4512c19",
+    "/chunk-W2JH4KPR.js": "b339d087455ce7661e7c27d86aa6e44db484e20b",
+    "/icons/icon-128x128.png": "ffc9947e93efb20fdab5e6232babd0eb5cec6146",
+    "/icons/icon-192x192.png": "9392ab6c84b936a004da354886f5113d2cab179f",
+    "/icons/icon-384x384.png": "64e814b8fe2b0da408f294150f756e503912fdf1",
+    "/icons/icon-512x512.png": "0f3f0b9f7a52b56f54ca1d29797badd31c7fb4d9",
+    "/icons/icon-72x72.png": "7ad221f636ee5b093c12480e68d0c7be2c23e91d",
+    "/icons/icon-96x96.png": "7792ffb39a2b94d902647dc259422c8082ea6029",
+    "/img/bible-login.png": "05a373af68fa9653e0aff302760e7766aacfc26b",
+    "/img/certificate-template.jpg": "e37c9ef6921513ab419aa7bebd0dba6950896eb3",
+    "/img/logo-login.png": "1e52dbbff63a2b22afa9c9bd024dca0c53586ec1",
+    "/img/logoicc.png": "cfc65c3c0124d7adc4ab251a394cf7711c96afc7",
+    "/img/sidebar-logo.jpg": "7ed783d95622306f76ffc58962874ccf2810ea9f",
+    "/index.html": "c4df87a36ab7a012e9a717a09f3d2c811993cdad",
+    "/main-AQMVPUAU.js": "cc5a30bbcce6cb67e0c1d83d5fc289084b47cab3",
+    "/manifest.webmanifest": "acd0a3eb8a775f5c7976aef2d024c2714705cb7d",
+    "/polyfills-6ISPNSXF.js": "b15ba4d1036f2db285649ff775f184bcdcd0b08a",
+    "/styles-DPHZZPPL.css": "25e696336c6e395e3a810eacdfba6845f6373a19"
+  },
+  "navigationUrls": [
+    {
+      "positive": true,
+      "regex": "^\\/.*$"
+    },
+    {
+      "positive": false,
+      "regex": "^\\/(?:.+\\/)?[^/]*\\.[^/]*$"
+    },
+    {
+      "positive": false,
+      "regex": "^\\/(?:.+\\/)?[^/]*__[^/]*$"
+    },
+    {
+      "positive": false,
+      "regex": "^\\/(?:.+\\/)?[^/]*__[^/]*\\/.*$"
+    }
+  ],
+  "navigationRequestStrategy": "performance"
+}
