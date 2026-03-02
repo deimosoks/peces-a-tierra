@@ -70,8 +70,15 @@ public class MemberSubCategoryServiceImpl implements MemberSubCategoryService {
     @Transactional
     @Override
     public MemberSubCategoryResponseDto update(MemberSubCategoryRequestDto memberSubCategoryRequestDto, String subCategoryId, User user) {
+
         MemberSubCategory memberSubCategory = memberSubCategoryRepository.findById(subCategoryId)
                 .orElseThrow(SubCategoryNotFoundException::new);
+
+        if (memberSubCategoryRepository.existsByCategoryAndName(memberSubCategory.getCategory(), memberSubCategoryRequestDto.getName())) {
+            log.warn("Usuario {} intento actualizar sub-categoria {} en la categoria {} pero ya existe una sub-categoria dentro de esa categoria con ese nombre.",
+                    user.getMember().getId(), memberSubCategoryRequestDto.getName(), memberSubCategory.getCategory().getId());
+            throw new AlreadyExistsSubCategoryWithName(memberSubCategoryRequestDto.getName(), memberSubCategory.getCategory().getName());
+        }
 
         MemberSubCategory beforeUpdate = MemberSubCategory.builder()
                 .id(memberSubCategory.getId())

@@ -4,7 +4,12 @@
 
 ## 🚀 Características Principales
 
-*   **👥 Gestión de Integrantes:** Administración completa de perfiles de miembros, incluyendo categorías, tipos y estados (activo/inactivo).
+*   **👥 Gestión de Integrantes:** 
+    *   Administración completa de perfiles (datos personales, contacto, ubicación).
+    *   Gestión dinámica de **Categorías y Subcategorías** (sin valores hardcodeados).
+*   **⚙️ Motor de Reglas de Categoría:**
+    *   Sistema inteligente para definir reglas de pertenencia a categorías basadas en **edad y género**.
+    *   Validación automática de integridad entre categorías y subcategorías.
 *   **📅 Control de Asistencias:** 
     *   Registro masivo de asistencias por eventos/servicios.
     *   Validación de reglas de negocio (horarios, estado del miembro).
@@ -14,7 +19,6 @@
     *   Autorización basada en Roles y Permisos dinámicos (RBAC).
     *   Protección de endpoints a nivel de método (`@PreAuthorize`).
 *   **📊 Reportes y Dashboard:** Generación automática de estadísticas y reportes de actividad.
-*   **🛠️ Gestión de Eventos:** Administración de servicios y eventos eclesiásticos.
 
 ## 🛠️ Stack Tecnológico
 
@@ -53,7 +57,7 @@ El proyecto sigue una arquitectura en capas limpia y escalable:
 
 1.  **Clonar el repositorio:**
     ```bash
-    git clone https://github.com/tu-usuario/peces-a-tierra.git
+    git clone <url-del-repositorio>
     cd peces-a-tierra
     ```
 
@@ -73,16 +77,6 @@ El proyecto sigue una arquitectura en capas limpia y escalable:
 
 4.  **Acceso:**
     La API estará disponible en `http://localhost:8080`.
-
-## 🤝 Contribución
-
-Las contribuciones son bienvenidas. Por favor, sigue los siguientes pasos:
-
-1.  Haz un Fork del proyecto.
-2.  Crea una rama para tu feature (`git checkout -b feature/NuevaFuncionalidad`).
-3.  Haz Commit de tus cambios (`git commit -m 'Agrega nueva funcionalidad'`).
-4.  Haz Push a la rama (`git push origin feature/NuevaFuncionalidad`).
-5.  Abre un Pull Request.
 
 ## 📄 Licencia
 
