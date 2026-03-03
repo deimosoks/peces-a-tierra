@@ -16,7 +16,12 @@ public interface BaptismRepository extends JpaRepository<Baptism, String>, JpaSp
     long countByInvalidFalse();
 
     @Override
-    @EntityGraph(attributePaths = {"baptizedMember", "baptizedMember.branch"})
+    @EntityGraph(attributePaths = {
+            "baptizedMember",
+            "baptizedMember.branch",
+            "registeredBy",
+            "invalidatorId"
+    })
     Page<Baptism> findAll(Specification<Baptism> spec, Pageable pageable);
 
     long countByBaptizedMemberBranchAndInvalidFalse(Branch branch);

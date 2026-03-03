@@ -41,9 +41,6 @@ public class RoleServiceImpl implements RoleService {
 
         roleRequestDto.getPermissions().forEach(
                 permissionRequestDto -> {
-//                    Permission permission = permissionRepository.findById(permissionRequestDto.getPermission())
-//                            .orElseThrow(PermissionNotFoundException::new);
-
                     RolePermissionId rolePermissionId = RolePermissionId.builder()
                             .permission(permissionRequestDto.getName().getPermission())
                             .roleId(role.getId())

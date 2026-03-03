@@ -1,6 +1,10 @@
 package org.icc.pecesatierra.repositories;
 
 import org.icc.pecesatierra.entities.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
@@ -10,6 +14,19 @@ import java.util.Set;
 
 @Repository
 public interface AttendanceRepository extends JpaRepository<Attendance, String>, JpaSpecificationExecutor<Attendance> {
+
+    @Override
+    @EntityGraph(attributePaths = {
+            "memberCategory",
+            "memberType",
+            "registeredById",
+            "MemberSubCategory",
+            "invalidatorId",
+            "branch",
+            "serviceEvent",
+            "member"
+    })
+    Page<Attendance> findAll(Specification<Attendance> spec, Pageable pageable);
 
     boolean existsByMember(Member member);
 

@@ -23,7 +23,11 @@ import org.icc.pecesatierra.repositories.BranchRepository;
 import org.icc.pecesatierra.repositories.ServiceEventRepository;
 import org.icc.pecesatierra.repositories.ServiceRepository;
 import org.icc.pecesatierra.utils.mappers.ServiceEventMapper;
+import org.icc.pecesatierra.utils.specs.ServiceEventSpecification;
 import org.icc.pecesatierra.web.services.ServiceEventService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -42,9 +46,7 @@ public class ServiceEventServiceImpl implements ServiceEventService {
     private final ServiceRepository serviceRepository;
     private final BranchRepository branchRepository;
     private final AttendanceRepository attendanceRepository;
-
-    @PersistenceContext
-    private EntityManager em;
+    private final ServiceEventSpecification serviceEventSpecification;
 
     @Transactional
     @Override
@@ -144,51 +146,11 @@ public class ServiceEventServiceImpl implements ServiceEventService {
             throw new IllegalArgumentException("StartDate and EndDate are required for calendar view");
         }
 
-        CriteriaBuilder cb = em.getCriteriaBuilder();
-        CriteriaQuery<ServiceEvent> cq = cb.createQuery(ServiceEvent.class);
-        Root<ServiceEvent> serviceEvent = cq.from(ServiceEvent.class);
+        Specification<ServiceEvent> spec = serviceEventSpecification.build(dto, user);
 
-        Join<ServiceEvent, Services> service = serviceEvent.join("services", JoinType.INNER);
-        Join<ServiceEvent, Branch> branch = serviceEvent.join("branch", JoinType.INNER);
+        List<ServiceEvent> serviceEvents = serviceEventRepository.findAll(spec);
 
-        List<Predicate> predicates = new ArrayList<>();
-
-        predicates.add(
-                cb.between(
-                        serviceEvent.get("startDateTime"),
-                        dto.getStartDate(),
-                        dto.getEndDate()
-                )
-        );
-
-        if (dto.getServiceId() != null) {
-            predicates.add(
-                    cb.equal(service.get("id"), dto.getServiceId())
-            );
-        }
-
-        if (dto.getBranchId() != null && user.hasAuthority("ADMINISTRATOR")) {
-
-            predicates.add(
-                    cb.equal(branch.get("id"), dto.getBranchId())
-            );
-
-        } else if (!user.hasAuthority("ADMINISTRATOR")) {
-
-            predicates.add(
-                    cb.equal(
-                            branch.get("id"),
-                            user.getMember().getBranch().getId()
-                    )
-            );
-        }
-
-        cq.where(predicates.toArray(new Predicate[0]));
-        cq.orderBy(cb.asc(serviceEvent.get("startDateTime"))); // calendario necesita orden asc
-
-        List<ServiceEvent> results = em.createQuery(cq).getResultList();
-
-        return results.stream()
+        return serviceEvents.stream()
                 .map(serviceEventMapper::toDto)
                 .toList();
     }
@@ -200,7 +162,7 @@ public class ServiceEventServiceImpl implements ServiceEventService {
         String branchId = String.valueOf(user.getMember()
                 .getBranch()
                 .getId());
-        //TODO: implementar logica de formato de hora luego
+        //TODO: implementar lógica de formato de hora luego
         LocalDateTime now = LocalDateTime.now(ZoneId.of("America/Bogota"));
 
         List<ServiceEvent> event = serviceEventRepository
