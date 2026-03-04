@@ -50,20 +50,16 @@ public class DashboardServiceImpl implements DashboardService {
             totalBaptisms = baptismRepository.countByInvalidFalse();
         } else {
             Branch branch = user.getMember().getBranch();
-            if (branch == null) {
-                totalMember = 0;
-                memberBirthdays = List.of();
-                reportRequest.setBranchIds(List.of("NON_EXISTENT_BRANCH"));
-            } else {
-                totalMember = memberRepository.countByBranch(branch);
-                memberBirthdays = memberRepository.findMembersWithBirthdayInMonthAndBranch(
-                                LocalDateTime.now().getMonthValue(), branch)
-                        .stream().map(member -> memberMapper.toDto(member, false))
-                        .toList();
 
-                reportRequest.setBranchIds(List.of(branch.getId()));
-                totalBaptisms = baptismRepository.countByBaptizedMemberBranchAndInvalidFalse(branch);
-            }
+            totalMember = memberRepository.countByBranch(branch);
+            memberBirthdays = memberRepository.findMembersWithBirthdayInMonthAndBranch(
+                            LocalDateTime.now().getMonthValue(), branch)
+                    .stream().map(member -> memberMapper.toDto(member, false))
+                    .toList();
+
+            reportRequest.setBranchIds(List.of(branch.getId()));
+            totalBaptisms = baptismRepository.countByBaptizedMemberBranchAndInvalidFalse(branch);
+
         }
 
         List<ReportResponseDto> lastWeekReport = reportService.generate(reportRequest, user);

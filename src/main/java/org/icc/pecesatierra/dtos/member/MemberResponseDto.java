@@ -36,6 +36,7 @@ public class MemberResponseDto {
     private boolean active;
     private MemberSubCategoryResponseDto subCategory;
     private Set<MemberNoteResponseDto> notes;
+    private String registeredBy;
 
     private boolean categoryLocked;
 

@@ -10,6 +10,7 @@ import org.icc.pecesatierra.repositories.RefreshTokenRepository;
 import org.icc.pecesatierra.repositories.UserRepository;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.core.Authentication;
+import org.springframework.transaction.annotation.Transactional;
 
 @Configuration
 @RequiredArgsConstructor
@@ -18,14 +19,16 @@ public class SecurityService {
     private final UserRepository userRepository;
     private final RefreshTokenRepository refreshTokenRepository;
 
-    public boolean isActive(Authentication authentication){
+    @Transactional(readOnly = true)
+    public boolean isActive(Authentication authentication) {
         User user = userRepository.findByUsername(authentication.getName())
                 .orElseThrow(AuthenticatedUserNotFoundException::new);
 
         return user.isActive();
     }
 
-    public boolean isActive(RefreshTokenRequestDto token){
+    @Transactional(readOnly = true)
+    public boolean isActive(RefreshTokenRequestDto token) {
         RefreshToken refreshToken = refreshTokenRepository.findByToken(token.getRefreshToken())
                 .orElseThrow(InvalidRefreshTokenException::new);
 

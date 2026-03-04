@@ -31,9 +31,7 @@ public class ReportServiceImpl implements ReportService {
     @Override
     public List<ReportResponseDto> generate(ReportRequestDto dto, User user) {
 
-        boolean isAdmin = user.hasAuthority("ADMINISTRATOR");
-
-        if (!isAdmin) {
+        if (user.hasAuthority("ADMINISTRATOR")) {
             dto.setBranchIds(List.of(user.getMember().getBranch().getId()));
         }
 

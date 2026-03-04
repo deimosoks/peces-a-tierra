@@ -59,6 +59,7 @@ public class MemberMapper {
         memberResponseDto.gender(member.getGender());
         memberResponseDto.branch(branchMapper.toDto(member.getBranch()));
         memberResponseDto.categoryLocked(member.isCategoryLocked());
+        memberResponseDto.registeredBy(member.getRegisteredBy() != null ? member.getRegisteredBy().getCompleteName() : "desconocido");
 
         if (member.getSubcategoryId() != null) {
             memberResponseDto.subCategory(memberSubCategoryMapper.toDto(member.getSubcategoryId()));

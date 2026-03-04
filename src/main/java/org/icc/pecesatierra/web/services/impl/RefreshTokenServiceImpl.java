@@ -34,7 +34,7 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
         return refreshTokenRepository.save(refreshToken);
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     @Override
     public void validate(String token) {
 

@@ -50,11 +50,11 @@ public class Member {
     private String longitude;
     private String gender;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "type_id")
     private MemberType typeId;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id")
     private MemberCategory categoryId;
 
@@ -69,6 +69,10 @@ public class Member {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "subcategory_id")
     private MemberSubCategory subcategoryId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "registered_by")
+    private Member registeredBy;
 
     @Column(nullable = false, name = "category_locked")
     @Builder.Default

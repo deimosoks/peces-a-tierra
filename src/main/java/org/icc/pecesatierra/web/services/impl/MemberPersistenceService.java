@@ -53,6 +53,7 @@ public class MemberPersistenceService {
         member.setPostalCode(dto.getPostalCode());
         member.setLatitude(dto.getLatitude());
         member.setLongitude(dto.getLongitude());
+        member.setRegisteredBy(user.getMember());
 
         member.setCategoryLocked(dto.isCategoryLocked());
 

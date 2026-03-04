@@ -80,7 +80,7 @@ public class UserServiceImpl implements UserService {
                             .build())
                     .user(user)
                     .role(role)
-                    .giverId(givenBy.getMember().getId())
+                    .giverId(givenBy.getMember())
                     .givenDate(LocalDateTime.now())
                     .build();
         }).collect(Collectors.toSet()));
@@ -200,7 +200,7 @@ public class UserServiceImpl implements UserService {
                                 .build())
                         .user(user)
                         .role(role)
-                        .giverId(givenBy.getMember().getId())
+                        .giverId(givenBy.getMember())
                         .givenDate(LocalDateTime.now())
                         .build();
 

@@ -16,7 +16,6 @@ import java.util.stream.Collectors;
 public class UserMapper {
 
     private final MemberMapper memberMapper;
-    private final MemberRepository memberRepository;
 
     //TODO: refactorizar esto
     public UserResponseDto toDto(User user) {
@@ -29,7 +28,6 @@ public class UserMapper {
                 .branchName(user.getMember().getBranch().getName())
                 .memberResponseDto(memberMapper.toDto(user.getMember(), false))
                 .roles(user.getRoles().stream().map(userRole -> {
-                    Member givenBy = memberRepository.findById(userRole.getGiverId()).orElse(null);
                     return RoleResponseDto.builder()
                             .id(userRole.getRole().getId())
                             .name(userRole.getRole().getName())
@@ -37,7 +35,7 @@ public class UserMapper {
                             .createdAt(userRole.getRole().getCreatedAt())
                             .updatedAt(userRole.getRole().getUpdatedAt())
                             .description(userRole.getRole().getDescription())
-                            .givenBy(givenBy != null ? givenBy.getCompleteName()
+                            .givenBy(userRole.getGiverId() != null ? userRole.getGiverId().getCompleteName()
                                     : "desconocido")
                             .permissions(userRole.getRole().getPermissions().stream()
                                     .map(rolePermission -> PermissionResponseDto

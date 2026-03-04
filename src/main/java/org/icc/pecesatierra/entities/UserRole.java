@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 @Setter
 @Builder
 @Entity
-@Table(name = "user_role", uniqueConstraints = @UniqueConstraint(columnNames = { "role_id", "user_id" }))
+@Table(name = "user_role", uniqueConstraints = @UniqueConstraint(columnNames = {"role_id", "user_id"}))
 public class UserRole {
 
     @EmbeddedId
@@ -30,7 +30,8 @@ public class UserRole {
     @Column(nullable = false)
     private LocalDateTime givenDate;
 
-    @Column(nullable = false)
-    private String giverId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "giver_id")
+    private Member giverId;
 
 }

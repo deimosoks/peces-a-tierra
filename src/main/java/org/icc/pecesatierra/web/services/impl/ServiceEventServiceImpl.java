@@ -17,6 +17,7 @@ import org.icc.pecesatierra.exceptions.branches.BranchNotFoundException;
 import org.icc.pecesatierra.exceptions.events.CannotCancelEventOutsideYouBranch;
 import org.icc.pecesatierra.exceptions.events.CannotCancelEventsWithRecords;
 import org.icc.pecesatierra.exceptions.events.ServiceEventNotFoundException;
+import org.icc.pecesatierra.exceptions.services.InvalidStartAndEndDatesException;
 import org.icc.pecesatierra.exceptions.services.ServicesNotFoundException;
 import org.icc.pecesatierra.repositories.AttendanceRepository;
 import org.icc.pecesatierra.repositories.BranchRepository;
@@ -143,7 +144,7 @@ public class ServiceEventServiceImpl implements ServiceEventService {
     ) {
 
         if (dto.getStartDate() == null || dto.getEndDate() == null) {
-            throw new IllegalArgumentException("StartDate and EndDate are required for calendar view");
+            throw new InvalidStartAndEndDatesException();
         }
 
         Specification<ServiceEvent> spec = serviceEventSpecification.build(dto, user);

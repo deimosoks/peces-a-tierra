@@ -21,11 +21,10 @@ public interface MemberRepository extends JpaRepository<Member, String>, JpaSpec
             "branch",
             "notes",
             "notes.createdBy",
-            "subcategoryId"
+            "subcategoryId",
+            "registeredBy"
     })
     Page<Member> findAll(Specification<Member> spec, Pageable pageable);
-
-    long count();
 
     @Query("SELECT m FROM Member m WHERE FUNCTION('DATE_PART', 'month', m.birthdate) = :currentMonth")
     List<Member> findMembersWithBirthdayInMonth(@Param("currentMonth") int currentMonth);
