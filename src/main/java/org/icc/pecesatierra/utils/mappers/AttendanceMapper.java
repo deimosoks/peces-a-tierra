@@ -3,6 +3,7 @@ package org.icc.pecesatierra.utils.mappers;
 import lombok.RequiredArgsConstructor;
 import org.icc.pecesatierra.dtos.attendance.AttendanceResponseDto;
 import org.icc.pecesatierra.entities.Attendance;
+import org.icc.pecesatierra.utils.time.DateTimeUtils;
 import org.springframework.stereotype.Component;
 
 @RequiredArgsConstructor
@@ -12,6 +13,7 @@ public class AttendanceMapper {
     private final MemberTypeMapper memberTypeMapper;
     private final MemberCategoryMapper memberCategoryMapper;
     private final MemberSubCategoryMapper memberSubCategoryMapper;
+    private final DateTimeUtils dateTimeUtils;
 
     public AttendanceResponseDto toDto(Attendance attendance) {
 
@@ -22,14 +24,14 @@ public class AttendanceMapper {
                 .memberCategory(memberCategoryMapper.toDto(attendance.getMemberCategory()))
                 .memberType(memberTypeMapper.toDto(attendance.getMemberType()))
                 .subCategory(memberSubCategoryMapper.toDto(attendance.getMemberSubCategory()))
-                .serviceDate(attendance.getServiceEvent().getStartDateTime())
-                .attendanceDate(attendance.getAttendanceDate())
+                .serviceDate(dateTimeUtils.toColombia(attendance.getServiceEvent().getStartDateTime()))
+                .attendanceDate(dateTimeUtils.toColombia(attendance.getAttendanceDate()))
                 .branchName(attendance.getBranch().getName())
                 .invalid(attendance.isInvalid())
                 .note(attendance.getNote())
                 .registeredBy(attendance.getRegisteredById() != null ? attendance.getRegisteredById().getCompleteName() : "desconocido.")
                 .invalidReason(attendance.getInvalidReason())
-                .invalidAt(attendance.getInvalidAt())
+                .invalidAt(dateTimeUtils.toColombia(attendance.getInvalidAt()))
                 .invalidatedBy(attendance.getInvalidatorId() != null ? attendance.getInvalidatorId().getCompleteName() : "desconocido.")
                 .build();
     }

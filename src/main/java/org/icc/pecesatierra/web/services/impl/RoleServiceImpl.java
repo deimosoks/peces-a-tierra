@@ -10,6 +10,7 @@ import org.icc.pecesatierra.exceptions.roles.RoleNotFoundException;
 import org.icc.pecesatierra.repositories.UserRoleRepository;
 import org.icc.pecesatierra.utils.mappers.RoleMapper;
 import org.icc.pecesatierra.repositories.RoleRepository;
+import org.icc.pecesatierra.utils.time.DateTimeUtils;
 import org.icc.pecesatierra.web.services.RoleService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,6 +27,7 @@ public class RoleServiceImpl implements RoleService {
     private final RoleRepository roleRepository;
     private final RoleMapper roleMapper;
     private final UserRoleRepository userRoleRepository;
+    private final DateTimeUtils dateTimeUtils;
 
     @Transactional
     @Override
@@ -34,7 +36,7 @@ public class RoleServiceImpl implements RoleService {
         Role role = roleRepository.save(Role.builder()
                 .name(roleRequestDto.getName())
                 .color(roleRequestDto.getColor())
-                .createdAt(LocalDateTime.now())
+                .createdAt(dateTimeUtils.nowUTC())
                 .description(roleRequestDto.getDescription())
                 .permissions(new HashSet<>())
                 .build());
@@ -89,7 +91,7 @@ public class RoleServiceImpl implements RoleService {
                 .build();
 
         roleMapper.updateEntityFromDto(roleRequestDto, role);
-        role.setUpdatedAt(LocalDateTime.now());
+        role.setUpdatedAt(dateTimeUtils.nowUTC());
         roleRepository.save(role);
 
         log.info("""

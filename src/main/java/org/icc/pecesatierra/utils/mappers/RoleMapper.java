@@ -8,6 +8,7 @@ import org.icc.pecesatierra.entities.Role;
 import org.icc.pecesatierra.entities.RolePermission;
 import org.icc.pecesatierra.entities.RolePermissionId;
 import org.icc.pecesatierra.repositories.UserRoleRepository;
+import org.icc.pecesatierra.utils.time.DateTimeUtils;
 import org.springframework.stereotype.Component;
 
 import java.util.HashSet;
@@ -18,12 +19,13 @@ import java.util.stream.Collectors;
 public class RoleMapper {
 
     private final UserRoleRepository userRoleRepository;
+    private final DateTimeUtils dateTimeUtils;
 
     public RoleResponseDto toDto(Role role) {
         RoleResponseDto roleResponseDto = RoleResponseDto.builder()
                 .id(role.getId())
-                .createdAt(role.getCreatedAt())
-                .updatedAt(role.getUpdatedAt())
+                .createdAt(dateTimeUtils.toColombia(role.getCreatedAt()))
+                .updatedAt(dateTimeUtils.toColombia(role.getUpdatedAt()))
                 .name(role.getName())
                 .color(role.getColor())
                 .description(role.getDescription())

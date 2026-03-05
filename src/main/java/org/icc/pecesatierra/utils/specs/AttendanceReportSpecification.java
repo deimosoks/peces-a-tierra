@@ -1,17 +1,23 @@
 package org.icc.pecesatierra.utils.specs;
 
 import jakarta.persistence.criteria.*;
+import lombok.RequiredArgsConstructor;
 import org.icc.pecesatierra.dtos.report.ReportRequestDto;
 import org.icc.pecesatierra.entities.*;
+import org.icc.pecesatierra.utils.time.DateTimeUtils;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 @Component
+@RequiredArgsConstructor
 public class AttendanceReportSpecification {
+
+    private final DateTimeUtils dateTimeUtils;
 
     public Specification<Attendance> build(ReportRequestDto dto) {
 
@@ -37,7 +43,7 @@ public class AttendanceReportSpecification {
             Join<Attendance, MemberSubCategory> subCategory =
                     root.join("memberSubCategory", JoinType.LEFT);
 
-            Expression<LocalDateTime> serviceDateTime =
+            Expression<OffsetDateTime> serviceDateTime =
                     serviceEvent.get("startDateTime");
 
             List<Predicate> predicates = new ArrayList<>();
@@ -46,13 +52,13 @@ public class AttendanceReportSpecification {
 
             if (dto.getStartDate() != null) {
                 predicates.add(
-                        cb.greaterThanOrEqualTo(serviceDateTime, dto.getStartDate())
+                        cb.greaterThanOrEqualTo(serviceDateTime, dateTimeUtils.toUTC(dto.getStartDate()))
                 );
             }
 
             if (dto.getEndDate() != null) {
                 predicates.add(
-                        cb.lessThanOrEqualTo(serviceDateTime, dto.getEndDate())
+                        cb.lessThanOrEqualTo(serviceDateTime, dateTimeUtils.toUTC(dto.getEndDate()))
                 );
             }
 

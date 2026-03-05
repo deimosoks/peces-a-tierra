@@ -6,7 +6,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -34,9 +34,9 @@ public class User implements UserDetails {
     private String passwordHash;
 
     @Column(nullable = false)
-    private LocalDateTime createdAt;
+    private OffsetDateTime createdAt;
 
-    private LocalDateTime updatedAt;
+    private OffsetDateTime updatedAt;
 
     @Column(nullable = false)
     private boolean active;

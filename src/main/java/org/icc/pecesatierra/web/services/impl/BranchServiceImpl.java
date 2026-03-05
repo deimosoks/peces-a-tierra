@@ -12,6 +12,7 @@ import org.icc.pecesatierra.repositories.AttendanceRepository;
 import org.icc.pecesatierra.repositories.BranchRepository;
 import org.icc.pecesatierra.repositories.MemberRepository;
 import org.icc.pecesatierra.utils.mappers.BranchMapper;
+import org.icc.pecesatierra.utils.time.DateTimeUtils;
 import org.icc.pecesatierra.web.services.BranchService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,6 +29,7 @@ public class BranchServiceImpl implements BranchService {
     private final BranchMapper branchMapper;
     private final MemberRepository memberRepository;
     private final AttendanceRepository attendanceRepository;
+    private final DateTimeUtils dateTimeUtils;
 
     @Transactional
     @Override
@@ -36,7 +38,7 @@ public class BranchServiceImpl implements BranchService {
                 .name(branchRequestDto.getName())
                 .address(branchRequestDto.getAddress())
                 .city(branchRequestDto.getCity())
-                .createdAt(LocalDateTime.now())
+                .createdAt(dateTimeUtils.nowUTC())
                 .cellphone(branchRequestDto.getCellphone())
                 .build();
 

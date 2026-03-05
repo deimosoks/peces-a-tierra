@@ -15,6 +15,7 @@ import org.icc.pecesatierra.exceptions.members.categories.sub.SubCategoryNotFoun
 import org.icc.pecesatierra.repositories.*;
 import org.icc.pecesatierra.utils.MemberCategoryDeterminer;
 import org.icc.pecesatierra.utils.mappers.MemberMapper;
+import org.icc.pecesatierra.utils.time.DateTimeUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,13 +34,14 @@ public class MemberPersistenceService {
     private final MemberSubCategoryRepository memberSubCategoryRepository;
     private final BranchRepository branchRepository;
     private final MemberCategoryDeterminer memberCategoryDeterminer;
+    private final DateTimeUtils dateTimeUtils;
 
     @Transactional
     public MemberResponseDto save(MemberRequestDto dto, Map<String, String> pictureData, User user) {
 
         Member member = Member.builder()
                 .completeName(dto.getCompleteName())
-                .createdAt(LocalDateTime.now())
+                .createdAt(dateTimeUtils.nowUTC())
                 .cc(dto.getCc())
                 .cellphone(dto.getCellphone())
                 .birthdate(dto.getBirthdate())
@@ -147,7 +149,7 @@ public class MemberPersistenceService {
                 .build();
 
         memberMapper.updateEntityFromDto(dto, member);
-        member.setUpdatedAt(LocalDateTime.now());
+        member.setUpdatedAt(dateTimeUtils.nowUTC());
 
         if (!user.hasAuthority("ADMINISTRATOR") && !user.getMember().getBranch().getId().equals(member.getBranch().getId())) {
             throw new CannotCreateMembersOutsideYourBranch();

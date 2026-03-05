@@ -14,6 +14,7 @@ import org.icc.pecesatierra.utils.mappers.AttendanceMapper;
 import org.icc.pecesatierra.utils.models.ExportResponseDto;
 import org.icc.pecesatierra.utils.models.PagesResponseDto;
 import org.icc.pecesatierra.utils.specs.AttendanceSpecification;
+import org.icc.pecesatierra.utils.time.DateTimeUtils;
 import org.icc.pecesatierra.web.services.AttendanceService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -23,6 +24,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -39,6 +41,7 @@ public class AttendanceServiceImpl implements AttendanceService {
     private final AttendanceMapper attendanceMapper;
     private final ServiceEventRepository serviceEventRepository;
     private final AttendanceSpecification attendanceSpecification;
+    private final DateTimeUtils dateTimeUtils;
 
     @Transactional
     @Override
@@ -74,28 +77,30 @@ public class AttendanceServiceImpl implements AttendanceService {
             }
 
             if (!member.isActive()) {
-                log.warn("Usuario {} intento registrar un integrante {} inactivo, no se registró asistencia en el evento {}",user.getMember().getId(), member.getId(), event.getId());
+                log.warn("Usuario {} intento registrar un integrante {} inactivo, no se registró asistencia en el evento {}", user.getMember().getId(), member.getId(), event.getId());
                 continue;
             }
 
             if (existingMemberIds.contains(member.getId()))
                 continue;
 
-            LocalDateTime arrival = dto.getAttendanceDate();
 
             if (!user.hasAuthority("ADMINISTRATOR")) {
-                if (arrival.isBefore(event.getStartDateTime()) ||
-                        arrival.isAfter(event.getEndDateTime())) {
+                if (event.getEndDateTime().isBefore(dateTimeUtils.nowUTC()) ||
+                        event.getStartDateTime().isAfter(dateTimeUtils.nowUTC())) {
 
-                    throw new AttendanceOutOfRangeException();
+                    throw new AttendanceOutOfRangeException("No puede registrar asistencias en un evento finalizado.");
                 }
             }
+
+            if (event.getStartDateTime().isAfter(dateTimeUtils.nowUTC()))
+                throw new AttendanceOutOfRangeException("No puedes registrar asistencias en un evento que no ha iniciado.");
 
             Attendance attendance = Attendance.builder()
                     .member(member)
                     .serviceEvent(event)
                     .branch(event.getBranch())
-                    .attendanceDate(arrival)
+                    .attendanceDate(dateTimeUtils.toUTC(dto.getAttendanceDate()))
                     .memberCategory(member.getCategoryId())
                     .memberType(member.getTypeId())
                     .memberSubCategory(member.getSubcategoryId())
@@ -125,7 +130,7 @@ public class AttendanceServiceImpl implements AttendanceService {
         }
 
         attendance.setInvalid(true);
-        attendance.setInvalidAt(LocalDateTime.now());
+        attendance.setInvalidAt(dateTimeUtils.nowUTC());
         attendance.setInvalidatorId(user.getMember());
         attendance.setInvalidReason(attendanceInvalidRequestDto.getInvalidReason());
 

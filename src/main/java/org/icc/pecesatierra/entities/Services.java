@@ -3,7 +3,7 @@ package org.icc.pecesatierra.entities;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -22,9 +22,9 @@ public class Services {
     private String name;
 
     @Column(nullable = false)
-    private LocalDateTime createdAt;
+    private OffsetDateTime createdAt;
 
-    private LocalDateTime updatedAt;
+    private OffsetDateTime updatedAt;
 
     @Column(nullable = false)
     private String description;

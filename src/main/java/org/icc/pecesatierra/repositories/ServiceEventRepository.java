@@ -6,7 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.List;
 
 @Repository
@@ -15,8 +15,8 @@ public interface ServiceEventRepository extends JpaRepository<ServiceEvent, Stri
     List<ServiceEvent>
     findByBranch_IdAndStartDateTimeLessThanEqualAndEndDateTimeGreaterThanEqual(
             String branchId,
-            LocalDateTime now1,
-            LocalDateTime now2
+            OffsetDateTime now1,
+            OffsetDateTime now2
     );
 
     boolean existsByServices(Services service);

@@ -3,7 +3,7 @@ package org.icc.pecesatierra.entities;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -28,7 +28,7 @@ public class UserRole {
     private User user;
 
     @Column(nullable = false)
-    private LocalDateTime givenDate;
+    private OffsetDateTime givenDate;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "giver_id")

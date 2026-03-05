@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -25,12 +25,12 @@ public class Member {
     private String completeName;
 
     @Column(nullable = false)
-    private LocalDateTime createdAt;
+    private OffsetDateTime createdAt;
 
     @Column(nullable = false)
     private boolean active;
 
-    private LocalDateTime updatedAt;
+    private OffsetDateTime updatedAt;
 
     private String cc;
     private String cellphone;

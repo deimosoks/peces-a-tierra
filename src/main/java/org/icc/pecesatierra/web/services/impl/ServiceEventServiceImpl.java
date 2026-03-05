@@ -1,7 +1,5 @@
 package org.icc.pecesatierra.web.services.impl;
 
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.criteria.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,16 +23,13 @@ import org.icc.pecesatierra.repositories.ServiceEventRepository;
 import org.icc.pecesatierra.repositories.ServiceRepository;
 import org.icc.pecesatierra.utils.mappers.ServiceEventMapper;
 import org.icc.pecesatierra.utils.specs.ServiceEventSpecification;
+import org.icc.pecesatierra.utils.time.DateTimeUtils;
 import org.icc.pecesatierra.web.services.ServiceEventService;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.ArrayList;
+import java.time.OffsetDateTime;
 import java.util.List;
 
 @Slf4j
@@ -48,6 +43,7 @@ public class ServiceEventServiceImpl implements ServiceEventService {
     private final BranchRepository branchRepository;
     private final AttendanceRepository attendanceRepository;
     private final ServiceEventSpecification serviceEventSpecification;
+    private final DateTimeUtils dateTimeUtils;
 
     @Transactional
     @Override
@@ -75,8 +71,8 @@ public class ServiceEventServiceImpl implements ServiceEventService {
                 .createdBy(user.getMember())
                 .branch(branch)
                 .services(service)
-                .startDateTime(serviceEventRequestDto.getStartDateTime())
-                .endDateTime(serviceEventRequestDto.getEndDateTime())
+                .startDateTime(dateTimeUtils.toUTC(serviceEventRequestDto.getStartDateTime()))
+                .endDateTime(dateTimeUtils.toUTC(serviceEventRequestDto.getEndDateTime()))
                 .build();
 
         serviceEventRepository.save(serviceEvent);
@@ -163,8 +159,8 @@ public class ServiceEventServiceImpl implements ServiceEventService {
         String branchId = String.valueOf(user.getMember()
                 .getBranch()
                 .getId());
-        //TODO: implementar lógica de formato de hora luego
-        LocalDateTime now = LocalDateTime.now(ZoneId.of("America/Bogota"));
+
+        OffsetDateTime now = dateTimeUtils.nowUTC();
 
         List<ServiceEvent> event = serviceEventRepository
                 .findByBranch_IdAndStartDateTimeLessThanEqualAndEndDateTimeGreaterThanEqual(

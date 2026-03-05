@@ -11,6 +11,7 @@ import org.icc.pecesatierra.exceptions.services.ServicesNotFoundException;
 import org.icc.pecesatierra.repositories.ServiceEventRepository;
 import org.icc.pecesatierra.utils.mappers.ServiceMapper;
 import org.icc.pecesatierra.repositories.ServiceRepository;
+import org.icc.pecesatierra.utils.time.DateTimeUtils;
 import org.icc.pecesatierra.web.services.ServiceService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,6 +27,7 @@ public class ServiceServiceImpl implements ServiceService {
     private final ServiceRepository serviceRepository;
     private final ServiceMapper serviceMapper;
     private final ServiceEventRepository serviceEventRepository;
+    private final DateTimeUtils dateTimeUtils;
 
     @Transactional
     @Override
@@ -34,7 +36,7 @@ public class ServiceServiceImpl implements ServiceService {
         Services services = Services.builder()
                 .name(serviceRequestDto.getName())
                 .description(serviceRequestDto.getDescription())
-                .createdAt(LocalDateTime.now())
+                .createdAt(dateTimeUtils.nowUTC())
                 .active(true)
                 .build();
 
@@ -74,7 +76,7 @@ public class ServiceServiceImpl implements ServiceService {
 
         serviceMapper.updateEntityFromDto(serviceRequestDto, services);
 
-        services.setUpdatedAt(LocalDateTime.now());
+        services.setUpdatedAt(dateTimeUtils.nowUTC());
 
         serviceRepository.save(services);
 

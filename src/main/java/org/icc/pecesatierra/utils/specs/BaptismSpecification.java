@@ -1,10 +1,12 @@
 package org.icc.pecesatierra.utils.specs;
 
 import jakarta.persistence.criteria.*;
+import lombok.RequiredArgsConstructor;
 import org.icc.pecesatierra.dtos.baptism.BaptismFilterRequestDto;
 import org.icc.pecesatierra.entities.Baptism;
 import org.icc.pecesatierra.entities.Member;
 import org.icc.pecesatierra.entities.User;
+import org.icc.pecesatierra.utils.time.DateTimeUtils;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
 
@@ -12,7 +14,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Component
+@RequiredArgsConstructor
 public class BaptismSpecification {
+
+    private final DateTimeUtils dateTimeUtils;
 
     public Specification<Baptism> build(BaptismFilterRequestDto dto, User currentUser) {
         return (Root<Baptism> root, CriteriaQuery<?> query, CriteriaBuilder cb) -> {

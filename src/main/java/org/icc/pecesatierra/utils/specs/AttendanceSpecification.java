@@ -1,8 +1,10 @@
 package org.icc.pecesatierra.utils.specs;
 
 import jakarta.persistence.criteria.*;
+import lombok.RequiredArgsConstructor;
 import org.icc.pecesatierra.dtos.attendance.AttendanceFiltersRequestDto;
 import org.icc.pecesatierra.entities.*;
+import org.icc.pecesatierra.utils.time.DateTimeUtils;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
 
@@ -10,7 +12,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Component
+@RequiredArgsConstructor
 public class AttendanceSpecification {
+
+    private final DateTimeUtils dateTimeUtils;
 
     public Specification<Attendance> build(AttendanceFiltersRequestDto dto, User user) {
         return (Root<Attendance> root, CriteriaQuery<?> query, CriteriaBuilder cb) -> {
@@ -30,10 +35,10 @@ public class AttendanceSpecification {
                 }
 
                 if (dto.getStartDate() != null) {
-                    predicates.add(cb.greaterThanOrEqualTo(serviceEvent.get("startDateTime"), dto.getStartDate()));
+                    predicates.add(cb.greaterThanOrEqualTo(serviceEvent.get("startDateTime"), dateTimeUtils.toUTC(dto.getStartDate())));
                 }
                 if (dto.getEndDate() != null) {
-                    predicates.add(cb.lessThanOrEqualTo(serviceEvent.get("startDateTime"), dto.getEndDate()));
+                    predicates.add(cb.lessThanOrEqualTo(serviceEvent.get("startDateTime"), dateTimeUtils.toUTC(dto.getEndDate())));
                 }
 
                 if (dto.getMemberId() != null) {
@@ -66,7 +71,6 @@ public class AttendanceSpecification {
 
             }
 
-            assert query != null;
             if (query.getResultType() != Long.class && query.getResultType() != long.class) {
                 query.orderBy(cb.desc(root.get("attendanceDate")));
             }

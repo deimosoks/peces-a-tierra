@@ -3,8 +3,7 @@ package org.icc.pecesatierra.entities;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDateTime;
-import java.util.UUID;
+import java.time.OffsetDateTime;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -28,7 +27,7 @@ public class Attendance {
     private MemberType memberType;
 
     @Column(nullable = false)
-    private LocalDateTime attendanceDate;
+    private OffsetDateTime attendanceDate;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "registered_by_id", nullable = false)
@@ -44,7 +43,7 @@ public class Attendance {
     private String note;
 
     private String invalidReason;
-    private LocalDateTime invalidAt;
+    private OffsetDateTime invalidAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "invalidator_id")

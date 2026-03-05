@@ -3,10 +3,8 @@ package org.icc.pecesatierra.entities;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
+import java.time.OffsetDateTime;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 @AllArgsConstructor
@@ -23,9 +21,9 @@ public class Role {
     private String id;
 
     @Column(nullable = false)
-    private LocalDateTime createdAt;
+    private OffsetDateTime createdAt;
 
-    private LocalDateTime updatedAt;
+    private OffsetDateTime updatedAt;
 
     @Column(nullable = false)
     private String name;

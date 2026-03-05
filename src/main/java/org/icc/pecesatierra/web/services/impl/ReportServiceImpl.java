@@ -8,6 +8,7 @@ import org.icc.pecesatierra.dtos.report.ReportResponseDto;
 import org.icc.pecesatierra.dtos.report.ReportRequestDto;
 import org.icc.pecesatierra.entities.*;
 import org.icc.pecesatierra.utils.specs.AttendanceReportSpecification;
+import org.icc.pecesatierra.utils.time.DateTimeUtils;
 import org.icc.pecesatierra.web.services.ReportService;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
@@ -15,6 +16,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,6 +26,7 @@ import java.util.List;
 public class ReportServiceImpl implements ReportService {
 
     private final AttendanceReportSpecification attendanceReportSpecification;
+    private final DateTimeUtils dateTimeUtils;
 
     @PersistenceContext
     private final EntityManager em;
@@ -67,7 +71,7 @@ public class ReportServiceImpl implements ReportService {
         Join<Attendance, MemberSubCategory> subCategory =
                 attendance.join("memberSubCategory", JoinType.LEFT);
 
-        Expression<LocalDateTime> serviceDateTime =
+        Expression<OffsetDateTime> serviceDateTime =
                 serviceEvent.get("startDateTime");
 
         Expression<LocalDate> onlyDate =
@@ -91,7 +95,7 @@ public class ReportServiceImpl implements ReportService {
             groupExpressions.add(serviceDateTime);
         } else {
             selections.add(cb.nullLiteral(LocalDate.class));
-            selections.add(cb.nullLiteral(LocalDateTime.class));
+            selections.add(cb.nullLiteral(OffsetDateTime.class));
         }
 
         if (groupBy.contains("SERVICE")) {
@@ -142,6 +146,15 @@ public class ReportServiceImpl implements ReportService {
             cq.orderBy(cb.asc(onlyDate), cb.asc(serviceDateTime));
         }
 
+//        return em.createQuery(cq).getResultList().stream()
+//                .peek(r -> {
+//                    if (r.getServiceTime() != null) {
+//                        r.setServiceTime(
+//                                dateTimeUtils.toColombia(r.getServiceTime().atOffset(ZoneOffset.UTC))
+//                        );
+//                    }
+//                })
+//                .toList();
         return em.createQuery(cq).getResultList();
     }
 

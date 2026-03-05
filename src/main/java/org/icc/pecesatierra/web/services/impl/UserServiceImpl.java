@@ -14,6 +14,7 @@ import org.icc.pecesatierra.repositories.RoleRepository;
 import org.icc.pecesatierra.repositories.UserRepository;
 import org.icc.pecesatierra.utils.models.PagesResponseDto;
 import org.icc.pecesatierra.utils.specs.UserSpecification;
+import org.icc.pecesatierra.utils.time.DateTimeUtils;
 import org.icc.pecesatierra.web.services.UserService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -40,6 +41,7 @@ public class UserServiceImpl implements UserService {
     private final RoleRepository roleRepository;
     private final UserMapper userMapper;
     private final UserSpecification userSpecification;
+    private final DateTimeUtils dateTimeUtils;
 
     @Transactional
     @Override
@@ -62,7 +64,7 @@ public class UserServiceImpl implements UserService {
                 .username(userRequestDto.getUsername())
                 .member(member)
                 .passwordHash(passwordEncoder.encode(userRequestDto.getPassword()))
-                .createdAt(LocalDateTime.now())
+                .createdAt(dateTimeUtils.nowUTC())
                 .active(true)
                 .roles(new HashSet<>())
                 .build();
@@ -81,7 +83,7 @@ public class UserServiceImpl implements UserService {
                     .user(user)
                     .role(role)
                     .giverId(givenBy.getMember())
-                    .givenDate(LocalDateTime.now())
+                    .givenDate(dateTimeUtils.nowUTC())
                     .build();
         }).collect(Collectors.toSet()));
 
@@ -201,14 +203,14 @@ public class UserServiceImpl implements UserService {
                         .user(user)
                         .role(role)
                         .giverId(givenBy.getMember())
-                        .givenDate(LocalDateTime.now())
+                        .givenDate(dateTimeUtils.nowUTC())
                         .build();
 
                 user.getRoles().add(userRole);
             }
         });
 
-        user.setUpdatedAt(LocalDateTime.now());
+        user.setUpdatedAt(dateTimeUtils.nowUTC());
 
         userRepository.save(user);
 
@@ -260,7 +262,7 @@ public class UserServiceImpl implements UserService {
 
         boolean beforeActive = userToUpdate.isActive();
 
-        userToUpdate.setUpdatedAt(LocalDateTime.now());
+        userToUpdate.setUpdatedAt(dateTimeUtils.nowUTC());
 
         userToUpdate.setActive(active);
 

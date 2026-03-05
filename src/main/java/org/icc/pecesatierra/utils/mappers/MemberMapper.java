@@ -15,6 +15,7 @@ import org.icc.pecesatierra.exceptions.members.types.TypeNotFoundException;
 import org.icc.pecesatierra.repositories.MemberCategoryRepository;
 import org.icc.pecesatierra.repositories.MemberSubCategoryRepository;
 import org.icc.pecesatierra.repositories.MemberTypeRepository;
+import org.icc.pecesatierra.utils.time.DateTimeUtils;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
@@ -34,6 +35,7 @@ public class MemberMapper {
     private final MemberSubCategoryRepository memberSubCategoryRepository;
     private final MemberSubCategoryMapper memberSubCategoryMapper;
     private final BranchMapper branchMapper;
+    private final DateTimeUtils dateTimeUtils;
 
     public MemberResponseDto toDto(Member member, boolean withNotes) {
         if (member == null) {
@@ -52,8 +54,8 @@ public class MemberMapper {
         memberResponseDto.address(member.getAddress());
         memberResponseDto.birthdate(member.getBirthdate());
         memberResponseDto.cc(member.getCc());
-        memberResponseDto.createdAt(member.getCreatedAt());
-        memberResponseDto.updatedAt(member.getUpdatedAt());
+        memberResponseDto.createdAt(dateTimeUtils.toColombia(member.getCreatedAt()));
+        memberResponseDto.updatedAt(dateTimeUtils.toColombia(member.getUpdatedAt()));
         memberResponseDto.pictureProfileUrl(member.getPictureProfileUrl());
         memberResponseDto.active(member.isActive());
         memberResponseDto.gender(member.getGender());

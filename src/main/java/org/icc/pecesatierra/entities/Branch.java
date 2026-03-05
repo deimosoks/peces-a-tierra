@@ -3,8 +3,7 @@ package org.icc.pecesatierra.entities;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDateTime;
-import java.util.UUID;
+import java.time.OffsetDateTime;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -32,6 +31,6 @@ public class Branch {
     private String cellphone;
 
     @Column(nullable = false)
-    private LocalDateTime createdAt;
+    private OffsetDateTime createdAt;
 
 }

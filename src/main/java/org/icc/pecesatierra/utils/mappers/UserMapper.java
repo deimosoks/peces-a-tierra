@@ -1,21 +1,21 @@
 package org.icc.pecesatierra.utils.mappers;
 
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.icc.pecesatierra.dtos.permission.PermissionResponseDto;
 import org.icc.pecesatierra.dtos.role.RoleResponseDto;
 import org.icc.pecesatierra.dtos.user.UserResponseDto;
-import org.icc.pecesatierra.entities.Member;
 import org.icc.pecesatierra.entities.User;
-import org.icc.pecesatierra.repositories.MemberRepository;
+import org.icc.pecesatierra.utils.time.DateTimeUtils;
 import org.springframework.stereotype.Component;
 
 import java.util.stream.Collectors;
 
 @Component
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class UserMapper {
 
     private final MemberMapper memberMapper;
+    private final DateTimeUtils dateTimeUtils;
 
     //TODO: refactorizar esto
     public UserResponseDto toDto(User user) {
@@ -23,8 +23,8 @@ public class UserMapper {
                 .id(user.getId())
                 .username(user.getUsername())
                 .active(user.isActive())
-                .createdAt(user.getCreatedAt())
-                .updateAt(user.getUpdatedAt())
+                .createdAt(dateTimeUtils.toColombia(user.getCreatedAt()))
+                .updateAt(dateTimeUtils.toColombia(user.getUpdatedAt()))
                 .branchName(user.getMember().getBranch().getName())
                 .memberResponseDto(memberMapper.toDto(user.getMember(), false))
                 .roles(user.getRoles().stream().map(userRole -> {
@@ -32,8 +32,8 @@ public class UserMapper {
                             .id(userRole.getRole().getId())
                             .name(userRole.getRole().getName())
                             .color(userRole.getRole().getColor())
-                            .createdAt(userRole.getRole().getCreatedAt())
-                            .updatedAt(userRole.getRole().getUpdatedAt())
+                            .createdAt(dateTimeUtils.toColombia(userRole.getRole().getCreatedAt()))
+                            .updatedAt(dateTimeUtils.toColombia(userRole.getRole().getUpdatedAt()))
                             .description(userRole.getRole().getDescription())
                             .givenBy(userRole.getGiverId() != null ? userRole.getGiverId().getCompleteName()
                                     : "desconocido")

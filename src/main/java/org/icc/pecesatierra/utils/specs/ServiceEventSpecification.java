@@ -1,11 +1,13 @@
 package org.icc.pecesatierra.utils.specs;
 
 import jakarta.persistence.criteria.*;
+import lombok.RequiredArgsConstructor;
 import org.icc.pecesatierra.dtos.service.event.ServiceEventsFilterRequestDto;
 import org.icc.pecesatierra.entities.Branch;
 import org.icc.pecesatierra.entities.ServiceEvent;
 import org.icc.pecesatierra.entities.Services;
 import org.icc.pecesatierra.entities.User;
+import org.icc.pecesatierra.utils.time.DateTimeUtils;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
 
@@ -13,7 +15,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Component
+@RequiredArgsConstructor
 public class ServiceEventSpecification {
+
+    private final DateTimeUtils dateTimeUtils;
 
     public Specification<ServiceEvent> build(ServiceEventsFilterRequestDto dto, User user) {
         return (Root<ServiceEvent> root,
@@ -28,8 +33,8 @@ public class ServiceEventSpecification {
             predicates.add(
                     cb.between(
                             root.get("startDateTime"),
-                            dto.getStartDate(),
-                            dto.getEndDate()
+                            dateTimeUtils.toUTC(dto.getStartDate()),
+                            dateTimeUtils.toUTC(dto.getEndDate())
                     )
             );
 

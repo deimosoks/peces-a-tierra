@@ -3,7 +3,7 @@ package org.icc.pecesatierra.dtos.report;
 import lombok.*;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 @Builder
 @Getter
@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 public class ReportResponseDto {
 
     private LocalDate date;
-    private LocalDateTime serviceTime;
+    private OffsetDateTime serviceTime;
 
     private String serviceName;
 

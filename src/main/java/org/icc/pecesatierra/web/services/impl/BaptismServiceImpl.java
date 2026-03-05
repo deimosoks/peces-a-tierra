@@ -16,6 +16,7 @@ import org.icc.pecesatierra.repositories.MemberRepository;
 import org.icc.pecesatierra.utils.mappers.BaptismMapper;
 import org.icc.pecesatierra.utils.models.PagesResponseDto;
 import org.icc.pecesatierra.utils.specs.BaptismSpecification;
+import org.icc.pecesatierra.utils.time.DateTimeUtils;
 import org.icc.pecesatierra.web.services.BaptismService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -35,6 +36,7 @@ public class BaptismServiceImpl implements BaptismService {
     private final MemberRepository memberRepository;
     private final BaptismMapper baptismMapper;
     private final BaptismSpecification baptismSpecification;
+    private final DateTimeUtils dateTimeUtils;
 
     @Transactional
     @Override
@@ -57,7 +59,7 @@ public class BaptismServiceImpl implements BaptismService {
                 .baptizedMember(member)
                 .date(baptismRequestDto.getDate())
                 .neighborhood(baptismRequestDto.getNote())
-                .createdAt(LocalDateTime.now())
+                .createdAt(dateTimeUtils.nowUTC())
                 .registeredBy(user.getMember())
                 .address(baptismRequestDto.getAddress())
                 .neighborhood(baptismRequestDto.getNeighborhood())
@@ -90,7 +92,7 @@ public class BaptismServiceImpl implements BaptismService {
         baptism.setInvalid(true);
         baptism.setInvalidatorId(user.getMember());
         baptism.setInvalidReason(baptismInvalidRequestDto.getInvalidReason());
-        baptism.setInvalidAt(LocalDateTime.now());
+        baptism.setInvalidAt(dateTimeUtils.nowUTC());
 
         log.info("Usuario {} invalido el bautismo {}", user.getMember().getId(), baptism.getId());
 

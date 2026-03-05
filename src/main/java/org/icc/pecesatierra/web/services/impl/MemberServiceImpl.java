@@ -19,6 +19,7 @@ import org.icc.pecesatierra.utils.models.ApiException;
 import org.icc.pecesatierra.utils.models.ExportResponseDto;
 import org.icc.pecesatierra.utils.models.PagesResponseDto;
 import org.icc.pecesatierra.utils.specs.MemberSpecification;
+import org.icc.pecesatierra.utils.time.DateTimeUtils;
 import org.icc.pecesatierra.web.services.MemberService;
 import org.icc.pecesatierra.utils.cloudinary.PictureUtils;
 import org.springframework.data.domain.Page;
@@ -46,6 +47,7 @@ public class MemberServiceImpl implements MemberService {
     private final MemberNotesMapper memberNotesMapper;
     private final MemberNotesRepository memberNotesRepositor;
     private final MemberSpecification memberSpecification;
+    private final DateTimeUtils dateTimeUtils;
 
     @Override
     public MemberResponseDto create(MemberRequestDto memberRequestDto, User user) {
@@ -249,7 +251,7 @@ public class MemberServiceImpl implements MemberService {
 
         MemberNotes memberNotes = MemberNotes.builder()
                 .note(memberNoteRequestDto.getNote())
-                .createdAt(LocalDateTime.now())
+                .createdAt(dateTimeUtils.nowUTC())
                 .createdBy(user.getMember())
                 .member(member)
                 .build();
@@ -300,7 +302,7 @@ public class MemberServiceImpl implements MemberService {
                 memberNotes.getNote(),
                 user.getUsername(),
                 user.getId(),
-                LocalDateTime.now()
+                dateTimeUtils.nowUTC()
         );
 
         memberNotesRepositor.delete(memberNotes);

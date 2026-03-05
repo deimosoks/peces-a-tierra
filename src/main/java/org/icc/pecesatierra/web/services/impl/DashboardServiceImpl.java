@@ -9,6 +9,7 @@ import org.icc.pecesatierra.entities.Branch;
 import org.icc.pecesatierra.repositories.BaptismRepository;
 import org.icc.pecesatierra.utils.mappers.MemberMapper;
 import org.icc.pecesatierra.repositories.MemberRepository;
+import org.icc.pecesatierra.utils.time.DateTimeUtils;
 import org.icc.pecesatierra.web.services.DashboardService;
 import org.icc.pecesatierra.web.services.ReportService;
 import org.springframework.stereotype.Service;
@@ -27,6 +28,7 @@ public class DashboardServiceImpl implements DashboardService {
     private final MemberMapper memberMapper;
     private final ReportService reportService;
     private final BaptismRepository baptismRepository;
+    private final DateTimeUtils dateTimeUtils;
 
     @Transactional(readOnly = true)
     @Override
@@ -45,7 +47,7 @@ public class DashboardServiceImpl implements DashboardService {
         if (isAdmin) {
             totalMember = memberRepository.count();
             memberBirthdays = memberRepository
-                    .findMembersWithBirthdayInMonth(LocalDateTime.now().getMonthValue())
+                    .findMembersWithBirthdayInMonth(dateTimeUtils.nowColombia().getMonthValue())
                     .stream().map(member -> memberMapper.toDto(member, false)).toList();
             totalBaptisms = baptismRepository.countByInvalidFalse();
         } else {
@@ -53,7 +55,7 @@ public class DashboardServiceImpl implements DashboardService {
 
             totalMember = memberRepository.countByBranch(branch);
             memberBirthdays = memberRepository.findMembersWithBirthdayInMonthAndBranch(
-                            LocalDateTime.now().getMonthValue(), branch)
+                            dateTimeUtils.nowColombia().getMonthValue(), branch)
                     .stream().map(member -> memberMapper.toDto(member, false))
                     .toList();
 

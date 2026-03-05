@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -30,7 +30,7 @@ public class Baptism {
     private String note;
 
     @Column(name = "created_at", nullable = false)
-    private LocalDateTime createdAt;
+    private OffsetDateTime createdAt;
 
     @JoinColumn(name = "registered_by", nullable = false)
     @ManyToOne(fetch = FetchType.LAZY)
@@ -49,7 +49,7 @@ public class Baptism {
 
     //invalid
     private String invalidReason;
-    private LocalDateTime invalidAt;
+    private OffsetDateTime invalidAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "invalidator_id")

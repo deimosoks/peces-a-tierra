@@ -3,8 +3,7 @@ package org.icc.pecesatierra.entities;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDateTime;
-import java.util.UUID;
+import java.time.OffsetDateTime;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -32,9 +31,9 @@ public class ServiceEvent {
     private Member createdBy;
 
     @Column(nullable = false)
-    LocalDateTime startDateTime;
+    private OffsetDateTime startDateTime;
 
     @Column(nullable = false)
-    LocalDateTime endDateTime;
+    private OffsetDateTime endDateTime;
 
 }
