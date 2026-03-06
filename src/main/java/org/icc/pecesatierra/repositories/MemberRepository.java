@@ -17,10 +17,7 @@ public interface MemberRepository extends JpaRepository<Member, String>, JpaSpec
     @EntityGraph(attributePaths = {
             "typeId",
             "categoryId",
-            "categoryId.subCategories",
             "branch",
-            "notes",
-            "notes.createdBy",
             "subcategoryId",
             "registeredBy"
     })

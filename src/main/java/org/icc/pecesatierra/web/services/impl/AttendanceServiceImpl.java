@@ -111,7 +111,27 @@ public class AttendanceServiceImpl implements AttendanceService {
 
             attendancesList.add(attendance);
             existingMemberIds.add(member.getId());
-            log.info("Usuario {} registró la asistencia de {} en el evento {}", user.getMember().getId(), member.getId(), event.getId());
+            log.info("""
+                            Usuario: 
+                            Id: {}
+                            Nombre: {}
+                            Registró la asistencia de:
+                            Id: {}
+                            Nombre: {} 
+                            En el evento: 
+                            Id: {}
+                            Nombre: {}
+                            Hora: {} - {}
+                            """
+                    , user.getMember().getId()
+                    , user.getMember().getCompleteName()
+                    , member.getId()
+                    , member.getCompleteName()
+                    , event.getId()
+                    , event.getServices().getName()
+                    , event.getStartDateTime()
+                    , event.getEndDateTime()
+            );
 
         }
 

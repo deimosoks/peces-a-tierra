@@ -22,8 +22,4 @@ public interface MemberService {
 
     boolean updateActive(String memberId, boolean active, User user);
 
-    MemberNoteResponseDto createNote(MemberNoteRequestDto memberNoteRequestDto, User user);
-
-    void deleteNote(String noteId, User user);
-
 }

@@ -60,7 +60,14 @@ public class AuthServiceImpl implements AuthService {
                 .expiredAt(jwtService.extractExpiration(accessToken))
                 .build();
 
-        log.info("Usuario {} logueo al sistema.", user.getMember().getId());
+        log.info("""
+                        Usuario: 
+                        Id: {}
+                        Name: {}
+                        Logueo al sistema.
+                        """
+                , user.getMember().getId()
+                , user.getMember().getCompleteName());
 
         return AuthResponseDto.builder()
                 .accessTokenDto(accessTokenDto)
@@ -76,7 +83,14 @@ public class AuthServiceImpl implements AuthService {
                 .orElseThrow(InvalidRefreshTokenException::new);
 
         if (!user.getUsername().equals(refreshToken.getUser().getUsername())) {
-            log.warn("Usuario {} intento hacer logout el token {} que no le pertenece.", user.getMember().getId(), refreshToken.getId());
+            log.warn("""
+                            Usuario:
+                             Id: {} 
+                             Name: {}
+                             Intento hacer logout el token {} que no le pertenece.
+                            """
+                    , user.getMember().getId(), refreshToken.getId()
+                    , user.getMember().getCompleteName());
             throw new CannotLogOutWithTokenYouDoNotOwn();
         }
 
@@ -97,8 +111,14 @@ public class AuthServiceImpl implements AuthService {
                 .expiredAt(jwtService.extractExpiration(accessToken))
                 .build();
 
-        log.info("Usuario {} hizo refresco de sesión", newRefreshToken.getUser().getMember().getId());
-
+        log.info("""
+                        Usuario: 
+                        Id: {}
+                        Name: {}
+                        Hizo refresco de sesión.
+                        """
+                , newRefreshToken.getUser().getMember().getId()
+                , newRefreshToken.getUser().getMember().getCompleteName());
         return AuthResponseDto.builder()
                 .accessTokenDto(newAccessTokenDto)
                 .refreshTokenDto(refreshTokenMapper.toDto(newRefreshToken))
@@ -117,7 +137,14 @@ public class AuthServiceImpl implements AuthService {
 
         user.setPasswordHash(passwordEncoder.encode(dto.getPassword()));
 
-        log.info("Usuario {} hizo cambio de contraseña.", user.getMember().getId());
+        log.info("""
+                        Usuario: 
+                        Id: {}
+                        Name: {}
+                        Cambio su contraseña.
+                        """
+                , user.getMember().getId()
+                , user.getMember().getCompleteName());
 
         userRepository.save(user);
     }

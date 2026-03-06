@@ -121,35 +121,4 @@ public class MemberController extends BaseController {
         return ResponseEntity.ok(memberService.updateActive(memberId, active, user));
     }
 
-    @PreAuthorize("""
-            (
-            hasAuthority('CREATE_NOTE') 
-            || 
-            hasAuthority('ADMINISTRATOR')
-            )
-            &&
-            @securityService.isActive(authentication)
-            """)
-    @PostMapping("/notes")
-    public ResponseEntity<MemberNoteResponseDto> createNote(@Valid @RequestBody MemberNoteRequestDto memberNoteRequestDto,
-                                                            @AuthenticationPrincipal User user) {
-        return ResponseEntity.ok(memberService.createNote(memberNoteRequestDto, user));
-    }
-
-    @PreAuthorize("""
-            (
-            hasAuthority('DELETE_NOTE') 
-            || 
-            hasAuthority('ADMINISTRATOR')
-            )
-            &&
-            @securityService.isActive(authentication)
-            """)
-    @DeleteMapping("/notes/{noteId}")
-    public ResponseEntity<Void> deleteNote(@PathVariable String noteId,
-                                           @AuthenticationPrincipal User user) {
-        memberService.deleteNote(noteId, user);
-        return ResponseEntity.ok().build();
-    }
-
 }
