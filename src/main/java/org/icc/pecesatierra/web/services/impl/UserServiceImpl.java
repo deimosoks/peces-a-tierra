@@ -25,9 +25,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.HashSet;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -121,13 +119,25 @@ public class UserServiceImpl implements UserService {
 
     @Transactional(readOnly = true)
     @Override
-    public PagesResponseDto<UserResponseDto> search(int page, String query, User user, String branchId) {
+    public PagesResponseDto<UserResponseDto> search(int page, UserFilterRequestDto dto, User user) {
 
-        Specification<User> spec = userSpecification.build(query, branchId, user);
+        Specification<User> spec = userSpecification.build(dto, user);
+
+        Sort sort = Sort.by("username").ascending();
+
+        if (dto.getOrderBy() != null) {
+            sort = dto.getOrderBy().isAsc()
+                    ? Sort.by(dto.getOrderBy().getOrderBy()).ascending()
+                    : Sort.by(dto.getOrderBy().getOrderBy()).descending();
+        }
 
         Page<User> pageResult = userRepository.findAll(
                 spec,
-                PageRequest.of(page, 20, Sort.by("username"))
+                PageRequest.of(
+                        page,
+                        20,
+                        sort
+                )
         );
 
         return PagesResponseDto.<UserResponseDto>builder()
@@ -183,32 +193,23 @@ public class UserServiceImpl implements UserService {
             user.setPasswordHash(passwordEncoder.encode(userRequestDto.getPassword()));
         }
 
-        Set<Role> requestedRoles = userRequestDto.getRolesId().stream().map(s -> {
-            return roleRepository.findById(s)
+        user.getRoles().clear();
+
+        user.getRoles().addAll(userRequestDto.getRolesId().stream().map(roleId -> {
+            Role role = roleRepository.findById(roleId)
                     .orElseThrow(RoleNotFoundException::new);
-        }).collect(Collectors.toSet());
 
-        Set<Role> currentRoles = user.getRoles().stream().map(UserRole::getRole).collect(Collectors.toSet());
-
-        user.getRoles().removeIf(
-                userRole -> !requestedRoles.contains(userRole.getRole()));
-
-        requestedRoles.forEach(role -> {
-            if (!currentRoles.contains(role)) {
-                UserRole userRole = UserRole.builder()
-                        .id(UserRoleId.builder()
-                                .userId(user.getId())
-                                .roleId(role.getId())
-                                .build())
-                        .user(user)
-                        .role(role)
-                        .giverId(givenBy.getMember())
-                        .givenDate(dateTimeUtils.nowUTC())
-                        .build();
-
-                user.getRoles().add(userRole);
-            }
-        });
+            return UserRole.builder()
+                    .id(UserRoleId.builder()
+                            .roleId(role.getId())
+                            .userId(user.getId())
+                            .build())
+                    .user(user)
+                    .role(role)
+                    .giverId(givenBy.getMember())
+                    .givenDate(dateTimeUtils.nowUTC())
+                    .build();
+        }).collect(Collectors.toSet()));
 
         user.setUpdatedAt(dateTimeUtils.nowUTC());
 
@@ -267,7 +268,6 @@ public class UserServiceImpl implements UserService {
         userToUpdate.setActive(active);
 
         userRepository.save(userToUpdate);
-
 
         log.info("""
                         Usuario {} actualizó estado activo del usuario {}:

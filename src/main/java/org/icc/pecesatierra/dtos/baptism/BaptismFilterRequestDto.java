@@ -1,6 +1,7 @@
 package org.icc.pecesatierra.dtos.baptism;
 
 import lombok.*;
+import org.icc.pecesatierra.utils.models.OrderBy;
 
 import java.time.LocalDate;
 
@@ -17,5 +18,5 @@ public class BaptismFilterRequestDto {
     private String query;
     private boolean active;
     private String branchId;
-
+    private OrderBy orderBy;
 }

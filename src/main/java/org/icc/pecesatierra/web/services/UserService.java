@@ -10,11 +10,11 @@ public interface UserService {
 
     MeDto me(User user);
 
-    PagesResponseDto<UserResponseDto> search(int page, String query, User user, String branchId);
+    PagesResponseDto<UserResponseDto> search(int page, UserFilterRequestDto dto, User user);
 
     UserResponseDto update(UserRequestDto userRequestDto, String userId, User givenBy);
 
-    boolean updateActive(User user,String userId, boolean active);
+    boolean updateActive(User user, String userId, boolean active);
 
     void delete(User user, String userId);
 

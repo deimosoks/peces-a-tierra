@@ -62,20 +62,16 @@ public class UserController extends BaseController {
             )
             && 
             @securityService.isActive(authentication)""")
-    @GetMapping
+    @PostMapping("/search")
     public ResponseEntity<PagesResponseDto<UserResponseDto>> findAll(@RequestParam(
                                                                              required = false,
                                                                              defaultValue = "0"
                                                                      ) int page,
-                                                                     @RequestParam(
-                                                                             required = false,
-                                                                             defaultValue = ""
-                                                                     ) String query,
-                                                                     @RequestParam(
+                                                                     @RequestBody(
                                                                              required = false
-                                                                     ) String branchId,
+                                                                     ) UserFilterRequestDto dto,
                                                                      @AuthenticationPrincipal User user) {
-        return ResponseEntity.ok(userService.search(page, query, user, branchId));
+        return ResponseEntity.ok(userService.search(page, dto, user));
     }
 
     @PreAuthorize("""

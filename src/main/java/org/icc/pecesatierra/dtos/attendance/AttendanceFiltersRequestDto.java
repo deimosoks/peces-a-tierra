@@ -2,6 +2,7 @@ package org.icc.pecesatierra.dtos.attendance;
 
 import lombok.*;
 import org.icc.pecesatierra.utils.enums.Gender;
+import org.icc.pecesatierra.utils.models.OrderBy;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -23,5 +24,6 @@ public class AttendanceFiltersRequestDto {
     private List<String> subCategory;
     private Boolean invalid;
     private String gender;
+    private OrderBy orderBy;
 
 }

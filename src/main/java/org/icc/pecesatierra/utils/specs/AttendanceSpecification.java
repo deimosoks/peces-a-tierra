@@ -71,10 +71,6 @@ public class AttendanceSpecification {
 
             }
 
-            if (query.getResultType() != Long.class && query.getResultType() != long.class) {
-                query.orderBy(cb.desc(root.get("attendanceDate")));
-            }
-
             return cb.and(predicates.toArray(new Predicate[0]));
         };
     }

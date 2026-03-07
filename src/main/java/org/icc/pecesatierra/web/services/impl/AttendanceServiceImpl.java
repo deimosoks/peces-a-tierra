@@ -165,9 +165,21 @@ public class AttendanceServiceImpl implements AttendanceService {
 
         Specification<Attendance> spec = attendanceSpecification.build(dto, user);
 
+        Sort sort = Sort.by("serviceEvent.startDateTime").ascending();
+
+        if (dto.getOrderBy() != null) {
+            sort = dto.getOrderBy().isAsc()
+                    ? Sort.by(dto.getOrderBy().getOrderBy()).ascending()
+                    : Sort.by(dto.getOrderBy().getOrderBy()).descending();
+        }
+
         Page<Attendance> pageResult = attendanceRepository.findAll(
                 spec,
-                PageRequest.of(page, 20, Sort.by("serviceEvent.startDateTime"))
+                PageRequest.of(
+                        page,
+                        20,
+                        sort
+                )
         );
 
         return PagesResponseDto.<AttendanceResponseDto>builder()

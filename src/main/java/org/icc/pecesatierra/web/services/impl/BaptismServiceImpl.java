@@ -105,9 +105,20 @@ public class BaptismServiceImpl implements BaptismService {
 
         Specification<Baptism> spec = baptismSpecification.build(dto, user);
 
+        Sort sort = Sort.by("baptizedMember.completeName").ascending();
+
+        if (dto.getOrderBy() != null) {
+            sort = dto.getOrderBy().isAsc()
+                    ? Sort.by(dto.getOrderBy().getOrderBy()).ascending()
+                    : Sort.by(dto.getOrderBy().getOrderBy()).descending();
+        }
+
         Page<Baptism> pageResult = baptismRepository.findAll(
                 spec,
-                PageRequest.of(page, 20, Sort.by("baptizedMember.completeName"))
+                PageRequest.of(page,
+                        20,
+                        sort
+                )
         );
 
         return PagesResponseDto.<BaptismResponseDto>builder()

@@ -129,9 +129,21 @@ public class MemberServiceImpl implements MemberService {
 
         Specification<Member> spec = memberSpecification.build(dto, user);
 
+        Sort sort = Sort.by("completeName").ascending();
+
+        if (dto.getOrderBy() != null) {
+            sort = dto.getOrderBy().isAsc()
+                    ? Sort.by(dto.getOrderBy().getOrderBy()).ascending()
+                    : Sort.by(dto.getOrderBy().getOrderBy()).descending();
+        }
+
         Page<Member> pageResult = memberRepository.findAll(
                 spec,
-                PageRequest.of(page, 20, Sort.by("completeName"))
+                PageRequest.of(
+                        page,
+                        20,
+                        sort
+                )
         );
 
         return PagesResponseDto.<MemberResponseDto>builder()

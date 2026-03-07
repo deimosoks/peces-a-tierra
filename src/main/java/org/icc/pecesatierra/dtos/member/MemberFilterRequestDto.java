@@ -1,6 +1,7 @@
 package org.icc.pecesatierra.dtos.member;
 
 import lombok.*;
+import org.icc.pecesatierra.utils.models.OrderBy;
 
 import java.util.Set;
 
@@ -25,4 +26,6 @@ public class MemberFilterRequestDto {
     private String gender;
     private String location;
     private String branchId;
+    private OrderBy orderBy;
+
 }
