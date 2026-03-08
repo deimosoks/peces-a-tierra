@@ -30,6 +30,8 @@ public class ReportController extends BaseController {
             hasAuthority('MANAGE_REPORT') 
             || 
             hasAuthority('ADMINISTRATOR')
+            ||
+            hasAuthority('MANAGE_DASHBOARD')
             ) 
             && 
             @securityService.isActive(authentication)
