@@ -1,15 +1,13 @@
 package org.icc.pecesatierra.utils.specs;
 
-import jakarta.persistence.criteria.CriteriaBuilder;
-import jakarta.persistence.criteria.CriteriaQuery;
-import jakarta.persistence.criteria.Predicate;
-import jakarta.persistence.criteria.Root;
+import jakarta.persistence.criteria.*;
 import org.icc.pecesatierra.dtos.member.MemberFilterRequestDto;
 import org.icc.pecesatierra.entities.Member;
 import org.icc.pecesatierra.entities.User;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
 
+import java.text.Normalizer;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -60,17 +58,25 @@ public class MemberSpecification {
             if (Boolean.FALSE.equals(dto.getHasBirthdate())) predicates.add(cb.isNull(root.get("birthdate")));
 
             if (dto.getQuery() != null && !dto.getQuery().isBlank()) {
-                String[] keywords = dto.getQuery().toLowerCase().split("\\s+"); // divide por espacios
+                String normalizedQuery = Normalizer.normalize(dto.getQuery(), Normalizer.Form.NFD)
+                        .replaceAll("\\p{M}", "")
+                        .toLowerCase();
+
+                String[] keywords = normalizedQuery.split("\\s+");
                 List<Predicate> namePredicates = new ArrayList<>();
 
                 for (String keyword : keywords) {
+                    Expression<String> normalizedName = cb.function(
+                            "unaccent", String.class, cb.lower(root.get("completeName"))
+                    );
+
                     String searchLike = "%" + keyword + "%";
-                    namePredicates.add(cb.like(cb.lower(root.get("completeName")), searchLike));
+                    namePredicates.add(cb.like(normalizedName, searchLike));
                 }
 
                 Predicate completeNamePredicate = cb.and(namePredicates.toArray(new Predicate[0]));
 
-                String searchLikeFull = "%" + dto.getQuery().toLowerCase() + "%";
+                String searchLikeFull = "%" + normalizedQuery + "%";
                 Predicate otherFieldsPredicate = cb.or(
                         cb.like(root.get("cc"), searchLikeFull),
                         cb.like(root.get("cellphone"), searchLikeFull),
