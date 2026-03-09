@@ -60,13 +60,24 @@ public class MemberSpecification {
             if (Boolean.FALSE.equals(dto.getHasBirthdate())) predicates.add(cb.isNull(root.get("birthdate")));
 
             if (dto.getQuery() != null && !dto.getQuery().isBlank()) {
-                String searchLike = "%" + dto.getQuery().toLowerCase() + "%";
-                predicates.add(cb.or(
-                        cb.like(cb.lower(root.get("completeName")), searchLike),
-                        cb.like(root.get("cc"), searchLike),
-                        cb.like(root.get("cellphone"), searchLike),
-                        cb.like(root.get("id"), searchLike)
-                ));
+                String[] keywords = dto.getQuery().toLowerCase().split("\\s+"); // divide por espacios
+                List<Predicate> namePredicates = new ArrayList<>();
+
+                for (String keyword : keywords) {
+                    String searchLike = "%" + keyword + "%";
+                    namePredicates.add(cb.like(cb.lower(root.get("completeName")), searchLike));
+                }
+
+                Predicate completeNamePredicate = cb.and(namePredicates.toArray(new Predicate[0]));
+
+                String searchLikeFull = "%" + dto.getQuery().toLowerCase() + "%";
+                Predicate otherFieldsPredicate = cb.or(
+                        cb.like(root.get("cc"), searchLikeFull),
+                        cb.like(root.get("cellphone"), searchLikeFull),
+                        cb.like(root.get("id"), searchLikeFull)
+                );
+
+                predicates.add(cb.or(completeNamePredicate, otherFieldsPredicate));
             }
 
             if (dto.getAgeFilterRange1() != null && dto.getAgeFilterRange2() != null) {
