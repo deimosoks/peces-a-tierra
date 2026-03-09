@@ -25,5 +25,6 @@ public class AttendanceFiltersRequestDto {
     private Boolean invalid;
     private String gender;
     private OrderBy orderBy;
+    private String branchName;
 
 }

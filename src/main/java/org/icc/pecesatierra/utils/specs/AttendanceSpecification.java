@@ -69,6 +69,10 @@ public class AttendanceSpecification {
                     predicates.add(cb.equal(member.get("gender"), dto.getGender()));
                 }
 
+                if (dto.getBranchName() != null && !dto.getBranchName().isEmpty()) {
+                    predicates.add(cb.equal(branch.get("name"), dto.getBranchName()));
+                }
+
             }
 
             return cb.and(predicates.toArray(new Predicate[0]));

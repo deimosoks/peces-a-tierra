@@ -42,6 +42,8 @@ public class AttendanceController extends BaseController {
             hasAuthority('MANAGE_ATTENDANCE') 
             || 
             hasAuthority('ADMINISTRATOR')
+            ||
+            hasAuthority('MANAGE_DASHBOARD') 
             )
             && 
             @securityService.isActive(authentication)

@@ -35,10 +35,6 @@ public class ReportServiceImpl implements ReportService {
     @Override
     public List<ReportResponseDto> generate(ReportRequestDto dto, User user) {
 
-        if (user.hasAuthority("ADMINISTRATOR")) {
-            dto.setBranchIds(List.of(user.getMember().getBranch().getId()));
-        }
-
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<ReportResponseDto> cq =
                 cb.createQuery(ReportResponseDto.class);
@@ -46,7 +42,7 @@ public class ReportServiceImpl implements ReportService {
         Root<Attendance> attendance = cq.from(Attendance.class);
 
         Specification<Attendance> spec =
-                attendanceReportSpecification.build(dto);
+                attendanceReportSpecification.build(dto, user);
 
         Predicate predicate =
                 spec.toPredicate(attendance, cq, cb);

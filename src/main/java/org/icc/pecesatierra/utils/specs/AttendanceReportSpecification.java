@@ -19,7 +19,7 @@ public class AttendanceReportSpecification {
 
     private final DateTimeUtils dateTimeUtils;
 
-    public Specification<Attendance> build(ReportRequestDto dto) {
+    public Specification<Attendance> build(ReportRequestDto dto, User user) {
 
         return (Root<Attendance> root,
                 CriteriaQuery<?> query,
@@ -60,6 +60,12 @@ public class AttendanceReportSpecification {
                 predicates.add(
                         cb.lessThanOrEqualTo(serviceDateTime, dateTimeUtils.toUTC(dto.getEndDate()))
                 );
+            }
+
+            if (!user.hasAuthority("ADMINISTRATOR")) {
+                predicates.add(cb.equal(branch.get("id"), user.getMember().getBranch().getId()));
+            } else if (dto.getBranchIds() != null) {
+                predicates.add(cb.equal(branch.get("id"), dto.getBranchIds()));
             }
 
             if (dto.getCategories() != null && !dto.getCategories().isEmpty()) {
