@@ -18,6 +18,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.icc.pecesatierra.entities.User;
 
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 @Service
@@ -44,12 +47,17 @@ public class DashboardServiceImpl implements DashboardService {
                 .endDate(LocalDateTime.now())
                 .build();
 
+
+        List<MemberResponseDto> latestMemberRegisteredInThLastMonth = new ArrayList<>();
+
         if (isAdmin) {
             totalMember = memberRepository.count();
             memberBirthdays = memberRepository
                     .findMembersWithBirthdayInMonth(dateTimeUtils.nowColombia().getMonthValue())
                     .stream().map(member -> memberMapper.toDto(member, false)).toList();
             totalBaptisms = baptismRepository.countByInvalidFalse();
+
+            latestMemberRegisteredInThLastMonth = memberRepository.findLatestMembers(OffsetDateTime.now().minusDays(30)).stream().map(member -> memberMapper.toDto(member, false)).toList();
         } else {
             Branch branch = user.getMember().getBranch();
 
@@ -62,6 +70,8 @@ public class DashboardServiceImpl implements DashboardService {
             reportRequest.setBranchIds(List.of(branch.getId()));
             totalBaptisms = baptismRepository.countByBaptizedMemberBranchAndInvalidFalse(branch);
 
+            latestMemberRegisteredInThLastMonth = memberRepository.findLatestMembersByBranch(OffsetDateTime.now().minusDays(30), branch.getId()).stream().map(member -> memberMapper.toDto(member, false)).toList();
+
         }
 
         List<ReportResponseDto> lastWeekReport = reportService.generate(reportRequest, user);
@@ -71,6 +81,7 @@ public class DashboardServiceImpl implements DashboardService {
                 .membersBirthdays(memberBirthdays)
                 .lastWeekReport(lastWeekReport)
                 .totalBaptisms(totalBaptisms)
+                .latestMemberRegisteredInThLastMonth(latestMemberRegisteredInThLastMonth)
                 .build();
     }
 }

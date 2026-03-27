@@ -3,6 +3,9 @@ package org.icc.pecesatierra.dtos.member;
 import lombok.*;
 import org.icc.pecesatierra.utils.models.OrderBy;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.Set;
 
 @Getter
@@ -27,5 +30,8 @@ public class MemberFilterRequestDto {
     private String location;
     private String branchId;
     private OrderBy orderBy;
+
+    private LocalDateTime registeredFrom;
+    private LocalDateTime registeredTo;
 
 }

@@ -65,7 +65,7 @@ public class AttendanceReportSpecification {
             if (!user.hasAuthority("ADMINISTRATOR")) {
                 predicates.add(cb.equal(branch.get("id"), user.getMember().getBranch().getId()));
             } else if (dto.getBranchIds() != null) {
-                predicates.add(cb.equal(branch.get("id"), dto.getBranchIds()));
+                predicates.add(branch.get("id").in(dto.getBranchIds()));
             }
 
             if (dto.getCategories() != null && !dto.getCategories().isEmpty()) {

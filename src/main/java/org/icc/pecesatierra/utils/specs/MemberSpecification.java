@@ -1,9 +1,11 @@
 package org.icc.pecesatierra.utils.specs;
 
 import jakarta.persistence.criteria.*;
+import lombok.RequiredArgsConstructor;
 import org.icc.pecesatierra.dtos.member.MemberFilterRequestDto;
 import org.icc.pecesatierra.entities.Member;
 import org.icc.pecesatierra.entities.User;
+import org.icc.pecesatierra.utils.time.DateTimeUtils;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
 
@@ -13,7 +15,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Component
+@RequiredArgsConstructor
 public class MemberSpecification {
+
+    private final DateTimeUtils dateTimeUtils;
 
     public Specification<Member> build(MemberFilterRequestDto dto, User user) {
         return (Root<Member> root, CriteriaQuery<?> query, CriteriaBuilder cb) -> {
@@ -93,6 +98,10 @@ public class MemberSpecification {
                 LocalDate maxBirthdate = today.minusYears(minAge);
                 LocalDate minBirthdate = today.minusYears(maxAge);
                 predicates.add(cb.between(root.get("birthdate"), minBirthdate, maxBirthdate));
+            }
+
+            if (dto.getRegisteredFrom() != null && dto.getRegisteredTo() != null) {
+                predicates.add(cb.between(root.get("createdAt"), dateTimeUtils.toUTC(dto.getRegisteredFrom()), dateTimeUtils.toUTC(dto.getRegisteredTo())));
             }
 
             if (dto.getLocation() != null && !dto.getLocation().isBlank()) {

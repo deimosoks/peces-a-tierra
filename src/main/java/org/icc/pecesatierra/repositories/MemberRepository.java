@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 
 @Repository
@@ -79,4 +80,18 @@ public interface MemberRepository extends JpaRepository<Member, String>, JpaSpec
             """, nativeQuery = true)
     int applyCategoryRules();
 
+    @Query("SELECT m FROM Member m WHERE m.createdAt >= :date ORDER BY m.createdAt DESC")
+    List<Member> findLatestMembers(@Param("date") OffsetDateTime date);
+
+    @Query("""
+                SELECT m 
+                FROM Member m 
+                WHERE m.createdAt >= :date
+                  AND m.branch.id = :branchId
+                ORDER BY m.createdAt DESC
+            """)
+    List<Member> findLatestMembersByBranch(
+            @Param("date") OffsetDateTime date,
+            @Param("branchId") String branchId
+    );
 }

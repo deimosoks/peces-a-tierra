@@ -21,24 +21,24 @@ public class GlobalHandlerException {
     @ExceptionHandler(ApiException.class)
     @Order(Ordered.HIGHEST_PRECEDENCE)
     public ResponseEntity<ErrorResponseDto> handleApiException(ApiException ex, HttpServletRequest request) {
+        printStackTrace(ex);
         return buildResponse(ex.getStatus(), ex.getMessage(), request.getRequestURI());
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponseDto> handlerMethodArgumentNotValidException(HttpServletRequest httpServletRequest,
                                                                                    MethodArgumentNotValidException exception) {
+        printStackTrace(exception);
         return buildResponse(HttpStatus.BAD_REQUEST, exception.getBindingResult()
                 .getFieldErrors()
                 .getFirst()
                 .getDefaultMessage(), httpServletRequest.getRequestURI());
+
     }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponseDto> handleAllExceptions(Exception ex, HttpServletRequest request) {
-        log.error("""
-                Error: {}
-                StackTrace: {}
-                """, ex.getMessage(), ex.getStackTrace());
+        printStackTrace(ex);
         return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Ha ocurrido un error inesperado", request.getRequestURI());
     }
 
@@ -52,4 +52,13 @@ public class GlobalHandlerException {
         );
         return new ResponseEntity<>(error, status);
     }
+
+    private void printStackTrace(Exception ex) {
+        log.error("""
+                Error: {}
+                StackTrace:
+                """, ex.getMessage());
+        ex.printStackTrace(System.err);
+    }
+
 }

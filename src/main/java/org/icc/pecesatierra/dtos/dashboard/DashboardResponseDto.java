@@ -17,5 +17,6 @@ public class DashboardResponseDto {
     private List<MemberResponseDto> membersBirthdays;
     private long totalBaptisms;
     private List<ReportResponseDto> lastWeekReport;
+    private List<MemberResponseDto> latestMemberRegisteredInThLastMonth;
 
 }
