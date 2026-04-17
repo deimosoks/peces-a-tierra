@@ -9,7 +9,7 @@ import java.util.Arrays;
 @Component
 public class SqlQueryValidator {
 
-    private static final Pattern SELECT_PATTERN = Pattern.compile("^\\s*SELECT\\s", Pattern.CASE_INSENSITIVE);
+    private static final Pattern SELECT_PATTERN = Pattern.compile("^\\s*(SELECT|WITH)\\s", Pattern.CASE_INSENSITIVE);
     
     private static final Set<String> FORBIDDEN_KEYWORDS = new HashSet<>(Arrays.asList(
         "INSERT", "UPDATE", "DELETE", "DROP", "TRUNCATE", "ALTER", "CREATE", "GRANT", "REVOKE", "EXEC", "EXECUTE"

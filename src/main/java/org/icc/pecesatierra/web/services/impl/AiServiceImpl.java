@@ -65,9 +65,16 @@ public class AiServiceImpl implements AiService {
 
                 return parseFinalResponse(finalLlmResponse, sql);
             } else {
-                // If no SQL or unsafe, just treat as normal chat
+                // Si no hay SQL válido o es rechazado por seguridad, damos una respuesta segura
+                log.warn("AI response rejected by validator or no SQL found: {}", llmResponse);
+                
+                // Si la respuesta original de la IA ya era el mensaje de aclaración, lo usamos
+                String fallbackAnswer = (llmResponse != null && llmResponse.contains("información")) 
+                    ? "Por favor deme mas información para completar su solicitud." 
+                    : "Lo siento, no he podido procesar esa consulta compleja. ¿Podrías ser más específico o pedir los datos por partes?";
+
                 return AiChatResponseDto.builder()
-                        .answer(llmResponse)
+                        .answer(fallbackAnswer)
                         .requiresClarification(true)
                         .build();
             }
@@ -95,11 +102,11 @@ public class AiServiceImpl implements AiService {
         prompt.append("TU MISIÓN INTERNA (No la menciones):\n");
         prompt.append("Eres un experto en generar SQL SELECT preciso para este esquema:\n");
         prompt.append("ESQUEMA TÉCNICO COMPLETO (TODOS LOS IDs SON 'TEXT/UUID'):\n");
-        prompt.append("- members (m): id, complete_name, created_at, active, cc, cellphone, birthdate, gender, address, neighborhood, city, municipality, district, type_id (FK mt.id), category_id (FK mc.id), subcategory_id (FK msc.id), branch_id (FK br.id), registered_by\n");
-        prompt.append("- attendance (a): id, member_id (FK m.id), service_event_id (FK se.id), attendance_date, member_category (FK mc.id), member_type (FK mt.id), sub_category_id (FK msc.id), branch_id, invalid\n");
-        prompt.append("- baptism (b): id, member_baptized (FK m.id), date, created_at, invalid\n");
+        prompt.append("- members (m): id, complete_name, created_at (timestamptz), active, cc, cellphone, birthdate, gender, address, neighborhood, city, municipality, district, type_id (FK mt.id), category_id (FK mc.id), subcategory_id (FK msc.id), branch_id (FK br.id), registered_by\n");
+        prompt.append("- attendance (a): id, member_id (FK m.id), service_event_id (FK se.id), attendance_date (timestamptz), member_category (FK mc.id), member_type (FK mt.id), sub_category_id (FK msc.id), branch_id, invalid\n");
+        prompt.append("- baptism (b): id, member_baptized (FK m.id), date (timestamptz), created_at (timestamptz), invalid\n");
         prompt.append("- services (s): id, name, description, active\n");
-        prompt.append("- service_event (se): id, service_id (FK s.id), branch_id (FK br.id), start_date_time, end_date_time\n");
+        prompt.append("- service_event (se): id, service_id (FK s.id), branch_id (FK br.id), start_date_time (timestamptz), end_date_time (timestamptz)\n");
         prompt.append("- branches (br): id, name, address, city\n");
         prompt.append("- member_types (mt): id, name\n");
         prompt.append("- member_categories (mc): id, name\n");
@@ -175,6 +182,12 @@ public class AiServiceImpl implements AiService {
         prompt.append("  `WHERE se.id IN (SELECT se2.id FROM service_event se2 ... ORDER BY se2.start_date_time DESC LIMIT N)`\n");
         prompt.append("- Si pide 'que asistieron a los últimos N' (fieles), usa `HAVING COUNT(DISTINCT se.id) = N` después de filtrar por esos IDs.\n\n");
 
+        prompt.append("LÓGICA DE ÚLTIMO EVENTO / ÚLTIMO ATRIBUTO (CRÍTICO):\n");
+        prompt.append("- Si hay un `GROUP BY`, NUNCA uses una consulta correlacionada en el `SELECT` que dependa de columnas no agrupadas (como `a.service_event_id`).\n");
+        prompt.append("- Para obtener el nombre del último servicio o atributo del último evento en una consulta agrupada, usa este patrón de correlación segura por el ID del miembro:\n");
+        prompt.append("  `(SELECT s2.name FROM attendance a2 JOIN service_event se2 ON a2.service_event_id = se2.id JOIN services s2 ON se2.service_id = s2.id WHERE a2.member_id = m.id ORDER BY a2.attendance_date DESC LIMIT 1)`\n");
+        prompt.append("- Esto evita el error 'subquery uses ungrouped column' de PostgreSQL.\n\n");
+
         prompt.append("REGLAS CRÍTICAS (LEYES INFLEXIBLES Y OBLIGATORIAS):\n");
         prompt.append("- BÚSQUEDA INSENSIBLE A ACENTOS (OBLIGATORIO): Para CUALQUIER filtro de texto (`WHERE columna ILIKE ...`), DEBES usar la función `unaccent()` TANTO en la columna como en el valor.\n");
         prompt.append("- Ejemplo Correcto: `WHERE unaccent(mc.name) ILIKE unaccent('%niño%')`.\n");
@@ -184,16 +197,18 @@ public class AiServiceImpl implements AiService {
         prompt.append("- LÓGICA DE INASISTENCIA: Usa SIEMPRE `NOT EXISTS` para 'quién no hizo algo'.\n");
         prompt.append("- BÚSQUEDA FLEXIBLE: Usa siempre `ILIKE '%termino%'`.\n");
         prompt.append("- COMPARATIVAS Y DISTRIBUCIONES: Si el usuario pide comparar grupos (ej: hombres vs mujeres, activos vs inactivos, por categoría, etc.) o pregunta 'quién tiene más', NO uses `LIMIT 1`. Obtén todos los grupos para que el análisis sea completo y el gráfico muestre la distribución total.\n");
-        prompt.append("- ZONA HORARIA (CRÍTICO): La base de datos almacena todo en UTC (GMT 0). DEBES convertir siempre los campos de fecha/hora a la hora de Colombia ('America/Bogota') en tu SQL para que los resultados sean precisos.\n");
-        prompt.append("  Ejemplo correcto: `(a.attendance_date AT TIME ZONE 'America/Bogota')`.\n");
+        prompt.append("- ZONA HORARIA (CRÍTICO): Las fechas se almacenan como `timestamptz` (están en UTC). DEBES convertirlas a Colombia ('America/Bogota') usando `AT TIME ZONE` UNA SOLA VEZ.\n");
+        prompt.append("- PROHIBIDO: NUNCA uses `AT TIME ZONE 'UTC' AT TIME ZONE ...`. La doble conversión es un error grave que rompe la hora local. Ejemplo correcto: `(a.attendance_date AT TIME ZONE 'America/Bogota')`.\n");
         prompt.append("- RESOLUCIÓN DE FECHAS: Si el usuario menciona un día/mes sin año (ej: '12 de abril'), utiliza SIEMPRE el año de la 'FECHA/HORA ACTUAL' proporcionada para resolver la fecha completa.\n");
         prompt.append("- EVITAR AMBIGÜEDAD (CRÍTICO): Siempre que haya un JOIN, DEBES prefijar todas las columnas con su alias (ej: `se.id` en lugar de `id`). El error 'ambiguous column reference' es inaceptable.\n");
-        prompt.append("- ALIAS ÚNICOS: En subconsultas anidadas, NUNCA repitas alias (`s`, `s2`, `se`, `se2`).\n");
+        prompt.append("- REGLA DE CONSOLIDACIÓN (ÚNICA QUERY): Genera SIEMPRE **una única sentencia SQL**. Prohibido devolver múltiples bloques `SELECT` independientes o usar `;` para separar consultas. Esto causará un error del sistema.\n");
+        prompt.append("- PATRÓN PROHIBIDO (ERROR CRÍTICO): Nada de `SELECT ...; SELECT ...;`.\n");
+        prompt.append("- PATRÓN CORRECTO (CONSITENCIA): Usa `WITH` (CTEs) para unir lógicas complejas en una sola tabla de resultados final.\n");
         prompt.append("- SEGURIDAD: Solo genera sentencias SELECT.\n\n");
 
-        prompt.append("RETORNO:\n");
-        prompt.append("1. Devuelve estrictamente la query SQL en bloque ```sql ... ```.\n");
-        prompt.append("2. Si faltan datos, devuelve Por favor deme mas información para completar su solicitud.\n");
+        prompt.append("RETORNO (ESTRICTO):\n");
+        prompt.append("1. Devuelve **ÚNICAMENTE** la query SQL en bloque ```sql ... ```. No añadidas texto adicional, explicaciones ni comentarios fuera del bloque.\n");
+        prompt.append("2. Si faltan datos para generar la query, devuelve estrictamente: Por favor deme mas información para completar su solicitud.\n");
 
         return prompt.toString();
     }
@@ -248,7 +263,8 @@ public class AiServiceImpl implements AiService {
         prompt.append("1. Solo genera 'chartData' si el usuario pidió un gráfico, comparativa o tendencia.\n");
         prompt.append("2. Usa NOMBRES PROPIOS y FECHAS mencionadas en los datos.\n");
         prompt.append("3. REDONDEO: Para promedios o estadísticas, redondea SIEMPRE a máximo 1 decimal (ej: 10.5). Si el número es entero, muéstralo sin decimales.\n");
-        prompt.append("4. Sé siempre amable y servicial.\n");
+        prompt.append("4. LÍMITE DE LISTAS: Si la lista de resultados es muy larga (más de 40 nombres), NO los listes todos. Menciona los primeros 40 de forma clara y dile al usuario: 'Hay más resultados, por favor indícame si deseas ver el resto o si prefieres buscar algo más específico'.\n");
+        prompt.append("5. Sé siempre amable y servicial.\n");
         return prompt.toString();
     }
 
@@ -338,9 +354,29 @@ public class AiServiceImpl implements AiService {
             AiChatResponseDto response = objectMapper.readValue(jsonPart, AiChatResponseDto.class);
             return response;
         } catch (Exception e) {
-            log.error("Error parsing final LLM JSON", e);
+            log.error("Error parsing final LLM JSON, attempting regex fallback", e);
+            
+            // Intento de rescate: Extraer el contenido de "answer" usando regex si Jackson falló
+            try {
+                java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("\"answer\"\\s*:\\s*\"((?:\\\\\"|[^\"])*)\"", java.util.regex.Pattern.DOTALL);
+                java.util.regex.Matcher matcher = pattern.matcher(llmJson);
+                if (matcher.find()) {
+                    String extractedAnswer = matcher.group(1)
+                        .replace("\\n", "\n")
+                        .replace("\\\"", "\"")
+                        .replace("\\\\", "\\");
+                    
+                    return AiChatResponseDto.builder()
+                            .answer(extractedAnswer)
+                            .requiresClarification(true)
+                            .build();
+                }
+            } catch (Exception ex) {
+                log.error("Regex fallback also failed", ex);
+            }
+
             return AiChatResponseDto.builder()
-                    .answer(llmJson) // Devuelve el texto bruto si falla el JSON
+                    .answer(llmJson) // Último recurso: devolver el texto bruto
                     .requiresClarification(true)
                     .build();
         }
