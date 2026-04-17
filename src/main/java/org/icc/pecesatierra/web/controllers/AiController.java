@@ -17,7 +17,7 @@ public class AiController extends BaseController {
 
     private final AiService aiService;
 
-    @PreAuthorize("isAuthenticated() && @securityService.isActive(authentication)")
+    @PreAuthorize("(hasAuthority('CHAT_AI') || hasAuthority('ADMINISTRATOR')) && @securityService.isActive(authentication)")
     @PostMapping("/chat")
     public ResponseEntity<AiChatResponseDto> chat(@RequestBody AiChatRequestDto request) {
         return ResponseEntity.ok(aiService.processChat(request, new User()));

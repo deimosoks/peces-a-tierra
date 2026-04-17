@@ -8,6 +8,7 @@ import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.InternalAuthenticationServiceException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -21,8 +22,15 @@ public class GlobalHandlerException {
     @ExceptionHandler(ApiException.class)
     @Order(Ordered.HIGHEST_PRECEDENCE)
     public ResponseEntity<ErrorResponseDto> handleApiException(ApiException ex, HttpServletRequest request) {
-        printStackTrace(ex);
+        ex.printStackTrace(System.err);
         return buildResponse(ex.getStatus(), ex.getMessage(), request.getRequestURI());
+    }
+
+    @ExceptionHandler(InternalAuthenticationServiceException.class)
+    @Order(Ordered.HIGHEST_PRECEDENCE)
+    public ResponseEntity<ErrorResponseDto> handleAInternalAuthenticationServiceException(InternalAuthenticationServiceException ex, HttpServletRequest request) {
+        ex.printStackTrace(System.err);
+        return buildResponse(HttpStatus.UNAUTHORIZED, ex.getMessage(), request.getRequestURI());
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

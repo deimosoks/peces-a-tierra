@@ -7,66 +7,67 @@ import org.icc.pecesatierra.configurations.SqlQueryValidator;
 import org.icc.pecesatierra.dtos.ai.AiChatRequestDto;
 import org.icc.pecesatierra.dtos.ai.AiChatResponseDto;
 import org.icc.pecesatierra.entities.User;
+import org.icc.pecesatierra.utils.sql.executor.SqlExecutor;
 import org.icc.pecesatierra.web.services.AiService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
+import java.time.ZonedDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class AiServiceImpl implements AiService {
 
-    private final JdbcTemplate jdbcTemplate;
+    private final SqlExecutor sqlExecutor;
     private final SqlQueryValidator sqlQueryValidator;
     private final RestTemplate restTemplate = new RestTemplate();
     private final ObjectMapper objectMapper;
 
-    @Value("${huggingface.api.key}")
+    @Value("${google.gemini.api.key}")
     private String apiKey;
 
-    @Value("${huggingface.model.id}")
+    @Value("${google.gemini.model.id}")
     private String modelId;
 
-    private static final String HF_ROUTER_URL = "https://router.huggingface.co/v1/chat/completions";
+    private static final String GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/";
 
     @Override
-    @Transactional(readOnly = true)
     public AiChatResponseDto processChat(AiChatRequestDto request, User user) {
         try {
             // STEP 1: Generate SQL from Natural Language
             String sqlSystemPrompt = buildSqlSystemPrompt();
             String sqlUserPrompt = buildSqlUserPrompt(request.getMessage(), request.getHistory());
-            String llmResponse = callHuggingFace(sqlSystemPrompt, sqlUserPrompt);
+            String llmResponse = callGemini(sqlSystemPrompt, sqlUserPrompt, false);
 
-            log.info("LLM generated response for SQL: {}", llmResponse);
+            log.info("Gemini generated response for SQL: {}", llmResponse);
 
             // Extract SQL
             String sql = extractSql(llmResponse);
 
             if (sql != null && sqlQueryValidator.isSafeSelect(sql)) {
                 // STEP 2: Execute SQL
-                List<Map<String, Object>> resultData = jdbcTemplate.queryForList(sql);
+                List<Map<String, Object>> resultData = sqlExecutor.sqlExecutor(sql);
 
                 // STEP 3: Format result back to natural language and chart data
-                String formattingSystemPrompt = "Eres un asistente inteligente para una iglesia. Debes transformar los datos de base de datos en una respuesta amable y natural para el usuario.";
+                String formattingSystemPrompt = buildFormattingSystemPrompt();
                 String formattingUserPrompt = buildFormattingUserPrompt(request.getMessage(), resultData);
-                String finalLlmResponse = callHuggingFace(formattingSystemPrompt, formattingUserPrompt);
 
-                log.info("LLM final response: {}", finalLlmResponse);
+                // Use JSON mode for the formatting pass
+                String finalLlmResponse = callGemini(formattingSystemPrompt, formattingUserPrompt, true);
+
+                log.info("Gemini final response: {}", finalLlmResponse);
 
                 return parseFinalResponse(finalLlmResponse, sql);
             } else {
                 // If no SQL or unsafe, just treat as normal chat
                 return AiChatResponseDto.builder()
                         .answer(llmResponse)
-                        .query(sql)
                         .requiresClarification(true)
                         .build();
             }
@@ -82,8 +83,17 @@ public class AiServiceImpl implements AiService {
 
     private String buildSqlSystemPrompt() {
         StringBuilder prompt = new StringBuilder();
-        prompt.append("Eres un experto senior en PostgreSQL. Tu misión es generar consultas SQL SELECT precisas para una base de datos de gestión de iglesia.\n\n");
-        
+        prompt.append("Eres el asistente amable y servicial de la iglesia 'ICC'. Tu propósito es ayudar a los líderes a conocer mejor a su congregación.\n\n");
+
+        prompt.append("REGLA DE PERSONALIDAD (CRÍTICA):\n");
+        prompt.append("- Habla siempre de forma amable, pastoral y servicial.\n");
+        prompt.append("- PROHIBIDO: No menciones términos técnicos como 'PostgreSQL', 'SQL', 'Base de datos', 'Query', 'Tablas' o 'Consultas' en tus saludos o respuestas al usuario.\n");
+        prompt.append("- REGLA DE SOLO LECTURA (OBLIGATORIO): Eres estrictamente un asistente de CONSULTA. NO TIENES permisos para modificar, insertar o borrar registros. NUNCA ofrezcas actualizar información o guiar en el proceso de edición.\n");
+        prompt.append("- Si el usuario te saluda, responde calurosamente: '¡Hola! Es un gusto saludarte. ¿En qué puedo ayudarte hoy a conocer mejor a nuestra comunidad?' o algo similar.\n");
+        prompt.append("- DECLARACIÓN DE FE (FUNDAMENTAL): Si el usuario te pide declarar algo o pregunta sobre Jesús, DEBES proclamar con fe y convicción: 'Jesús es el único Dios, Señor y Salvador, quien murió por nosotros y resucitó al tercer día para darnos vida eterna'.\n\n");
+
+        prompt.append("TU MISIÓN INTERNA (No la menciones):\n");
+        prompt.append("Eres un experto en generar SQL SELECT preciso para este esquema:\n");
         prompt.append("ESQUEMA TÉCNICO COMPLETO (TODOS LOS IDs SON 'TEXT/UUID'):\n");
         prompt.append("- members (m): id, complete_name, created_at, active, cc, cellphone, birthdate, gender, address, neighborhood, city, municipality, district, type_id (FK mt.id), category_id (FK mc.id), subcategory_id (FK msc.id), branch_id (FK br.id), registered_by\n");
         prompt.append("- attendance (a): id, member_id (FK m.id), service_event_id (FK se.id), attendance_date, member_category (FK mc.id), member_type (FK mt.id), sub_category_id (FK msc.id), branch_id, invalid\n");
@@ -125,6 +135,18 @@ public class AiServiceImpl implements AiService {
         prompt.append("   );\n");
         prompt.append("   ```\n\n");
 
+        prompt.append("3. Pregunta: 'Promedio de asistencia de las últimas 3 reuniones de jóvenes'\n");
+        prompt.append("   SQL: ```sql\n");
+        prompt.append("   SELECT AVG(resumen.total)::FLOAT as promedio_asistencia FROM (\n");
+        prompt.append("     SELECT COUNT(a.id) as total FROM attendance a\n");
+        prompt.append("     JOIN service_event se ON a.service_event_id = se.id\n");
+        prompt.append("     JOIN services s ON se.service_id = s.id\n");
+        prompt.append("     WHERE unaccent(s.name) ILIKE unaccent('%jov%')\n");
+        prompt.append("     GROUP BY se.id\n");
+        prompt.append("     ORDER BY MAX(se.start_date_time) DESC LIMIT 3\n");
+        prompt.append("   ) resumen;\n");
+        prompt.append("   ```\n\n");
+
         prompt.append("RESOLUCIÓN DE CONTEXTO:\n");
         prompt.append("- Analiza siempre el HISTORIAL DE CONVERSACIÓN.\n");
         prompt.append("- Si el usuario usa pronombres (ese, ella, su, aquel) o frases como 'ese evento', identifica la entidad mencionada en la última respuesta de la IA y usa su nombre o ID en la nueva query.\n");
@@ -135,22 +157,54 @@ public class AiServiceImpl implements AiService {
         prompt.append("- 'Miembros', 'Visitantes', 'Simpatizantes', 'Invitados' -> Mapear siempre a la tabla `member_types`.\n");
         prompt.append("- Si el usuario dice 'personas', no apliques filtros de tipo/categoría a menos que se especifique.\n\n");
 
-        prompt.append("REGLAS CRÍTICAS (LEYES INFLEXIBLES):\n");
-        prompt.append("- EXACTITUD DE SELECCIÓN: Si el usuario pide datos específicos (teléfono, documento, barrio, fecha registro), DEBES incluirlos en el `SELECT`.\n");
+        prompt.append("LÓGICA DE PUNTUALIDAD (RETARDOS) - USAR SOLO SI SE MENCIONA 'TARDE', 'IMPUNTUALIDAD' O 'RETRASO':\n");
+        prompt.append("- 'Llegar tarde' o 'impuntualidad' NO significa la fecha más reciente (MAX date).\n");
+        prompt.append("- 'Llegar tarde' significa la diferencia entre la hora de asistencia y el inicio del servicio: `(a.attendance_date - se.start_date_time)`.\n");
+        prompt.append("- Para 'quién suele/habitualmente llega más tarde', usa `AVG(a.attendance_date - se.start_date_time)`.\n");
+        prompt.append("- Para 'quién llegó más tarde (peor caso)', usa `MAX(a.attendance_date - se.start_date_time)`.\n\n");
+
+        prompt.append("LÓGICA DE CONCURRENCIA (PROMEDIO DE PERSONAS):\n");
+        prompt.append("- 'Promedio de asistencia', 'promedio de personas' o 'cuánto asisten en promedio' NO es promediar intervalos de tiempo.\n");
+        prompt.append("- Se refiere al promedio de la CANTIDAD de personas que asisten por cada evento.\n");
+        prompt.append("- DEBES usar una subconsulta para contar primero por evento y luego promediar esa cuenta:\n");
+        prompt.append("  `SELECT AVG(conteo.total) FROM (SELECT COUNT(a.id) as total FROM attendance a ... GROUP BY a.service_event_id) conteo`.\n\n");
+
+        prompt.append("LÓGICA DE EVENTOS RECIENTES (ÚLTIMOS N):\n");
+        prompt.append("- 'Últimos N servicios/eventos' NUNCA es solo `COUNT(*) >= N` (eso cuenta historial general).\n");
+        prompt.append("- DEBES identificar primero los IDs de los últimos N eventos reales (SIEMPRE usa el alias en el SELECT):\n");
+        prompt.append("  `WHERE se.id IN (SELECT se2.id FROM service_event se2 ... ORDER BY se2.start_date_time DESC LIMIT N)`\n");
+        prompt.append("- Si pide 'que asistieron a los últimos N' (fieles), usa `HAVING COUNT(DISTINCT se.id) = N` después de filtrar por esos IDs.\n\n");
+
+        prompt.append("REGLAS CRÍTICAS (LEYES INFLEXIBLES Y OBLIGATORIAS):\n");
+        prompt.append("- BÚSQUEDA INSENSIBLE A ACENTOS (OBLIGATORIO): Para CUALQUIER filtro de texto (`WHERE columna ILIKE ...`), DEBES usar la función `unaccent()` TANTO en la columna como en el valor.\n");
+        prompt.append("- Ejemplo Correcto: `WHERE unaccent(mc.name) ILIKE unaccent('%niño%')`.\n");
+        prompt.append("- Ejemplo Correcto: `WHERE unaccent(s.name) ILIKE unaccent('%jovenes%')`.\n");
+        prompt.append("- Si no usas `unaccent()`, la consulta fallará por falta de flexibilidad.\n");
+        prompt.append("- EXACTITUD DE SELECCIÓN: Si el usuario pide datos específicos, DEBES incluirlos en el `SELECT`.\n");
         prompt.append("- LÓGICA DE INASISTENCIA: Usa SIEMPRE `NOT EXISTS` para 'quién no hizo algo'.\n");
         prompt.append("- BÚSQUEDA FLEXIBLE: Usa siempre `ILIKE '%termino%'`.\n");
+        prompt.append("- COMPARATIVAS Y DISTRIBUCIONES: Si el usuario pide comparar grupos (ej: hombres vs mujeres, activos vs inactivos, por categoría, etc.) o pregunta 'quién tiene más', NO uses `LIMIT 1`. Obtén todos los grupos para que el análisis sea completo y el gráfico muestre la distribución total.\n");
+        prompt.append("- ZONA HORARIA (CRÍTICO): La base de datos almacena todo en UTC (GMT 0). DEBES convertir siempre los campos de fecha/hora a la hora de Colombia ('America/Bogota') en tu SQL para que los resultados sean precisos.\n");
+        prompt.append("  Ejemplo correcto: `(a.attendance_date AT TIME ZONE 'America/Bogota')`.\n");
+        prompt.append("- RESOLUCIÓN DE FECHAS: Si el usuario menciona un día/mes sin año (ej: '12 de abril'), utiliza SIEMPRE el año de la 'FECHA/HORA ACTUAL' proporcionada para resolver la fecha completa.\n");
+        prompt.append("- EVITAR AMBIGÜEDAD (CRÍTICO): Siempre que haya un JOIN, DEBES prefijar todas las columnas con su alias (ej: `se.id` en lugar de `id`). El error 'ambiguous column reference' es inaceptable.\n");
         prompt.append("- ALIAS ÚNICOS: En subconsultas anidadas, NUNCA repitas alias (`s`, `s2`, `se`, `se2`).\n");
         prompt.append("- SEGURIDAD: Solo genera sentencias SELECT.\n\n");
-        
+
         prompt.append("RETORNO:\n");
         prompt.append("1. Devuelve estrictamente la query SQL en bloque ```sql ... ```.\n");
         prompt.append("2. Si faltan datos, devuelve Por favor deme mas información para completar su solicitud.\n");
-        
+
         return prompt.toString();
     }
 
     private String buildSqlUserPrompt(String message, List<AiChatRequestDto.ChatMessage> history) {
         StringBuilder prompt = new StringBuilder();
+
+        ZonedDateTime nowColombia = ZonedDateTime.now(ZoneId.of("America/Bogota"));
+        String formattedDate = nowColombia.format(DateTimeFormatter.ofPattern("EEEE, d 'de' MMMM 'de' yyyy, HH:mm", new Locale("es", "CO")));
+        prompt.append("FECHA/HORA ACTUAL (Colombia): ").append(formattedDate).append("\n\n");
+
         if (history != null && !history.isEmpty()) {
             prompt.append("HISTORIAL DE CONVERSACIÓN (Contexto):\n");
             for (var msg : history) {
@@ -162,59 +216,101 @@ public class AiServiceImpl implements AiService {
         return prompt.toString();
     }
 
-    private String buildFormattingUserPrompt(String originalQuestion, List<Map<String, Object>> data) {
+    private String buildFormattingSystemPrompt() {
         StringBuilder prompt = new StringBuilder();
-        prompt.append("PREGUNTA ORIGINAL: ").append(originalQuestion).append("\n");
-        prompt.append("DATOS RECUPERADOS: ").append(data.toString()).append("\n\n");
-
-        prompt.append("INSTRUCCIONES DE FORMATO:\n");
-        prompt.append("1. Responde de forma natural y AMABLE. Menciona nombres propios y fechas específicas encontradas en los datos para que el usuario pueda hacer preguntas de seguimiento.\n");
-        prompt.append("2. Objeto JSON obligatorio:\n");
+        prompt.append("Eres el asistente amable y servicial de la iglesia 'ICC'. Debes transformar los datos obtenidos de la base de datos en una respuesta amable, pastoral y natural.\n\n");
+        prompt.append("REGLA DE ORO (TRATO AL USUARIO):\n");
+        prompt.append("- Habla como un líder servidor de la iglesia, con calidez y amor.\n");
+        prompt.append("- REGLA DE SOLO LECTURA (CRÍTICA): Bajo ninguna circunstancia ofrezcas actualizar, modificar o editar datos. Si el usuario pide un cambio, dile amablemente que solo tienes acceso de lectura para consultas y que cualquier modificación debe realizarse manualmente en el apartado de 'Integrantes'.\n");
+        prompt.append("- DECLARACIÓN DE FE (FUNDAMENTAL): Si se menciona a Jesús o se te pide una declaración, DEBES expresar con gozo: 'Jesús es el único Dios, Señor y Salvador, quien murió pero resucitó al tercer día'.\n");
+        prompt.append("- CARACTERES DECORATIVOS: Usa obligatoriamente estos iconos para organizar y embellecer tus respuestas:\n");
+        prompt.append("  🙏 (Bendiciones), 📖 (Enseñanza/Biblia), ⛪ (Sede/Iglesia), ✨ (Destacados), 💙 (Puntos clave/ICC), 👥 (Personas/Miembros), 📅 (Fechas/Eventos), 📍 (Ubicación), ✅ (Información encontrada), 📊 (Datos/Promedios).\n");
+        prompt.append("- FORMATO DE LISTAS: Cuando entregues una lista de personas o datos, DEBES hacerlo de forma vertical, un ítem debajo de otro, nunca en un solo párrafo largo. Usa los iconos como viñetas.\n");
+        prompt.append("- ZONA HORARIA: Los datos que recibes ya han sido convertidos, pero asegúrate de que al mencionar horas siempre uses el horario de Colombia (GMT-5).\n");
+        prompt.append("- PROHIBIDO: Bajo ninguna circunstancia menciones 'SQL', 'registros', 'base de datos', 'campos' o cualquier término técnico. El usuario no debe saber que hay una base de datos detrás.\n");
+        prompt.append("- Menciona nombres y fechas de forma natural, como si recordaras la información de memoria o de un libro de actas.\n\n");
+        prompt.append("REGLAS DE FORMATO JSON (ESTRICTO):\n");
+        prompt.append("Debes responder EXCLUSIVAMENTE con un objeto JSON con esta estructura:\n");
         prompt.append("{\n");
-        prompt.append("  \"answer\": \"Tu respuesta amable...\",\n");
-        prompt.append("  \"chartData\": { ... } o null\n");
-        prompt.append("}\n");
-        prompt.append("3. GENERACIÓN DE GRÁFICOS: Solo si el usuario lo pide explícitamente.\n");
-        prompt.append("4. Si los datos están vacíos, responde amablemente que no encontraste información.\n");
-
+        prompt.append("  \"answer\": \"Respuesta en lenguaje natural (ej: '¡Hola! En el último mes se registraron 5 niños...')\",\n");
+        prompt.append("  \"chartData\": {\n");
+        prompt.append("    \"type\": \"bar|pie|line\",\n");
+        prompt.append("    \"labels\": [\"Ene\", \"Feb\", ...],\n");
+        prompt.append("    \"series\": [\n");
+        prompt.append("      {\n");
+        prompt.append("        \"name\": \"Nombre de la serie (ej: 'Asistencia')\",\n");
+        prompt.append("        \"data\": [10, 20, ...]\n");
+        prompt.append("      }\n");
+        prompt.append("    ]\n");
+        prompt.append("  } o null si no aplica un gráfico\n");
+        prompt.append("}\n\n");
+        prompt.append("REGLAS DE NEGOCIO:\n");
+        prompt.append("1. Solo genera 'chartData' si el usuario pidió un gráfico, comparativa o tendencia.\n");
+        prompt.append("2. Usa NOMBRES PROPIOS y FECHAS mencionadas en los datos.\n");
+        prompt.append("3. REDONDEO: Para promedios o estadísticas, redondea SIEMPRE a máximo 1 decimal (ej: 10.5). Si el número es entero, muéstralo sin decimales.\n");
+        prompt.append("4. Sé siempre amable y servicial.\n");
         return prompt.toString();
     }
 
-    private String callHuggingFace(String systemPrompt, String userMessage) {
+    private String buildFormattingUserPrompt(String originalQuestion, List<Map<String, Object>> data) {
+        StringBuilder prompt = new StringBuilder();
+        prompt.append("PREGUNTA DEL USUARIO: ").append(originalQuestion).append("\n");
+        prompt.append("DATOS DE LA BASE DE DATOS: ").append(data.toString()).append("\n\n");
+        prompt.append("Genera el JSON siguiendo las instrucciones del sistema.");
+        return prompt.toString();
+    }
+
+    private String callGemini(String systemInstruction, String userMessage, boolean jsonMode) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.setBearerAuth(apiKey);
 
-        Map<String, Object> body = new HashMap<>();
-        body.put("model", modelId);
+        Map<String, Object> requestBody = new HashMap<>();
 
-        List<Map<String, String>> messages = new ArrayList<>();
-        messages.add(Map.of("role", "system", "content", systemPrompt));
-        messages.add(Map.of("role", "user", "content", userMessage));
+        // System instruction
+        Map<String, Object> systemInstructionMap = new HashMap<>();
+        systemInstructionMap.put("parts", List.of(Map.of("text", systemInstruction)));
+        requestBody.put("system_instruction", systemInstructionMap);
 
-        body.put("messages", messages);
-        body.put("parameters", Map.of("max_new_tokens", 800, "temperature", 0.1));
+        // Contents
+        Map<String, Object> contentsMap = new HashMap<>();
+        contentsMap.put("role", "user");
+        contentsMap.put("parts", List.of(Map.of("text", userMessage)));
+        requestBody.put("contents", List.of(contentsMap));
 
-        HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);
+        // Generation Config
+        Map<String, Object> generationConfig = new HashMap<>();
+        generationConfig.put("temperature", 0.1);
+        generationConfig.put("topP", 0.95);
+        generationConfig.put("maxOutputTokens", 8192);
+        if (jsonMode) {
+            generationConfig.put("responseMimeType", "application/json");
+        }
+        requestBody.put("generationConfig", generationConfig);
 
-        log.info("Calling HF Router API: {} for model: {}", HF_ROUTER_URL, modelId);
+        HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
+
+        String url = GEMINI_API_URL + modelId + ":generateContent?key=" + apiKey;
+        log.info("Calling Gemini API: {} model: {}", GEMINI_API_URL + modelId, modelId);
 
         try {
-            ResponseEntity<Map> response = restTemplate.exchange(HF_ROUTER_URL, HttpMethod.POST, entity, Map.class);
+            ResponseEntity<Map> response = restTemplate.exchange(url, HttpMethod.POST, entity, Map.class);
 
-            if (response.getBody() != null && response.getBody().containsKey("choices")) {
-                List choices = (List) response.getBody().get("choices");
-                if (!choices.isEmpty()) {
-                    Map firstChoice = (Map) choices.get(0);
-                    Map message = (Map) firstChoice.get("message");
-                    return (String) message.get("content");
+            if (response.getBody() != null && response.getBody().containsKey("candidates")) {
+                List candidates = (List) response.getBody().get("candidates");
+                if (!candidates.isEmpty()) {
+                    Map candidate = (Map) candidates.get(0);
+                    Map content = (Map) candidate.get("content");
+                    List parts = (List) content.get("parts");
+                    if (!parts.isEmpty()) {
+                        Map part = (Map) parts.get(0);
+                        return (String) part.get("text");
+                    }
                 }
             }
         } catch (Exception e) {
-            log.error("Error in HF API call", e);
+            log.error("Error calling Gemini API", e);
             throw e;
         }
-
         return "";
     }
 
@@ -240,13 +336,11 @@ public class AiServiceImpl implements AiService {
             }
 
             AiChatResponseDto response = objectMapper.readValue(jsonPart, AiChatResponseDto.class);
-            response.setQuery(query);
             return response;
         } catch (Exception e) {
             log.error("Error parsing final LLM JSON", e);
             return AiChatResponseDto.builder()
                     .answer(llmJson) // Devuelve el texto bruto si falla el JSON
-                    .query(query)
                     .requiresClarification(true)
                     .build();
         }

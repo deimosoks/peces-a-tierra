@@ -10,7 +10,6 @@ import java.util.Map;
 @NoArgsConstructor
 public class AiChatResponseDto {
     private String answer;
-    private String query; // SQL generado (para fines de auditoría/debug)
     private ChartData chartData;
     private boolean requiresClarification;
     

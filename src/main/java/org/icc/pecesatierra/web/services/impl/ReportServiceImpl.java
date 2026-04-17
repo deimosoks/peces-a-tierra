@@ -142,16 +142,16 @@ public class ReportServiceImpl implements ReportService {
             cq.orderBy(cb.asc(onlyDate), cb.asc(serviceDateTime));
         }
 
-//        return em.createQuery(cq).getResultList().stream()
-//                .peek(r -> {
-//                    if (r.getServiceTime() != null) {
-//                        r.setServiceTime(
-//                                dateTimeUtils.toColombia(r.getServiceTime().atOffset(ZoneOffset.UTC))
-//                        );
-//                    }
-//                })
-//                .toList();
-        return em.createQuery(cq).getResultList();
+        return em.createQuery(cq).getResultList().stream()
+                .peek(r -> {
+                    if (r.getServiceTime() != null) {
+                        r.setServiceTime(
+                                r.getServiceTime().atZoneSameInstant(org.icc.pecesatierra.utils.time.TimeConstants.COLOMBIA_ZONE).toOffsetDateTime()
+                        );
+                        r.setDate(r.getServiceTime().toLocalDate());
+                    }
+                })
+                .toList();
     }
 
 }
