@@ -1,8 +1,10 @@
 package org.icc.pecesatierra.utils.mappers;
 
 import lombok.RequiredArgsConstructor;
+import org.icc.pecesatierra.dtos.discipulado.DiscipuladoProgressResponseDto;
 import org.icc.pecesatierra.dtos.discipulado.DiscipuladoResponseDto;
 import org.icc.pecesatierra.entities.Discipulado;
+import org.icc.pecesatierra.entities.DiscipuladoProgress;
 import org.icc.pecesatierra.utils.time.DateTimeUtils;
 import org.springframework.stereotype.Component;
 

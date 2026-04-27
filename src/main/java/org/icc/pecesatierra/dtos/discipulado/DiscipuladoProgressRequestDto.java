@@ -16,14 +16,8 @@ public class DiscipuladoProgressRequestDto {
     @NotBlank
     private String discipuladoProgressId;
 
-    @NotNull
-    private int step;
-
     @NotBlank
     private String teacherId;
-
-//    @NotNull
-//    private boolean completed;
 
     @NotNull
     private LocalDateTime dateCompleted;

@@ -52,6 +52,10 @@ public class MemberSpecification {
                 predicates.add(cb.equal(root.get("active"), true));
             }
 
+            if (Boolean.FALSE.equals(dto.getOnlyActive())) {
+                predicates.add(cb.equal(root.get("active"), false));
+            }
+
             if (Boolean.TRUE.equals(dto.getHasCc())) predicates.add(cb.isNotNull(root.get("cc")));
             if (Boolean.TRUE.equals(dto.getHasCellphone())) predicates.add(cb.isNotNull(root.get("cellphone")));
             if (Boolean.TRUE.equals(dto.getHasAddress())) predicates.add(cb.isNotNull(root.get("address")));

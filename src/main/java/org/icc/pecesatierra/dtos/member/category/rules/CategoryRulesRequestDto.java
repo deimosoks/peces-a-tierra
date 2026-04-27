@@ -18,7 +18,7 @@ public class CategoryRulesRequestDto {
     private Gender gender;
 
     @NotNull
-    private int priority;
+    private Integer priority;
 
     @NotBlank
     private String memberCategoryId;

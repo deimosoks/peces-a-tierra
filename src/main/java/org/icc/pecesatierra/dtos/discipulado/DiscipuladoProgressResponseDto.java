@@ -14,7 +14,6 @@ import java.time.LocalDateTime;
 public class DiscipuladoProgressResponseDto {
 
     private String id;
-    private DiscipuladoResponseDto discipulado;
     private int step;
     private String teacher;
     private boolean completed;

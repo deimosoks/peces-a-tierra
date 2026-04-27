@@ -1,0 +1,23 @@
+package org.icc.pecesatierra.services;
+
+import org.icc.pecesatierra.entities.User;
+import org.icc.pecesatierra.dtos.user.*;
+import org.icc.pecesatierra.utils.models.PagesResponseDto;
+
+public interface UserService {
+
+    UserResponseDto create(UserRequestDto userRequestDto, User givenBy);
+
+    MeDto me(User user);
+
+    PagesResponseDto<UserResponseDto> search(int page, UserFilterRequestDto dto, User user);
+
+    UserResponseDto update(UserRequestDto userRequestDto, String userId, User givenBy);
+
+    boolean updateActive(User user, String userId, boolean active);
+
+    void delete(User user, String userId);
+
+    UserReportResponseDto report(User user);
+
+}
