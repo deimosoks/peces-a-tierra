@@ -23,4 +23,8 @@ public class DiscipuladoProgressMapper {
                 .build();
     }
 
+//    public void updateEntityFromDto(DiscipuladoProgressResponseDto dto, DiscipuladoProgress discipuladoProgress) {
+//
+//    }
+
 }

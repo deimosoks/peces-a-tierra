@@ -26,6 +26,12 @@ public class DiscipuladoSpecification {
                 return cb.conjunction();
             }
 
+            if (user.hasAuthority("ADMINISTRATOR") && dto.getBranchId() != null) {
+                predicates.add(cb.equal(root.get("member").get("branch").get("id"), dto.getBranchId()));
+            } else {
+                predicates.add(cb.equal(root.get("member").get("branch").get("id"), user.getMember().getBranch().getId()));
+            }
+
             // 🔹 Filtrar por miembro (a quién pertenece el discipulado)
             if (dto.getMemberId() != null && !dto.getMemberId().isBlank()) {
                 predicates.add(cb.equal(root.get("member").get("id"), dto.getMemberId()));

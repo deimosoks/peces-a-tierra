@@ -18,6 +18,7 @@ public class DiscipuladoResponseDto {
     private LocalDateTime dateStarted;
     private String registeredBy;
     private LocalDateTime createdAt;
+    private String branch;
     private List<DiscipuladoProgressResponseDto> progress;
 
 }

@@ -18,6 +18,7 @@ public class DiscipuladoFilterRequestDto {
     private LocalDateTime dateStartedFrom;
     private LocalDateTime dateStartedTo;
     private Boolean completed;
+    private String branchId;
     private OrderBy orderBy;
 
 }

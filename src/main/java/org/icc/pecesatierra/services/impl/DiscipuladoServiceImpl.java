@@ -6,8 +6,8 @@ import org.icc.pecesatierra.entities.Discipulado;
 import org.icc.pecesatierra.entities.DiscipuladoProgress;
 import org.icc.pecesatierra.entities.Member;
 import org.icc.pecesatierra.entities.User;
-import org.icc.pecesatierra.exceptions.discipulado.DiscipuladoNotFoundException;
-import org.icc.pecesatierra.exceptions.discipulado.DiscipuladoProgressNotFoundException;
+import org.icc.pecesatierra.exceptions.discipulado.*;
+import org.icc.pecesatierra.exceptions.members.CannotCreateMembersOutsideYourBranch;
 import org.icc.pecesatierra.exceptions.members.MemberNotFoundException;
 import org.icc.pecesatierra.repositories.DiscipuladoProgressRepository;
 import org.icc.pecesatierra.repositories.DiscipuladoRepository;
@@ -56,6 +56,10 @@ public class DiscipuladoServiceImpl implements DiscipuladoService {
                 .completed(false)
                 .build();
 
+        if (!user.hasAuthority("ADMINISTRATOR") && !user.getMember().getBranch().getId().equals(member.getBranch().getId())) {
+            throw new CannotCreateDiscipuladoWithMemberOutsideYourBranch();
+        }
+
         Set<DiscipuladoProgress> progresses = IntStream.range(0, 13).mapToObj(n -> {
             return DiscipuladoProgress.builder()
                     .discipulado(discipulado)
@@ -73,9 +77,15 @@ public class DiscipuladoServiceImpl implements DiscipuladoService {
 
     @Override
     @Transactional(readOnly = true)
-    public DiscipuladoResponseDto findById(String id) {
-        return discipuladoMapper.toDto(discipuladoRepository.findById(id)
-                .orElseThrow(DiscipuladoNotFoundException::new));
+    public DiscipuladoResponseDto findById(String id, User user) {
+        Discipulado discipulado = discipuladoRepository.findById(id)
+                .orElseThrow(DiscipuladoNotFoundException::new);
+
+        if (!user.hasAuthority("ADMINISTRATOR") && !user.getMember().getBranch().getId().equals(discipulado.getMember().getBranch().getId())) {
+            throw new CannotFindDiscipuladoWithMemberOutsideYourBranch();
+        }
+
+        return discipuladoMapper.toDto(discipulado);
     }
 
     @Override
@@ -111,10 +121,15 @@ public class DiscipuladoServiceImpl implements DiscipuladoService {
 
     @Override
     @Transactional
-    public void delete(String id) {
+    public void delete(String id, User user) {
         Discipulado discipulado = discipuladoRepository.findById(id)
                 .orElseThrow(DiscipuladoNotFoundException::new);
+
+        if (!user.hasAuthority("ADMINISTRATOR") && !user.getMember().getBranch().getId().equals(discipulado.getMember().getBranch().getId())) {
+            throw new CannotDeleteDiscipuladoWithMemberOutsideYourBranch();
+        }
         discipulado.getProgress().clear();
+
         discipuladoRepository.delete(discipulado);
     }
 
@@ -131,6 +146,20 @@ public class DiscipuladoServiceImpl implements DiscipuladoService {
         discipuladoProgress.setCompleted(true);
         discipuladoProgress.setDateCompleted(dateTimeUtils.toUTC(dto.getDateCompleted()));
         discipuladoProgress.setTeacherId(teacher);
+
+        return discipuladoProgressMapper.toDto(discipuladoProgress);
+    }
+
+    @Override
+    @Transactional
+    public DiscipuladoProgressResponseDto updateProgress(DiscipuladoProgressRequestDto dto, User user, String id) {
+
+        DiscipuladoProgress discipuladoProgress = discipuladoProgressRepository.findById(id)
+                .orElseThrow(DiscipuladoProgressNotFoundException::new);
+
+        discipuladoProgress.setTeacherId(memberRepository.findById(dto.getTeacherId())
+                .orElseThrow(MemberNotFoundException::new));
+        discipuladoProgress.setDateCompleted(dateTimeUtils.toUTC(dto.getDateCompleted()));
 
         return discipuladoProgressMapper.toDto(discipuladoProgress);
     }

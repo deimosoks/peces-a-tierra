@@ -43,8 +43,9 @@ public class DiscipuladoController {
             && 
             @securityService.isActive(authentication)
             """)
-    public ResponseEntity<DiscipuladoResponseDto> findById(@PathVariable String id) {
-        return ResponseEntity.ok(discipuladoService.findById(id));
+    public ResponseEntity<DiscipuladoResponseDto> findById(@PathVariable String id,
+                                                           @AuthenticationPrincipal User user) {
+        return ResponseEntity.ok(discipuladoService.findById(id, user));
     }
 
     @PostMapping("/search")
@@ -58,8 +59,9 @@ public class DiscipuladoController {
             @securityService.isActive(authentication)
             """)
     public ResponseEntity<PagesResponseDto<DiscipuladoResponseDto>> search(@RequestBody DiscipuladoFilterRequestDto filters,
-                                                                           @RequestParam(required = false, defaultValue = "0") int page) {
-        return ResponseEntity.ok(discipuladoService.search(page, filters, null));
+                                                                           @RequestParam(required = false, defaultValue = "0") int page,
+                                                                           @AuthenticationPrincipal User user) {
+        return ResponseEntity.ok(discipuladoService.search(page, filters, user));
     }
 
     @DeleteMapping("/{id}")
@@ -72,8 +74,9 @@ public class DiscipuladoController {
             && 
             @securityService.isActive(authentication)
             """)
-    public ResponseEntity<Void> delete(@PathVariable String id) {
-        discipuladoService.delete(id);
+    public ResponseEntity<Void> delete(@PathVariable String id,
+                                       @AuthenticationPrincipal User user) {
+        discipuladoService.delete(id, user);
         return ResponseEntity.noContent().build();
     }
 
@@ -89,6 +92,22 @@ public class DiscipuladoController {
             """)
     public ResponseEntity<DiscipuladoProgressResponseDto> progress(@RequestBody DiscipuladoProgressRequestDto dto) {
         return ResponseEntity.ok(discipuladoService.progress(dto, null));
+    }
+
+    @PutMapping("/progress/{id}")
+    @PreAuthorize("""
+            (
+            hasAuthority('DISCIPULADO_PROGRESS') 
+            || 
+            hasAuthority('ADMINISTRATOR') 
+            )
+            && 
+            @securityService.isActive(authentication)
+            """)
+    public ResponseEntity<DiscipuladoProgressResponseDto> progressUpdate(@RequestBody DiscipuladoProgressRequestDto dto,
+                                                                         @PathVariable String id,
+                                                                         @AuthenticationPrincipal User user) {
+        return ResponseEntity.ok(discipuladoService.updateProgress(dto, user, id));
     }
 
 

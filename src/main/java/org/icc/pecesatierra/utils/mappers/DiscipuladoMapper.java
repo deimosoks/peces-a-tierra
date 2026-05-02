@@ -23,6 +23,7 @@ public class DiscipuladoMapper {
                 .dateStarted(dateTimeUtils.toColombia(discipulado.getDateStarted()))
                 .registeredBy(discipulado.getRegisteredBy().getCompleteName())
                 .createdAt(dateTimeUtils.toColombia(discipulado.getCreatedAt()))
+                .branch(discipulado.getMember().getBranch().getName())
                 .progress(discipulado.getProgress().stream().map(discipuladoProgressMapper::toDto).toList())
                 .build();
     }
