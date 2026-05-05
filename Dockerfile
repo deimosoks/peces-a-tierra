@@ -2,30 +2,27 @@
 FROM gradle:8.6-jdk21 AS build
 WORKDIR /home/gradle/project
 
-# Copiar wrapper y archivos de build
+ENV GRADLE_USER_HOME=/tmp/gradle
+
 COPY gradle gradle
 COPY gradlew .
 COPY build.gradle settings.gradle ./
 
-# Dar permisos de ejecución al wrapper
 RUN chmod +x ./gradlew
 
-# Instalar dependencias
-RUN ./gradlew dependencies --no-daemon
-
-# Copiar código fuente y construir el JAR
+# Copiar código
 COPY src src
-RUN ./gradlew bootJar --no-daemon
+
+# Build limpio (SIN cache)
+RUN ./gradlew clean bootJar --no-daemon --no-build-cache --refresh-dependencies
+
 
 # 2️⃣ Runtime stage
 FROM eclipse-temurin:21-jre
 WORKDIR /app
 
-# Copiar el JAR generado
 COPY --from=build /home/gradle/project/build/libs/*.jar app.jar
 
-# Exponer puerto
 EXPOSE 8080
 
-# Ejecutar la app
 ENTRYPOINT ["java","-jar","app.jar"]
