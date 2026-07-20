@@ -1,0 +1,42 @@
+package org.icc.pecesatierra.features.attendance.repository;
+
+import org.icc.pecesatierra.features.attendance.Attendance;
+import org.icc.pecesatierra.features.branch.Branch;
+import org.icc.pecesatierra.features.member.Member;
+import org.icc.pecesatierra.features.service.ServiceEvent;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.jpa.repository.EntityGraph;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.stereotype.Repository;
+
+import java.util.Set;
+
+@Repository
+public interface AttendanceRepository extends JpaRepository<Attendance, String>, JpaSpecificationExecutor<Attendance> {
+
+    @Override
+    @EntityGraph(attributePaths = {
+            "memberCategory",
+            "memberType",
+            "registeredById",
+            "memberSubCategory",
+            "invalidatorId",
+            "branch",
+            "serviceEvent",
+            "member"
+    })
+    Page<Attendance> findAll(Specification<Attendance> spec, Pageable pageable);
+
+    boolean existsByMember(Member member);
+
+    boolean existsAttendanceByBranch(Branch branch);
+
+    boolean existsByServiceEvent(ServiceEvent serviceEvent);
+
+    @Query("SELECT a.member.id FROM Attendance a WHERE a.serviceEvent.id = :eventId AND a.invalid = false")
+    Set<String> findMemberIdsByServiceEventIdInvalidFalse(String eventId);
+}

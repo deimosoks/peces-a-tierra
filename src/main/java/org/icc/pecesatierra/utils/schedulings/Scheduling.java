@@ -2,12 +2,8 @@ package org.icc.pecesatierra.utils.schedulings;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.icc.pecesatierra.entities.MemberCategory;
-import org.icc.pecesatierra.entities.MemberSubCategory;
-import org.icc.pecesatierra.repositories.MemberCategoryRepository;
-import org.icc.pecesatierra.repositories.MemberRepository;
-import org.icc.pecesatierra.repositories.MemberSubCategoryRepository;
-import org.icc.pecesatierra.repositories.RefreshTokenRepository;
+import org.icc.pecesatierra.features.member.repository.MemberRepository;
+import org.icc.pecesatierra.features.auth.repository.RefreshTokenRepository;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;

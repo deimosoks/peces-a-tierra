@@ -2,8 +2,15 @@ package org.icc.pecesatierra.utils.specs;
 
 import jakarta.persistence.criteria.*;
 import lombok.RequiredArgsConstructor;
-import org.icc.pecesatierra.dtos.attendance.AttendanceFiltersRequestDto;
-import org.icc.pecesatierra.entities.*;
+import org.icc.pecesatierra.features.attendance.Attendance;
+import org.icc.pecesatierra.features.attendance.dtos.AttendanceFiltersRequestDto;
+import org.icc.pecesatierra.features.service.ServiceEvent;
+import org.icc.pecesatierra.features.service.Services;
+import org.icc.pecesatierra.features.user.User;
+import org.icc.pecesatierra.features.branch.Branch;
+import org.icc.pecesatierra.features.member.Member;
+import org.icc.pecesatierra.features.category.MemberCategory;
+import org.icc.pecesatierra.features.category.MemberSubCategory;
 import org.icc.pecesatierra.utils.time.DateTimeUtils;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;

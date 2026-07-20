@@ -1,13 +1,13 @@
 package org.icc.pecesatierra.configurations;
 
 import lombok.RequiredArgsConstructor;
-import org.icc.pecesatierra.dtos.auth.RefreshTokenRequestDto;
-import org.icc.pecesatierra.entities.RefreshToken;
-import org.icc.pecesatierra.entities.User;
-import org.icc.pecesatierra.exceptions.auth.AuthenticatedUserNotFoundException;
-import org.icc.pecesatierra.exceptions.auth.InvalidRefreshTokenException;
-import org.icc.pecesatierra.repositories.RefreshTokenRepository;
-import org.icc.pecesatierra.repositories.UserRepository;
+import org.icc.pecesatierra.features.auth.dtos.RefreshTokenRequestDto;
+import org.icc.pecesatierra.features.auth.RefreshToken;
+import org.icc.pecesatierra.features.user.User;
+import org.icc.pecesatierra.features.auth.exceptions.AuthenticatedUserNotFoundException;
+import org.icc.pecesatierra.features.auth.exceptions.InvalidRefreshTokenException;
+import org.icc.pecesatierra.features.auth.repository.RefreshTokenRepository;
+import org.icc.pecesatierra.features.user.repository.UserRepository;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.core.Authentication;
 import org.springframework.transaction.annotation.Transactional;

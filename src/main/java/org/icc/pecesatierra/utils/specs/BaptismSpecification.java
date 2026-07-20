@@ -2,10 +2,10 @@ package org.icc.pecesatierra.utils.specs;
 
 import jakarta.persistence.criteria.*;
 import lombok.RequiredArgsConstructor;
-import org.icc.pecesatierra.dtos.baptism.BaptismFilterRequestDto;
-import org.icc.pecesatierra.entities.Baptism;
-import org.icc.pecesatierra.entities.Member;
-import org.icc.pecesatierra.entities.User;
+import org.icc.pecesatierra.features.baptism.dtos.BaptismFilterRequestDto;
+import org.icc.pecesatierra.features.baptism.Baptism;
+import org.icc.pecesatierra.features.member.Member;
+import org.icc.pecesatierra.features.user.User;
 import org.icc.pecesatierra.utils.time.DateTimeUtils;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;

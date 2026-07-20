@@ -1,0 +1,29 @@
+package org.icc.pecesatierra.features.attendance.dtos;
+
+import lombok.*;
+import org.icc.pecesatierra.utils.models.OrderBy;
+
+import java.time.LocalDateTime;
+import java.util.List;
+
+@Builder
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+public class AttendanceFiltersRequestDto {
+
+    private String serviceId;
+    private String eventId;
+    private LocalDateTime startDate;
+    private LocalDateTime endDate;
+    private String branchId;
+    private String memberId;
+    private List<String> category;
+    private List<String> subCategory;
+    private Boolean invalid;
+    private String gender;
+    private OrderBy orderBy;
+    private String branchName;
+
+}

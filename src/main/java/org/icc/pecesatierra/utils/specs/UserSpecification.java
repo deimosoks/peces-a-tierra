@@ -1,9 +1,9 @@
 package org.icc.pecesatierra.utils.specs;
 
 import jakarta.persistence.criteria.*;
-import org.icc.pecesatierra.dtos.user.UserFilterRequestDto;
-import org.icc.pecesatierra.entities.Member;
-import org.icc.pecesatierra.entities.User;
+import org.icc.pecesatierra.features.user.dtos.UserFilterRequestDto;
+import org.icc.pecesatierra.features.member.Member;
+import org.icc.pecesatierra.features.user.User;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
 

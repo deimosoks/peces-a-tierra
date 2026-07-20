@@ -2,10 +2,10 @@ package org.icc.pecesatierra.utils.specs;
 
 import jakarta.persistence.criteria.*;
 import lombok.RequiredArgsConstructor;
-import org.icc.pecesatierra.dtos.discipulado.DiscipuladoFilterRequestDto;
-import org.icc.pecesatierra.entities.Discipulado;
-import org.icc.pecesatierra.entities.Member;
-import org.icc.pecesatierra.entities.User;
+import org.icc.pecesatierra.features.discipulado.dtos.DiscipuladoFilterRequestDto;
+import org.icc.pecesatierra.features.discipulado.Discipulado;
+import org.icc.pecesatierra.features.member.Member;
+import org.icc.pecesatierra.features.user.User;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
 

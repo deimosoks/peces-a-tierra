@@ -1,0 +1,28 @@
+package org.icc.pecesatierra.features.baptism.repository;
+
+import org.icc.pecesatierra.features.baptism.Baptism;
+import org.icc.pecesatierra.features.branch.Branch;
+import org.icc.pecesatierra.features.member.Member;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.jpa.repository.EntityGraph;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+
+public interface BaptismRepository extends JpaRepository<Baptism, String>, JpaSpecificationExecutor<Baptism> {
+    boolean existsByBaptizedMemberAndInvalidFalse(Member member);
+
+    long countByInvalidFalse();
+
+    @Override
+    @EntityGraph(attributePaths = {
+            "baptizedMember",
+            "baptizedMember.branch",
+            "registeredBy",
+            "invalidatorId"
+    })
+    Page<Baptism> findAll(Specification<Baptism> spec, Pageable pageable);
+
+    long countByBaptizedMemberBranchAndInvalidFalse(Branch branch);
+}

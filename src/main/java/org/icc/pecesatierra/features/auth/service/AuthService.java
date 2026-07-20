@@ -1,0 +1,144 @@
+package org.icc.pecesatierra.features.auth.service;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.icc.pecesatierra.features.auth.dtos.*;
+import org.icc.pecesatierra.features.auth.RefreshToken;
+import org.icc.pecesatierra.features.auth.exceptions.*;
+import org.icc.pecesatierra.features.user.User;
+import org.icc.pecesatierra.features.auth.repository.RefreshTokenRepository;
+import org.icc.pecesatierra.features.user.repository.UserRepository;
+import org.icc.pecesatierra.features.auth.mapper.RefreshTokenMapper;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+@Slf4j
+@Service
+@RequiredArgsConstructor
+public class AuthService {
+
+    private final RefreshTokenService refreshTokenService;
+    private final JwtService jwtService;
+    private final RefreshTokenRepository refreshTokenRepository;
+    private final AuthenticationManager authenticationManager;
+    private final UserDetailsService userDetailsService;
+    private final UserRepository userRepository;
+    private final RefreshTokenMapper refreshTokenMapper;
+    private final PasswordEncoder passwordEncoder;
+
+    @Transactional
+    public AuthResponseDto login(AuthRequestDto authRequestDto) {
+
+        authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        authRequestDto.getUsername(),
+                        authRequestDto.getPassword()
+                )
+        );
+
+        UserDetails userDetails = userDetailsService.loadUserByUsername(authRequestDto.getUsername());
+
+        User user = (User) userDetails;
+
+        if (!user.isActive()) {
+            throw new AuthenticatedUserNotFoundException();
+        }
+
+        String accessToken = jwtService.generateToken(userDetails);
+
+        AccessTokenDto accessTokenDto = AccessTokenDto.builder()
+                .token(accessToken)
+                .expiredAt(jwtService.extractExpiration(accessToken))
+                .build();
+
+        log.info("""
+                        Usuario: 
+                        Id: {}
+                        Name: {}
+                        Logueo al sistema.
+                        """
+                , user.getMember().getId()
+                , user.getMember().getCompleteName());
+
+        return AuthResponseDto.builder()
+                .accessTokenDto(accessTokenDto)
+                .refreshTokenDto(refreshTokenMapper.toDto(refreshTokenService.generate(user)))
+                .build();
+    }
+
+    @Transactional
+    public void logout(User user, RefreshTokenRequestDto refreshTokenRequestDto) {
+
+        RefreshToken refreshToken = refreshTokenRepository.findByToken(refreshTokenRequestDto.getRefreshToken())
+                .orElseThrow(InvalidRefreshTokenException::new);
+
+        if (!user.getUsername().equals(refreshToken.getUser().getUsername())) {
+            log.warn("""
+                            Usuario:
+                             Id: {} 
+                             Name: {}
+                             Intento hacer logout el token {} que no le pertenece.
+                            """
+                    , user.getMember().getId(), refreshToken.getId()
+                    , user.getMember().getCompleteName());
+            throw new CannotLogOutWithTokenYouDoNotOwn();
+        }
+
+        refreshTokenRepository.deleteByToken(refreshToken.getToken());
+
+    }
+
+    @Transactional
+    public AuthResponseDto refresh(RefreshTokenRequestDto refreshTokenRequestDto) {
+
+        RefreshToken newRefreshToken = refreshTokenService.validateAndRotate(refreshTokenRequestDto.getRefreshToken());
+
+        String accessToken = jwtService.generateToken(newRefreshToken.getUser());
+
+        AccessTokenDto newAccessTokenDto = AccessTokenDto.builder()
+                .token(accessToken)
+                .expiredAt(jwtService.extractExpiration(accessToken))
+                .build();
+
+        log.info("""
+                        Usuario: 
+                        Id: {}
+                        Name: {}
+                        Hizo refresco de sesión.
+                        """
+                , newRefreshToken.getUser().getMember().getId()
+                , newRefreshToken.getUser().getMember().getCompleteName());
+        return AuthResponseDto.builder()
+                .accessTokenDto(newAccessTokenDto)
+                .refreshTokenDto(refreshTokenMapper.toDto(newRefreshToken))
+                .build();
+    }
+
+    @Transactional
+    public void changgePassword(User user, ChanggePasswordRequest dto) {
+
+        if (!dto.getPassword().equals(dto.getConfirmPassword()))
+            throw new PasswordDoesNotMatchException();
+
+        if (!passwordEncoder.matches(dto.getOldPassword(), user.getPasswordHash()))
+            throw new PasswordDoesNotMatchWithPasswordRegisterException();
+
+        user.setPasswordHash(passwordEncoder.encode(dto.getPassword()));
+
+        log.info("""
+                        Usuario: 
+                        Id: {}
+                        Name: {}
+                        Cambio su contraseña.
+                        """
+                , user.getMember().getId()
+                , user.getMember().getCompleteName());
+
+        userRepository.save(user);
+    }
+}

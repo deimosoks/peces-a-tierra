@@ -3,13 +3,12 @@ package org.icc.pecesatierra.utils.cloudinary;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.Tika;
-import org.icc.pecesatierra.exceptions.images.InvalidImageFormatException;
-import org.icc.pecesatierra.exceptions.server.ServerErrorException;
+import org.icc.pecesatierra.features.member.exceptions.InvalidImageFormatException;
+import org.icc.pecesatierra.features.member.exceptions.FileErrorException;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Map;
 
 @Slf4j
@@ -41,7 +40,7 @@ public class PictureUtils {
 
         } catch (IOException e) {
             log.error("Error al procesar el archivo: {}", e.getMessage());
-            throw new ServerErrorException();
+            throw new FileErrorException();
         }
     }
 
@@ -57,7 +56,7 @@ public class PictureUtils {
                     , publicId
                     , e.getMessage()
                     , e.getStackTrace());
-            throw new ServerErrorException();
+            throw new FileErrorException();
         }
     }
 

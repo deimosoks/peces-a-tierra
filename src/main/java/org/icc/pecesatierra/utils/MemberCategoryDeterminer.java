@@ -2,12 +2,11 @@ package org.icc.pecesatierra.utils;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.icc.pecesatierra.entities.CategoryRules;
-import org.icc.pecesatierra.entities.Member;
-import org.icc.pecesatierra.repositories.CategoryRulesRepository;
-import org.icc.pecesatierra.repositories.MemberRepository;
+import org.icc.pecesatierra.features.category.CategoryRules;
+import org.icc.pecesatierra.features.member.Member;
+import org.icc.pecesatierra.features.category.repository.CategoryRulesRepository;
+import org.icc.pecesatierra.features.member.repository.MemberRepository;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.Period;
