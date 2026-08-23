@@ -23,7 +23,7 @@ public class CategoryRulesController {
 
     @PostMapping
     @PreAuthorize("""
-            hasAuthority('ADMINISTRATOR') 
+            hasAuthority(T(org.icc.pecesatierra.utils.enums.AppPermission).ADMINISTRATOR.name()) 
             &&
             @securityService.isActive(authentication)
             """)
@@ -34,7 +34,7 @@ public class CategoryRulesController {
 
     @PutMapping("/{categoryRuleId}")
     @PreAuthorize("""
-            hasAuthority('ADMINISTRATOR') 
+            hasAuthority(T(org.icc.pecesatierra.utils.enums.AppPermission).ADMINISTRATOR.name()) 
             &&
             @securityService.isActive(authentication)
             """)
@@ -46,7 +46,7 @@ public class CategoryRulesController {
 
     @PatchMapping("/{categoryRuleId}")
     @PreAuthorize("""
-            hasAuthority('ADMINISTRATOR') 
+            hasAuthority(T(org.icc.pecesatierra.utils.enums.AppPermission).ADMINISTRATOR.name()) 
             &&
             @securityService.isActive(authentication)
             """)
@@ -58,7 +58,7 @@ public class CategoryRulesController {
 
     @DeleteMapping("/{categoryRuleId}")
     @PreAuthorize("""
-            hasAuthority('ADMINISTRATOR') 
+            hasAuthority(T(org.icc.pecesatierra.utils.enums.AppPermission).ADMINISTRATOR.name()) 
             &&
             @securityService.isActive(authentication)
             """)
@@ -70,7 +70,7 @@ public class CategoryRulesController {
 
     @GetMapping
     @PreAuthorize("""
-            hasAuthority('ADMINISTRATOR') 
+            hasAuthority(T(org.icc.pecesatierra.utils.enums.AppPermission).ADMINISTRATOR.name()) 
             &&
             @securityService.isActive(authentication)
             """)

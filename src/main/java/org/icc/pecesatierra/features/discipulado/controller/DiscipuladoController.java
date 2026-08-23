@@ -21,9 +21,9 @@ public class DiscipuladoController {
     @PostMapping
     @PreAuthorize("""
             (
-            hasAuthority('DISCIPULADO_CREATE') 
+            hasAuthority(T(org.icc.pecesatierra.utils.enums.AppPermission).DISCIPULADO_CREATE.name()) 
             || 
-            hasAuthority('ADMINISTRATOR') 
+            hasAuthority(T(org.icc.pecesatierra.utils.enums.AppPermission).ADMINISTRATOR.name()) 
             )
             && 
             @securityService.isActive(authentication)
@@ -36,9 +36,9 @@ public class DiscipuladoController {
     @GetMapping("/{id}")
     @PreAuthorize("""
             (
-            hasAuthority('VIEW_DISCIPULADO_PANEL') 
+            hasAuthority(T(org.icc.pecesatierra.utils.enums.AppPermission).VIEW_DISCIPULADO_PANEL.name()) 
             || 
-            hasAuthority('ADMINISTRATOR') 
+            hasAuthority(T(org.icc.pecesatierra.utils.enums.AppPermission).ADMINISTRATOR.name()) 
             )
             && 
             @securityService.isActive(authentication)
@@ -51,9 +51,9 @@ public class DiscipuladoController {
     @PostMapping("/search")
     @PreAuthorize("""
             (
-            hasAuthority('VIEW_DISCIPULADO_PANEL') 
+            hasAuthority(T(org.icc.pecesatierra.utils.enums.AppPermission).VIEW_DISCIPULADO_PANEL.name()) 
             || 
-            hasAuthority('ADMINISTRATOR') 
+            hasAuthority(T(org.icc.pecesatierra.utils.enums.AppPermission).ADMINISTRATOR.name()) 
             )
             && 
             @securityService.isActive(authentication)
@@ -67,9 +67,9 @@ public class DiscipuladoController {
     @DeleteMapping("/{id}")
     @PreAuthorize("""
             (
-            hasAuthority('DISCIPULADO_DELETE')
+            hasAuthority(T(org.icc.pecesatierra.utils.enums.AppPermission).DISCIPULADO_DELETE.name())
             || 
-            hasAuthority('ADMINISTRATOR') 
+            hasAuthority(T(org.icc.pecesatierra.utils.enums.AppPermission).ADMINISTRATOR.name()) 
             )
             && 
             @securityService.isActive(authentication)
@@ -83,9 +83,9 @@ public class DiscipuladoController {
     @PostMapping("/progress")
     @PreAuthorize("""
             (
-            hasAuthority('DISCIPULADO_PROGRESS') 
+            hasAuthority(T(org.icc.pecesatierra.utils.enums.AppPermission).DISCIPULADO_PROGRESS.name()) 
             || 
-            hasAuthority('ADMINISTRATOR') 
+            hasAuthority(T(org.icc.pecesatierra.utils.enums.AppPermission).ADMINISTRATOR.name()) 
             )
             && 
             @securityService.isActive(authentication)
@@ -97,9 +97,9 @@ public class DiscipuladoController {
     @PutMapping("/progress/{id}")
     @PreAuthorize("""
             (
-            hasAuthority('DISCIPULADO_PROGRESS') 
+            hasAuthority(T(org.icc.pecesatierra.utils.enums.AppPermission).DISCIPULADO_PROGRESS.name()) 
             || 
-            hasAuthority('ADMINISTRATOR') 
+            hasAuthority(T(org.icc.pecesatierra.utils.enums.AppPermission).ADMINISTRATOR.name()) 
             )
             && 
             @securityService.isActive(authentication)

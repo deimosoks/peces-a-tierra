@@ -44,7 +44,7 @@ public class RoleService {
         roleRequestDto.getPermissions().forEach(
                 permissionRequestDto -> {
                     RolePermissionId rolePermissionId = RolePermissionId.builder()
-                            .permission(permissionRequestDto.getName().getPermission())
+                            .permission(permissionRequestDto.getName().name())
                             .roleId(role.getId())
                             .build();
 

@@ -11,6 +11,7 @@ import org.icc.pecesatierra.features.category.MemberCategory;
 import org.icc.pecesatierra.features.category.MemberSubCategory;
 import org.icc.pecesatierra.features.type.MemberType;
 import org.icc.pecesatierra.features.report.dtos.ReportRequestDto;
+import org.icc.pecesatierra.utils.enums.AppPermission;
 import org.icc.pecesatierra.utils.time.DateTimeUtils;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
@@ -68,7 +69,7 @@ public class AttendanceReportSpecification {
                 );
             }
 
-            if (!user.hasAuthority("ADMINISTRATOR")) {
+            if (!user.hasAuthority(AppPermission.ADMINISTRATOR.name())) {
                 predicates.add(cb.equal(branch.get("id"), user.getMember().getBranch().getId()));
             } else if (dto.getBranchIds() != null) {
                 predicates.add(branch.get("id").in(dto.getBranchIds()));

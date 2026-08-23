@@ -6,6 +6,7 @@ import org.icc.pecesatierra.features.discipulado.dtos.DiscipuladoFilterRequestDt
 import org.icc.pecesatierra.features.discipulado.Discipulado;
 import org.icc.pecesatierra.features.member.Member;
 import org.icc.pecesatierra.features.user.User;
+import org.icc.pecesatierra.utils.enums.AppPermission;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
 
@@ -26,7 +27,7 @@ public class DiscipuladoSpecification {
                 return cb.conjunction();
             }
 
-            if (!user.hasAuthority("ADMINISTRATOR")) {
+            if (!user.hasAuthority(AppPermission.ADMINISTRATOR.name())) {
                 predicates.add(cb.equal(root.get("member").get("branch").get("id"), user.getMember().getBranch().getId()));
             } else if (dto.getBranchId() != null) {
                 predicates.add(cb.equal(root.get("member").get("branch").get("id"), dto.getBranchId()));

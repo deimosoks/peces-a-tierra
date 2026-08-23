@@ -15,6 +15,7 @@ import org.icc.pecesatierra.features.user.User;
 import org.icc.pecesatierra.features.category.repository.mapper.MemberMapper;
 import org.icc.pecesatierra.features.attendance.repository.AttendanceRepository;
 import org.icc.pecesatierra.features.member.repository.MemberRepository;
+import org.icc.pecesatierra.utils.enums.AppPermission;
 import org.icc.pecesatierra.utils.models.ApiException;
 import org.icc.pecesatierra.utils.models.ExportResponseDto;
 import org.icc.pecesatierra.utils.models.PagesResponseDto;
@@ -172,7 +173,7 @@ public class MemberService {
         if (attendanceRepository.existsByMember(member))
             throw new CannotDeleteMemberWithRecords();
 
-        if (!user.hasAuthority("ADMINISTRATOR") && !user.getMember().getBranch().getId().equals(member.getBranch().getId())) {
+        if (!user.hasAuthority(AppPermission.ADMINISTRATOR.name()) && !user.getMember().getBranch().getId().equals(member.getBranch().getId())) {
             throw new CannotDeleteMemberOutSideYourBranchException();
         }
 
@@ -207,7 +208,7 @@ public class MemberService {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(MemberNotFoundException::new);
 
-        if (!user.hasAuthority("ADMINISTRATOR") && !user.getMember().getBranch().getId().equals(member.getBranch().getId())) {
+        if (!user.hasAuthority(AppPermission.ADMINISTRATOR.name()) && !user.getMember().getBranch().getId().equals(member.getBranch().getId())) {
             throw new CannotDeleteMemberOutSideYourBranchException();
         }
 

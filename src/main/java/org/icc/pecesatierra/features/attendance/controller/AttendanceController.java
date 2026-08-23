@@ -27,9 +27,9 @@ public class AttendanceController extends BaseController {
 
     @PreAuthorize("""
             (
-            hasAuthority('REGISTER_ATTENDANCE') 
+            hasAuthority(T(org.icc.pecesatierra.utils.enums.AppPermission).REGISTER_EVENTS.name()) 
             || 
-            hasAuthority('ADMINISTRATOR') 
+            hasAuthority(T(org.icc.pecesatierra.utils.enums.AppPermission).ADMINISTRATOR.name()) 
             ) 
             && 
             @securityService.isActive(authentication)
@@ -43,11 +43,11 @@ public class AttendanceController extends BaseController {
 
     @PreAuthorize("""
             (
-            hasAuthority('MANAGE_ATTENDANCE') 
+            hasAuthority(T(org.icc.pecesatierra.utils.enums.AppPermission).MANAGE_ATTENDANCE.name()) 
             || 
-            hasAuthority('ADMINISTRATOR')
+            hasAuthority(T(org.icc.pecesatierra.utils.enums.AppPermission).ADMINISTRATOR.name())
             ||
-            hasAuthority('MANAGE_DASHBOARD') 
+            hasAuthority(T(org.icc.pecesatierra.utils.enums.AppPermission).MANAGE_DASHBOARD.name()) 
             )
             && 
             @securityService.isActive(authentication)
@@ -64,6 +64,17 @@ public class AttendanceController extends BaseController {
         return ResponseEntity.ok(attendanceService.search(page, attendanceFiltersRequestDto, user));
     }
 
+    @PreAuthorize("""
+            (
+            hasAuthority(T(org.icc.pecesatierra.utils.enums.AppPermission).MANAGE_ATTENDANCE.name()) 
+            || 
+            hasAuthority(T(org.icc.pecesatierra.utils.enums.AppPermission).ADMINISTRATOR.name())
+            ||
+            hasAuthority(T(org.icc.pecesatierra.utils.enums.AppPermission).MANAGE_DASHBOARD.name()) 
+            )
+            && 
+            @securityService.isActive(authentication)
+            """)
     @PostMapping("/export")
     public ResponseEntity<ExportResponseDto<AttendanceResponseDto>> export(@RequestBody(
                                                                                    required = false
@@ -74,9 +85,9 @@ public class AttendanceController extends BaseController {
 
     @PreAuthorize("""
             (
-            hasAuthority('MANAGE_ATTENDANCE') 
+            hasAuthority(T(org.icc.pecesatierra.utils.enums.AppPermission).MANAGE_ATTENDANCE.name()) 
             || 
-            hasAuthority('ADMINISTRATOR')
+            hasAuthority(T(org.icc.pecesatierra.utils.enums.AppPermission).ADMINISTRATOR.name())
              )
              && 
             @securityService.isActive(authentication)

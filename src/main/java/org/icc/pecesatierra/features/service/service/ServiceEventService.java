@@ -21,6 +21,7 @@ import org.icc.pecesatierra.features.branch.repository.BranchRepository;
 import org.icc.pecesatierra.features.service.repository.ServiceEventRepository;
 import org.icc.pecesatierra.features.service.repository.ServiceRepository;
 import org.icc.pecesatierra.features.service.mapper.ServiceEventMapper;
+import org.icc.pecesatierra.utils.enums.AppPermission;
 import org.icc.pecesatierra.utils.specs.ServiceEventSpecification;
 import org.icc.pecesatierra.utils.time.DateTimeUtils;
 import org.springframework.data.jpa.domain.Specification;
@@ -54,7 +55,7 @@ public class ServiceEventService {
 
         Branch branch;
 
-        if (user.hasAuthority("ADMINISTRATOR") && serviceEventRequestDto.getBranchId() != null) {
+        if (user.hasAuthority(AppPermission.ADMINISTRATOR.name()) && serviceEventRequestDto.getBranchId() != null) {
             branch = branchRepository.findById(serviceEventRequestDto.getBranchId())
                     .orElseThrow(BranchNotFoundException::new);
         } else {
@@ -98,7 +99,7 @@ public class ServiceEventService {
         ServiceEvent serviceEvent = serviceEventRepository.findById(serviceEventId)
                 .orElseThrow(ServiceEventNotFoundException::new);
 
-        if (!user.hasAuthority("ADMINISTRATOR") && !user.getMember().getBranch().getId().equals(serviceEvent.getBranch().getId())) {
+        if (!user.hasAuthority(AppPermission.ADMINISTRATOR.name()) && !user.getMember().getBranch().getId().equals(serviceEvent.getBranch().getId())) {
             log.warn("Usuario {} intento cancelar evento {} fuera de su branch", user.getMember().getId(), serviceEvent.getId());
             throw new CannotCancelEventOutsideYouBranch();
         }

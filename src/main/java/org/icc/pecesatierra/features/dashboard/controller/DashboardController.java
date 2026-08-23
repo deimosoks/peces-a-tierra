@@ -22,7 +22,7 @@ public class DashboardController extends BaseController {
     @PostMapping
     @PreAuthorize("""
             (
-            hasAuthority('MANAGE_DASHBOARD')
+            hasAuthority(T(org.icc.pecesatierra.utils.enums.AppPermission).MANAGE_DASHBOARD.name())
             || 
             hasAuthority('ADMINISTRATOR') 
             )

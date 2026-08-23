@@ -12,6 +12,7 @@ import org.icc.pecesatierra.features.member.exceptions.notes.NoteNotFoundExcepti
 import org.icc.pecesatierra.features.member.repository.MemberNotesRepository;
 import org.icc.pecesatierra.features.member.repository.MemberRepository;
 import org.icc.pecesatierra.features.category.repository.mapper.MemberNotesMapper;
+import org.icc.pecesatierra.utils.enums.AppPermission;
 import org.icc.pecesatierra.utils.time.DateTimeUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,7 +33,7 @@ public class MemberNoteService {
         Member member = memberRepository.findById(memberNoteRequestDto.getMemberId())
                 .orElseThrow(NoteNotFoundException::new);
 
-        if (!user.hasAuthority("ADMINISTRATOR") && !user.getMember().getBranch().getId().equals(member.getBranch().getId())) {
+        if (!user.hasAuthority(AppPermission.ADMINISTRATOR.name()) && !user.getMember().getBranch().getId().equals(member.getBranch().getId())) {
             throw new CannotDeleteMemberOutSideYourBranchException();
         }
 
@@ -70,7 +71,7 @@ public class MemberNoteService {
         MemberNotes memberNotes = memberNotesRepositor.findById(noteId)
                 .orElseThrow(NoteNotFoundException::new);
 
-        if (!user.hasAuthority("ADMINISTRATOR") && !user.getMember().getBranch().getId().equals(memberNotes.getMember().getBranch().getId())) {
+        if (!user.hasAuthority(AppPermission.ADMINISTRATOR.name()) && !user.getMember().getBranch().getId().equals(memberNotes.getMember().getBranch().getId())) {
             throw new CannotDeleteMemberOutSideYourBranchException();
         }
 

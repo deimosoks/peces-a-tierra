@@ -19,6 +19,7 @@ import org.icc.pecesatierra.features.attendance.exceptions.CannotRegisterAttenda
 import org.icc.pecesatierra.features.service.service.events.ServiceEventNotFoundException;
 import org.icc.pecesatierra.features.member.exceptions.CannotDeleteMemberOutSideYourBranchException;
 import org.icc.pecesatierra.features.attendance.mapper.AttendanceMapper;
+import org.icc.pecesatierra.utils.enums.AppPermission;
 import org.icc.pecesatierra.utils.models.ExportResponseDto;
 import org.icc.pecesatierra.utils.models.PagesResponseDto;
 import org.icc.pecesatierra.utils.specs.AttendanceSpecification;
@@ -89,7 +90,7 @@ public class AttendanceService{
                 continue;
 
 
-            if (!user.hasAuthority("ADMINISTRATOR")) {
+            if (!user.hasAuthority(AppPermission.ADMINISTRATOR.name())) {
                 if (event.getEndDateTime().isBefore(dateTimeUtils.nowUTC()) ||
                         event.getStartDateTime().isAfter(dateTimeUtils.nowUTC())) {
 
@@ -147,7 +148,7 @@ public class AttendanceService{
         Attendance attendance = attendanceRepository.findById(attendanceInvalidRequestDto.getAttendanceId())
                 .orElseThrow(AttendanceNotFoundException::new);
 
-        if (!user.hasAuthority("ADMINISTRATOR")
+        if (!user.hasAuthority(AppPermission.ADMINISTRATOR.name())
                 && !user.getMember().getBranch().getId().equals(attendance.getBranch().getId())) {
             throw new CannotDeleteMemberOutSideYourBranchException();
         }

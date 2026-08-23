@@ -6,6 +6,7 @@ import org.icc.pecesatierra.features.baptism.dtos.BaptismFilterRequestDto;
 import org.icc.pecesatierra.features.baptism.Baptism;
 import org.icc.pecesatierra.features.member.Member;
 import org.icc.pecesatierra.features.user.User;
+import org.icc.pecesatierra.utils.enums.AppPermission;
 import org.icc.pecesatierra.utils.time.DateTimeUtils;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
@@ -27,7 +28,7 @@ public class BaptismSpecification {
 
             if (dto != null) {
 
-                if (!currentUser.hasAuthority("ADMINISTRATOR")) {
+                if (!currentUser.hasAuthority(AppPermission.ADMINISTRATOR.name())) {
                     predicates.add(cb.equal(baptizedMember.get("branch"), currentUser.getMember().getBranch()));
                 } else if (dto.getBranchId() != null) {
                     predicates.add(cb.equal(baptizedMember.get("branch").get("id"), dto.getBranchId()));

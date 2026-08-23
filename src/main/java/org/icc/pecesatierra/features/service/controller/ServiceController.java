@@ -24,12 +24,13 @@ public class ServiceController extends BaseController {
 
     @PreAuthorize("""
             (
-            hasAuthority('CREATE_SERVICE') 
+            hasAuthority(T(org.icc.pecesatierra.utils.enums.AppPermission).CREATE_SERVICE.name()) 
             || 
-            hasAuthority('ADMINISTRATOR')
+            hasAuthority(T(org.icc.pecesatierra.utils.enums.AppPermission).ADMINISTRATOR.name())
             ) 
             && 
-            @securityService.isActive(authentication)""")
+            @securityService.isActive(authentication)
+            """)
     @PostMapping
     public ResponseEntity<ServiceResponseDto> create(@Valid @RequestBody ServiceRequestDto serviceRequestDto,
                                                      @AuthenticationPrincipal User user) {
@@ -38,9 +39,9 @@ public class ServiceController extends BaseController {
 
     @PreAuthorize("""
             (
-            hasAuthority('UPDATE_SERVICE') 
+            hasAuthority(T(org.icc.pecesatierra.utils.enums.AppPermission).UPDATE_SERVICE.name()) 
             || 
-            hasAuthority('ADMINISTRATOR')
+            hasAuthority(T(org.icc.pecesatierra.utils.enums.AppPermission).ADMINISTRATOR.name())
              )
              && 
              @securityService.isActive(authentication)""")
@@ -51,7 +52,11 @@ public class ServiceController extends BaseController {
         return ResponseEntity.ok(serviceService.update(serviceRequestDto, serviceId, user));
     }
 
-    @PreAuthorize("hasAuthority('DELETE_SERVICE') || hasAuthority('ADMINISTRATOR') && @securityService.isActive(authentication)")
+    @PreAuthorize("""
+    hasAuthority(T(org.icc.pecesatierra.utils.enums.AppPermission).DELETE_SERVICE.name()) || 
+    hasAuthority(T(org.icc.pecesatierra.utils.enums.AppPermission).ADMINISTRATOR.name()) && 
+    @securityService.isActive(authentication)
+    """)
     @DeleteMapping("/{serviceId}")
     public ResponseEntity<ServiceResponseDto> delete(@PathVariable String serviceId,
                                                      @AuthenticationPrincipal User user) {
@@ -60,10 +65,10 @@ public class ServiceController extends BaseController {
     }
 
     @PreAuthorize("""
-            (hasAuthority('VIEW_SERVICE_PANEL') 
+            (hasAuthority(T(org.icc.pecesatierra.utils.enums.AppPermission).VIEW_SERVICE_PANEL.name()) 
             || 
-            hasAuthority('REGISTER_ATTENDANCE') 
-            || hasAuthority('ADMINISTRATOR') 
+            hasAuthority(T(org.icc.pecesatierra.utils.enums.AppPermission).REGISTER_ATTENDANCE.name()) 
+            || hasAuthority(T(org.icc.pecesatierra.utils.enums.AppPermission).ADMINISTRATOR.name()) 
             )
             && 
             @securityService.isActive(authentication)""")
@@ -74,9 +79,9 @@ public class ServiceController extends BaseController {
 
     @PreAuthorize("""
             (
-            hasAuthority('UPDATE_SERVICE') 
+            hasAuthority(T(org.icc.pecesatierra.utils.enums.AppPermission).UPDATE_SERVICE.name()) 
             ||
-             hasAuthority('ADMINISTRATOR')
+             hasAuthority(T(org.icc.pecesatierra.utils.enums.AppPermission).ADMINISTRATOR.name())
              ) 
              && 
              @securityService.isActive(authentication)""")

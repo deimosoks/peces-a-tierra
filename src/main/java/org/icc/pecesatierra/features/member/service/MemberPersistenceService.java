@@ -24,6 +24,7 @@ import org.icc.pecesatierra.features.category.repository.MemberSubCategoryReposi
 import org.icc.pecesatierra.features.type.repository.MemberTypeRepository;
 import org.icc.pecesatierra.utils.MemberCategoryDeterminer;
 import org.icc.pecesatierra.features.category.repository.mapper.MemberMapper;
+import org.icc.pecesatierra.utils.enums.AppPermission;
 import org.icc.pecesatierra.utils.time.DateTimeUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -67,7 +68,7 @@ public class MemberPersistenceService {
 
         member.setCategoryLocked(dto.isCategoryLocked());
 
-        if (user.hasAuthority("ADMINISTRATOR") && dto.getBranchId() != null) {
+        if (user.hasAuthority(AppPermission.ADMINISTRATOR.name()) && dto.getBranchId() != null) {
             Branch branch = branchRepository.findById(dto.getBranchId())
                     .orElseThrow(BranchNotFoundException::new);
             member.setBranch(branch);
@@ -159,11 +160,11 @@ public class MemberPersistenceService {
         memberMapper.updateEntityFromDto(dto, member);
         member.setUpdatedAt(dateTimeUtils.nowUTC());
 
-        if (!user.hasAuthority("ADMINISTRATOR") && !user.getMember().getBranch().getId().equals(member.getBranch().getId())) {
+        if (!user.hasAuthority(AppPermission.ADMINISTRATOR.name()) && !user.getMember().getBranch().getId().equals(member.getBranch().getId())) {
             throw new CannotCreateMembersOutsideYourBranch();
         }
 
-        if (user.hasAuthority("ADMINISTRATOR") && dto.getBranchId() != null) {
+        if (user.hasAuthority(AppPermission.ADMINISTRATOR.name())&& dto.getBranchId() != null) {
             Branch branch = branchRepository.findById(dto.getBranchId())
                     .orElseThrow(BranchNotFoundException::new);
             member.setBranch(branch);

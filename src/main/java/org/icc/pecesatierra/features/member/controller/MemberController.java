@@ -26,9 +26,9 @@ public class MemberController extends BaseController {
 
     @PreAuthorize("""
             (
-            hasAuthority('CREATE_MEMBER') 
+            hasAuthority(T(org.icc.pecesatierra.utils.enums.AppPermission).CREATE_MEMBER.name()) 
             || 
-            hasAuthority('ADMINISTRATOR') 
+            hasAuthority(T(org.icc.pecesatierra.utils.enums.AppPermission).ADMINISTRATOR.name()) 
             )
             && 
             @securityService.isActive(authentication)
@@ -41,9 +41,9 @@ public class MemberController extends BaseController {
 
     @PreAuthorize("""
             (
-            hasAuthority('UPDATE_MEMBER') 
+            hasAuthority(T(org.icc.pecesatierra.utils.enums.AppPermission).UPDATE_MEMBER.name()) 
             || 
-            hasAuthority('ADMINISTRATOR')
+            hasAuthority(T(org.icc.pecesatierra.utils.enums.AppPermission).ADMINISTRATOR.name())
             ) 
             && 
             @securityService.isActive(authentication)""")
@@ -56,13 +56,13 @@ public class MemberController extends BaseController {
 
     @PreAuthorize("""
             (
-            hasAuthority('VIEW_MEMBER_PANEL') || 
-            hasAuthority('VIEW_BAPTISM_PANEL') || 
-            hasAuthority('MANAGE_ATTENDANCE') || 
-            hasAuthority('REGISTER_ATTENDANCE') ||
-            hasAuthority('DISCIPULADO_PROGRESS') ||
-            hasAuthority('DISCIPULADO_CREATE') || 
-            hasAuthority('ADMINISTRATOR') 
+            hasAuthority(T(org.icc.pecesatierra.utils.enums.AppPermission).VIEW_MEMBER_PANEL.name()) || 
+            hasAuthority(T(org.icc.pecesatierra.utils.enums.AppPermission).VIEW_BAPTISM_PANEL.name()) || 
+            hasAuthority(T(org.icc.pecesatierra.utils.enums.AppPermission).MANAGE_ATTENDANCE.name()) || 
+            hasAuthority(T(org.icc.pecesatierra.utils.enums.AppPermission).REGISTER_ATTENDANCE.name()) ||
+            hasAuthority(T(org.icc.pecesatierra.utils.enums.AppPermission).DISCIPULADO_PROGRESS.name()) ||
+            hasAuthority(T(org.icc.pecesatierra.utils.enums.AppPermission).DISCIPULADO_CREATE.name()) || 
+            hasAuthority(T(org.icc.pecesatierra.utils.enums.AppPermission).ADMINISTRATOR.name()) 
              ) && 
             @securityService.isActive(authentication)
             """)
@@ -80,9 +80,9 @@ public class MemberController extends BaseController {
 
     @PreAuthorize("""
             (
-            hasAuthority('VIEW_MEMBER_PANEL') 
+            hasAuthority(T(org.icc.pecesatierra.utils.enums.AppPermission).VIEW_MEMBER_PANEL.name()) 
             || 
-            hasAuthority('ADMINISTRATOR')
+            hasAuthority(T(org.icc.pecesatierra.utils.enums.AppPermission).ADMINISTRATOR.name())
             ) 
             && 
             @securityService.isActive(authentication)
@@ -95,9 +95,9 @@ public class MemberController extends BaseController {
 
     @PreAuthorize("""
             (
-            hasAuthority('DELETE_MEMBER') 
+            hasAuthority(T(org.icc.pecesatierra.utils.enums.AppPermission).DELETE_MEMBER.name()) 
             || 
-            hasAuthority('ADMINISTRATOR')
+            hasAuthority(T(org.icc.pecesatierra.utils.enums.AppPermission).ADMINISTRATOR.name())
             ) 
             && 
             @securityService.isActive(authentication)""")
@@ -109,9 +109,9 @@ public class MemberController extends BaseController {
 
     @PreAuthorize("""
             (
-            hasAuthority('UPDATE_MEMBER') 
+            hasAuthority(T(org.icc.pecesatierra.utils.enums.AppPermission).UPDATE_MEMBER.name()) 
             || 
-            hasAuthority('ADMINISTRATOR')
+            hasAuthority(T(org.icc.pecesatierra.utils.enums.AppPermission).ADMINISTRATOR.name())
             )
             &&
             @securityService.isActive(authentication)

@@ -24,12 +24,13 @@ public class BranchController {
     @PostMapping
     @PreAuthorize("""
             (
-            hasAuthority('ADMINISTRATOR') 
+            hasAuthority(T(org.icc.pecesatierra.utils.enums.AppPermission).BRANCH_CREATE.name()) 
             || 
-            hasAuthority('ADMINISTRATOR') 
+            hasAuthority(T(org.icc.pecesatierra.utils.enums.AppPermission).ADMINISTRATOR.name()) 
             )
             && 
-            @securityService.isActive(authentication)""")
+            @securityService.isActive(authentication)
+            """)
     public ResponseEntity<BranchResponseDto> create(@Valid @RequestBody BranchRequestDto branchRequestDto,
                                                     @AuthenticationPrincipal User user) {
         return ResponseEntity.status(HttpStatus.CREATED).body(branchService.create(branchRequestDto, user));
@@ -38,9 +39,9 @@ public class BranchController {
     @GetMapping
     @PreAuthorize("""
             (
-            hasAuthority('VIEW_BRANCH_PANEL') 
+            hasAuthority(T(org.icc.pecesatierra.utils.enums.AppPermission).VIEW_BRANCH_PANEL.name()) 
             || 
-            hasAuthority('ADMINISTRATOR') 
+            hasAuthority(T(org.icc.pecesatierra.utils.enums.AppPermission).ADMINISTRATOR.name()) 
             ) 
             &&
             @securityService.isActive(authentication)""")
@@ -51,9 +52,9 @@ public class BranchController {
     @PutMapping("/{branchId}")
     @PreAuthorize("""
             (
-            hasAuthority('BRANCH_UPDATE') 
+            hasAuthority(T(org.icc.pecesatierra.utils.enums.AppPermission).BRANCH_UPDATE.name()) 
             ||
-            hasAuthority('ADMINISTRATOR')
+            hasAuthority(T(org.icc.pecesatierra.utils.enums.AppPermission).ADMINISTRATOR.name())
             ) 
             && 
             @securityService.isActive(authentication)
@@ -67,9 +68,9 @@ public class BranchController {
     @DeleteMapping("/{branchId}")
     @PreAuthorize("""
             (
-            hasAuthority('BRANCH_DELETE') 
+            hasAuthority(T(org.icc.pecesatierra.utils.enums.AppPermission).BRANCH_DELETE.name()) 
             || 
-            hasAuthority('ADMINISTRATOR')
+            hasAuthority(T(org.icc.pecesatierra.utils.enums.AppPermission).ADMINISTRATOR.name())
             ) 
             && 
             @securityService.isActive(authentication)

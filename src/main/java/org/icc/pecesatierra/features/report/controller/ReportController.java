@@ -27,11 +27,11 @@ public class ReportController extends BaseController {
     @PostMapping
     @PreAuthorize("""
             (
-            hasAuthority('MANAGE_REPORT') 
+            hasAuthority(T(org.icc.pecesatierra.utils.enums.AppPermission).MANAGE_REPORT.name()) 
             || 
-            hasAuthority('ADMINISTRATOR')
+            hasAuthority(T(org.icc.pecesatierra.utils.enums.AppPermission).ADMINISTRATOR.name())
             ||
-            hasAuthority('MANAGE_DASHBOARD')
+            hasAuthority(T(org.icc.pecesatierra.utils.enums.AppPermission).MANAGE_DASHBOARD.name())
             ) 
             && 
             @securityService.isActive(authentication)

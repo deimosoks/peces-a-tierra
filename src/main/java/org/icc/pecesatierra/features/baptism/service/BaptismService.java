@@ -17,6 +17,7 @@ import org.icc.pecesatierra.features.member.exceptions.notes.NoteNotFoundExcepti
 import org.icc.pecesatierra.features.baptism.repository.BaptismRepository;
 import org.icc.pecesatierra.features.member.repository.MemberRepository;
 import org.icc.pecesatierra.features.baptism.mapper.BaptismMapper;
+import org.icc.pecesatierra.utils.enums.AppPermission;
 import org.icc.pecesatierra.utils.models.PagesResponseDto;
 import org.icc.pecesatierra.utils.specs.BaptismSpecification;
 import org.icc.pecesatierra.utils.time.DateTimeUtils;
@@ -82,7 +83,7 @@ public class BaptismService {
         Baptism baptism = baptismRepository.findById(baptismInvalidRequestDto.getBaptismId())
                 .orElseThrow(BaptismNotFoundException::new);
 
-        if (!user.hasAuthority("ADMINISTRATOR") && !baptism.getBaptizedMember().getBranch().equals(user.getMember().getBranch())) {
+        if (!user.hasAuthority(AppPermission.ADMINISTRATOR.name()) && !baptism.getBaptizedMember().getBranch().equals(user.getMember().getBranch())) {
             log.warn("Usuario {} intento invalidar un bautismo al integrante {} el cual esta fuera de su sede.", user.getMember().getId(), baptism.getBaptizedMember().getId());
             throw new CannotCreateMembersOutsideYourBranch();
         }

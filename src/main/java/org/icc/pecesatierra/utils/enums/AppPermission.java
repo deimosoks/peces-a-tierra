@@ -62,9 +62,9 @@ public enum AppPermission {
     DISCIPULADO_PROGRESS,
 
     // SPECIAL
-    ADMINISTRATOR;
+    ADMINISTRATOR,
 
-    public String getPermission() {
-        return this.name();
-    }
+    // AI
+    CHAT_AI;
+
 }

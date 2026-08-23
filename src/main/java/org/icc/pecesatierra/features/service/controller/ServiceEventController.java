@@ -25,12 +25,13 @@ public class ServiceEventController {
     @PostMapping
     @PreAuthorize("""
             (
-            hasAuthority('REGISTER_EVENTS')
+            hasAuthority(T(org.icc.pecesatierra.utils.enums.AppPermission).REGISTER_EVENTS.name())
             || 
-            hasAuthority('ADMINISTRATOR')
+            hasAuthority(T(org.icc.pecesatierra.utils.enums.AppPermission).ADMINISTRATOR.name())
              )
              &&
-             @securityService.isActive(authentication)""")
+             @securityService.isActive(authentication)
+             """)
     public ResponseEntity<ServiceEventResponseDto> create(@Valid @RequestBody ServiceEventRequestDto serviceEventRequestDto,
                                                           @AuthenticationPrincipal User user) {
         return ResponseEntity.status(HttpStatus.CREATED).body(serviceEventService.create(serviceEventRequestDto, user));
@@ -39,9 +40,9 @@ public class ServiceEventController {
     @DeleteMapping("/{serviceEventId}")
     @PreAuthorize("""
             (
-            hasAuthority('CANCEL_EVENTS') 
+            hasAuthority(T(org.icc.pecesatierra.utils.enums.AppPermission).CANCEL_EVENTS.name()) 
             ||
-            hasAuthority('ADMINISTRATOR')
+            hasAuthority(T(org.icc.pecesatierra.utils.enums.AppPermission).ADMINISTRATOR.name())
             ) 
             &&
             @securityService.isActive(authentication)""")
@@ -53,11 +54,11 @@ public class ServiceEventController {
 
     @PostMapping("/calendar")
     @PreAuthorize("""
-            (hasAuthority('MANAGE_ATTENDANCE') 
+            (hasAuthority(T(org.icc.pecesatierra.utils.enums.AppPermission).MANAGE_ATTENDANCE.name()) 
             || 
-            hasAuthority('VIEW_EVENTS_PANEL') 
+            hasAuthority(T(org.icc.pecesatierra.utils.enums.AppPermission).VIEW_EVENTS_PANEL.name()) 
             || 
-            hasAuthority('ADMINISTRATOR')
+            hasAuthority(T(org.icc.pecesatierra.utils.enums.AppPermission).ADMINISTRATOR.name())
              )
              && 
              @securityService.isActive(authentication)
@@ -72,9 +73,9 @@ public class ServiceEventController {
     @GetMapping("/active")
     @PreAuthorize("""
             (
-            hasAuthority('REGISTER_ATTENDANCE') 
+            hasAuthority(T(org.icc.pecesatierra.utils.enums.AppPermission).REGISTER_ATTENDANCE.name()) 
             || 
-            hasAuthority('ADMINISTRATOR') 
+            hasAuthority(T(org.icc.pecesatierra.utils.enums.AppPermission).ADMINISTRATOR.name()) 
             )
             && 
             @securityService.isActive(authentication)

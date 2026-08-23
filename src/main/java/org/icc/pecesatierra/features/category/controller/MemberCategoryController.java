@@ -23,7 +23,7 @@ public class MemberCategoryController {
 
     @PostMapping
     @PreAuthorize("""
-            hasAuthority('ADMINISTRATOR') 
+            hasAuthority(T(org.icc.pecesatierra.utils.enums.AppPermission).ADMINISTRATOR.name()) 
             && 
             @securityService.isActive(authentication)
             """)
@@ -34,7 +34,7 @@ public class MemberCategoryController {
 
     @PutMapping("/{categoryId}")
     @PreAuthorize("""
-            hasAuthority('ADMINISTRATOR') 
+            hasAuthority(T(org.icc.pecesatierra.utils.enums.AppPermission).ADMINISTRATOR.name()) 
             && 
             @securityService.isActive(authentication)
             """)
@@ -46,7 +46,7 @@ public class MemberCategoryController {
 
     @DeleteMapping("/{categoryId}")
     @PreAuthorize("""
-            hasAuthority('ADMINISTRATOR') 
+            hasAuthority(T(org.icc.pecesatierra.utils.enums.AppPermission).ADMINISTRATOR.name()) 
             && 
             @securityService.isActive(authentication)
             """)

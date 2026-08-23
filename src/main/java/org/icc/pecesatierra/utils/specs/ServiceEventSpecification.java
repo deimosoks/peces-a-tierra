@@ -7,6 +7,7 @@ import org.icc.pecesatierra.features.branch.Branch;
 import org.icc.pecesatierra.features.service.ServiceEvent;
 import org.icc.pecesatierra.features.service.Services;
 import org.icc.pecesatierra.features.user.User;
+import org.icc.pecesatierra.utils.enums.AppPermission;
 import org.icc.pecesatierra.utils.time.DateTimeUtils;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
@@ -44,13 +45,13 @@ public class ServiceEventSpecification {
                 );
             }
 
-            if (dto.getBranchId() != null && user.hasAuthority("ADMINISTRATOR")) {
+            if (dto.getBranchId() != null && user.hasAuthority(AppPermission.ADMINISTRATOR.name())) {
 
                 predicates.add(
                         cb.equal(branch.get("id"), dto.getBranchId())
                 );
 
-            } else if (!user.hasAuthority("ADMINISTRATOR")) {
+            } else if (!user.hasAuthority(AppPermission.ADMINISTRATOR.name())) {
 
                 predicates.add(
                         cb.equal(

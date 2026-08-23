@@ -11,6 +11,7 @@ import org.icc.pecesatierra.features.branch.Branch;
 import org.icc.pecesatierra.features.member.Member;
 import org.icc.pecesatierra.features.category.MemberCategory;
 import org.icc.pecesatierra.features.category.MemberSubCategory;
+import org.icc.pecesatierra.utils.enums.AppPermission;
 import org.icc.pecesatierra.utils.time.DateTimeUtils;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
@@ -56,7 +57,7 @@ public class AttendanceSpecification {
                     predicates.add(cb.equal(root.get("invalid"), dto.getInvalid()));
                 }
 
-                if (!user.hasAuthority("ADMINISTRATOR")) {
+                if (!user.hasAuthority(AppPermission.ADMINISTRATOR.name())) {
                     predicates.add(cb.equal(branch.get("id"), user.getMember().getBranch().getId()));
                 } else if (dto.getBranchId() != null) {
                     predicates.add(cb.equal(branch.get("id"), dto.getBranchId()));

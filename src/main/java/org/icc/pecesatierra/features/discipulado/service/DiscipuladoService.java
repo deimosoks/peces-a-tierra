@@ -13,6 +13,7 @@ import org.icc.pecesatierra.features.discipulado.repository.DiscipuladoRepositor
 import org.icc.pecesatierra.features.member.repository.MemberRepository;
 import org.icc.pecesatierra.features.discipulado.mapper.DiscipuladoMapper;
 import org.icc.pecesatierra.features.discipulado.mapper.DiscipuladoProgressMapper;
+import org.icc.pecesatierra.utils.enums.AppPermission;
 import org.icc.pecesatierra.utils.models.PagesResponseDto;
 import org.icc.pecesatierra.utils.specs.DiscipuladoSpecification;
 import org.icc.pecesatierra.utils.time.DateTimeUtils;
@@ -53,7 +54,7 @@ public class DiscipuladoService {
                 .completed(false)
                 .build();
 
-        if (!user.hasAuthority("ADMINISTRATOR") && !user.getMember().getBranch().getId().equals(member.getBranch().getId())) {
+        if (!user.hasAuthority(AppPermission.ADMINISTRATOR.name()) && !user.getMember().getBranch().getId().equals(member.getBranch().getId())) {
             throw new CannotCreateDiscipuladoWithMemberOutsideYourBranch();
         }
 
@@ -77,7 +78,7 @@ public class DiscipuladoService {
         Discipulado discipulado = discipuladoRepository.findById(id)
                 .orElseThrow(DiscipuladoNotFoundException::new);
 
-        if (!user.hasAuthority("ADMINISTRATOR") && !user.getMember().getBranch().getId().equals(discipulado.getMember().getBranch().getId())) {
+        if (!user.hasAuthority(AppPermission.ADMINISTRATOR.name()) && !user.getMember().getBranch().getId().equals(discipulado.getMember().getBranch().getId())) {
             throw new CannotFindDiscipuladoWithMemberOutsideYourBranch();
         }
 
@@ -119,7 +120,7 @@ public class DiscipuladoService {
         Discipulado discipulado = discipuladoRepository.findById(id)
                 .orElseThrow(DiscipuladoNotFoundException::new);
 
-        if (!user.hasAuthority("ADMINISTRATOR") && !user.getMember().getBranch().getId().equals(discipulado.getMember().getBranch().getId())) {
+        if (!user.hasAuthority(AppPermission.ADMINISTRATOR.name()) && !user.getMember().getBranch().getId().equals(discipulado.getMember().getBranch().getId())) {
             throw new CannotDeleteDiscipuladoWithMemberOutsideYourBranch();
         }
         discipulado.getProgress().clear();

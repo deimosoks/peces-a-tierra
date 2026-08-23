@@ -23,7 +23,7 @@ public class MemberTypeController {
 
     @PostMapping
     @PreAuthorize("""
-            hasAuthority('ADMINISTRATOR') 
+            hasAuthority(T(org.icc.pecesatierra.utils.enums.AppPermission).ADMINISTRATOR.name()) 
             &&
             @securityService.isActive(authentication)
             """)
@@ -34,7 +34,7 @@ public class MemberTypeController {
 
     @PutMapping("/{typeId}")
     @PreAuthorize("""
-            hasAuthority('ADMINISTRATOR') 
+            hasAuthority(T(org.icc.pecesatierra.utils.enums.AppPermission).ADMINISTRATOR.name()) 
             &&
             @securityService.isActive(authentication)
             """)
@@ -45,7 +45,7 @@ public class MemberTypeController {
 
     @DeleteMapping("/{typeId}")
     @PreAuthorize("""
-            hasAuthority('ADMINISTRATOR') 
+            hasAuthority(T(org.icc.pecesatierra.utils.enums.AppPermission).ADMINISTRATOR.name()) 
             &&
             @securityService.isActive(authentication)
             """)

@@ -105,6 +105,7 @@ public class ServiceService {
 
     @Transactional
     public void delete(String serviceId, User user) {
+
         Services services = serviceRepository.findById(serviceId)
                 .orElseThrow(ServicesNotFoundException::new);
 

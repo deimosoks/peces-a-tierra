@@ -25,9 +25,9 @@ public class BaptismController {
     @PostMapping
     @PreAuthorize("""
             (
-            hasAuthority('BAPTISM_CREATE') 
+            hasAuthority(T(org.icc.pecesatierra.utils.enums.AppPermission).BAPTISM_CREATE.name()) 
             ||
-            hasAuthority('ADMINISTRATOR') 
+            hasAuthority(T(org.icc.pecesatierra.utils.enums.AppPermission).ADMINISTRATOR.name()) 
             )
             && 
             @securityService.isActive(authentication)
@@ -40,12 +40,13 @@ public class BaptismController {
     @PostMapping("/invalidate")
     @PreAuthorize("""
             (
-            hasAuthority('BAPTISM_INVALIDATE') 
+            hasAuthority(T(org.icc.pecesatierra.utils.enums.AppPermission).BAPTISM_INVALIDATE.name()) 
             || 
-            hasAuthority('ADMINISTRATOR') 
+            hasAuthority(T(org.icc.pecesatierra.utils.enums.AppPermission).ADMINISTRATOR.name()) 
             )
             && 
-            @securityService.isActive(authentication)""")
+            @securityService.isActive(authentication)
+            """)
     public ResponseEntity<BaptismResponseDto> invalidate(@Valid @RequestBody BaptismInvalidRequestDto baptismInvalidRequestDto,
                                                          @AuthenticationPrincipal User user) {
         return ResponseEntity.ok(baptismService.invalid(baptismInvalidRequestDto, user));
@@ -54,12 +55,13 @@ public class BaptismController {
     @PostMapping("/search")
     @PreAuthorize("""
             (
-            hasAuthority('VIEW_BAPTISM_PANEL') 
+            hasAuthority(T(org.icc.pecesatierra.utils.enums.AppPermission).VIEW_BAPTISM_PANEL.name()) 
             ||
-            hasAuthority('ADMINISTRATOR') 
+            hasAuthority(T(org.icc.pecesatierra.utils.enums.AppPermission).ADMINISTRATOR.name()) 
             )
             && 
-            @securityService.isActive(authentication)""")
+            @securityService.isActive(authentication)
+            """)
     public ResponseEntity<PagesResponseDto<BaptismResponseDto>> search(@Valid @RequestBody BaptismFilterRequestDto baptismFilterRequestDto,
                                                                        @RequestParam int page,
                                                                        @AuthenticationPrincipal User user) {

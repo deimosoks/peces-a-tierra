@@ -10,6 +10,7 @@ import org.icc.pecesatierra.features.baptism.repository.BaptismRepository;
 import org.icc.pecesatierra.features.category.repository.mapper.MemberMapper;
 import org.icc.pecesatierra.features.member.repository.MemberRepository;
 import org.icc.pecesatierra.features.report.service.ReportService;
+import org.icc.pecesatierra.utils.enums.AppPermission;
 import org.icc.pecesatierra.utils.time.DateTimeUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,7 +35,7 @@ public class DashboardService {
     @Transactional(readOnly = true)
     public DashboardResponseDto dashboard(User user) {
 
-        boolean isAdmin = user.hasAuthority("ADMINISTRATOR");
+        boolean isAdmin = user.hasAuthority(AppPermission.ADMINISTRATOR.name());
 
         long totalMember;
         long totalBaptisms = 0;

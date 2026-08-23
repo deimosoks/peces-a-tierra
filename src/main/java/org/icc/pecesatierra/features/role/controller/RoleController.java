@@ -24,9 +24,9 @@ public class RoleController extends BaseController {
 
     @PreAuthorize("""
             (
-            hasAuthority('CREATE_ROLE')
+            hasAuthority(T(org.icc.pecesatierra.utils.enums.AppPermission).CREATE_ROLE.name())
             || 
-            hasAuthority('ADMINISTRATOR')
+            hasAuthority(T(org.icc.pecesatierra.utils.enums.AppPermission).ADMINISTRATOR.name())
             ) 
             && 
             @securityService.isActive(authentication)
@@ -39,12 +39,13 @@ public class RoleController extends BaseController {
 
     @PreAuthorize("""
             (
-            hasAuthority('UPDATE_ROLE') 
+            hasAuthority(T(org.icc.pecesatierra.utils.enums.AppPermission).UPDATE_ROLE.name()) 
             ||
-            hasAuthority('ADMINISTRATOR') 
+            hasAuthority(T(org.icc.pecesatierra.utils.enums.AppPermission).ADMINISTRATOR.name()) 
             )
             && 
-            @securityService.isActive(authentication)""")
+            @securityService.isActive(authentication)
+            """)
     @PutMapping("/{roleId}")
     public ResponseEntity<RoleResponseDto> update(@Valid @RequestBody RoleRequestDto roleRequestDto,
                                                   @PathVariable String roleId,
@@ -54,9 +55,9 @@ public class RoleController extends BaseController {
 
     @PreAuthorize("""
             (
-            hasAuthority('DELETE_ROLE') 
+            hasAuthority(T(org.icc.pecesatierra.utils.enums.AppPermission).DELETE_ROLE.name()) 
             || 
-            hasAuthority('ADMINISTRATOR')
+            hasAuthority(T(org.icc.pecesatierra.utils.enums.AppPermission).ADMINISTRATOR.name())
             )
              && 
              @securityService.isActive(authentication)""")
@@ -69,14 +70,15 @@ public class RoleController extends BaseController {
 
     @PreAuthorize("""
             (
-            hasAuthority('VIEW_ROLE_PANEL') 
+            hasAuthority(T(org.icc.pecesatierra.utils.enums.AppPermission).VIEW_ROLE_PANEL.name()) 
             || 
-            hasAuthority('ADMINISTRATOR')
+            hasAuthority(T(org.icc.pecesatierra.utils.enums.AppPermission).ADMINISTRATOR.name())
             ||
-            hasAuthority('UPDATE_USER') 
+            hasAuthority(T(org.icc.pecesatierra.utils.enums.AppPermission).UPDATE_USER.name()) 
             )
             && 
-            @securityService.isActive(authentication)""")
+            @securityService.isActive(authentication)
+            """)
     @GetMapping
     public ResponseEntity<List<RoleResponseDto>> findAll() {
         return ResponseEntity.ok(roleService.findAll());

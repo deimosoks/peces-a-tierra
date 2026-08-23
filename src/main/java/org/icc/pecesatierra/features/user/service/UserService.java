@@ -16,6 +16,7 @@ import org.icc.pecesatierra.features.user.mapper.UserMapper;
 import org.icc.pecesatierra.features.member.repository.MemberRepository;
 import org.icc.pecesatierra.features.role.repository.RoleRepository;
 import org.icc.pecesatierra.features.user.repository.UserRepository;
+import org.icc.pecesatierra.utils.enums.AppPermission;
 import org.icc.pecesatierra.utils.models.PagesResponseDto;
 import org.icc.pecesatierra.utils.specs.UserSpecification;
 import org.icc.pecesatierra.utils.time.DateTimeUtils;
@@ -56,7 +57,7 @@ public class UserService {
         Member member = memberRepository.findById(userRequestDto.getMemberId())
                 .orElseThrow(MemberNotFoundException::new);
 
-        if (!givenBy.hasAuthority("ADMINISTRATOR") && !member.getBranch().getId().equals(givenBy.getMember().getBranch().getId())) {
+        if (!givenBy.hasAuthority(AppPermission.ADMINISTRATOR.name()) && !member.getBranch().getId().equals(givenBy.getMember().getBranch().getId())) {
             throw new CannotCreateUsersWithMembersOutsideYourBranch();
         }
 
@@ -165,7 +166,7 @@ public class UserService {
                 && userRepository.existsByMemberId(userRequestDto.getMemberId()))
             throw new MemberAlreadyRegisteredWithUserException();
 
-        if (!givenBy.hasAuthority("ADMINISTRATOR") && !user.getMember().getBranch().getId().equals(givenBy.getMember().getBranch().getId())) {
+        if (!givenBy.hasAuthority(AppPermission.ADMINISTRATOR.name()) && !user.getMember().getBranch().getId().equals(givenBy.getMember().getBranch().getId())) {
             throw new CannotUpdateUserWithMemberOutSideYourBranchException();
         }
 
@@ -255,7 +256,7 @@ public class UserService {
             throw new CannotDeactivateYourselfUserException();
         }
 
-        if (!user.hasAuthority("ADMINISTRATOR") && !user.getMember().getBranch().getId().equals(userToUpdate.getMember().getBranch().getId())) {
+        if (!user.hasAuthority(AppPermission.ADMINISTRATOR.name()) && !user.getMember().getBranch().getId().equals(userToUpdate.getMember().getBranch().getId())) {
             throw new CannotUpdateUserWithMemberOutSideYourBranchException();
         }
 
@@ -286,7 +287,7 @@ public class UserService {
         User userToDelete = userRepository.findById(userId)
                 .orElseThrow(UserNotFoundException::new);
 
-        if (!user.hasAuthority("ADMINISTRATOR") && !user.getMember().getBranch().getId().equals(userToDelete.getMember().getBranch().getId())) {
+        if (!user.hasAuthority(AppPermission.ADMINISTRATOR.name()) && !user.getMember().getBranch().getId().equals(userToDelete.getMember().getBranch().getId())) {
             throw new CannotUpdateUserWithMemberOutSideYourBranchException();
         }
 
@@ -319,8 +320,8 @@ public class UserService {
     @Transactional(readOnly = true)
     public UserReportResponseDto report(User user) {
 
-        long totalUsers = user.hasAuthority("ADMINISTRATOR") ? userRepository.count() : userRepository.countByMemberBranch(user.getMember().getBranch());
-        long totalUsersActives = user.hasAuthority("ADMINISTRATOR") ? userRepository.countByActiveTrue() : userRepository.countByActiveTrueAndMemberBranch(user.getMember().getBranch());
+        long totalUsers = user.hasAuthority(AppPermission.ADMINISTRATOR.name()) ? userRepository.count() : userRepository.countByMemberBranch(user.getMember().getBranch());
+        long totalUsersActives = user.hasAuthority(AppPermission.ADMINISTRATOR.name()) ? userRepository.countByActiveTrue() : userRepository.countByActiveTrueAndMemberBranch(user.getMember().getBranch());
 
         return UserReportResponseDto.builder()
                 .totalUsers(totalUsers)

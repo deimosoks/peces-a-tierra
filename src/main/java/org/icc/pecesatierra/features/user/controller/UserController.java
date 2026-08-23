@@ -22,9 +22,9 @@ public class UserController extends BaseController {
 
     @PreAuthorize("""
             (
-            hasAuthority('VIEW_USER_PANEL') 
+            hasAuthority(T(org.icc.pecesatierra.utils.enums.AppPermission).VIEW_USER_PANEL.name()) 
             ||
-             hasAuthority('ADMINISTRATOR') 
+             hasAuthority(T(org.icc.pecesatierra.utils.enums.AppPermission).ADMINISTRATOR.name()) 
              )
              &&
             @securityService.isActive(authentication)
@@ -36,9 +36,9 @@ public class UserController extends BaseController {
 
     @PreAuthorize("""
             (
-            hasAuthority('CREATE_USER') 
+            hasAuthority(T(org.icc.pecesatierra.utils.enums.AppPermission).CREATE_USER.name()) 
             || 
-            hasAuthority('ADMINISTRATOR')
+            hasAuthority(T(org.icc.pecesatierra.utils.enums.AppPermission).ADMINISTRATOR.name())
              )
              && 
              @securityService.isActive(authentication)
@@ -57,9 +57,9 @@ public class UserController extends BaseController {
 
     @PreAuthorize("""
             (
-            hasAuthority('VIEW_USER_PANEL') 
+            hasAuthority(T(org.icc.pecesatierra.utils.enums.AppPermission).VIEW_USER_PANEL.name()) 
             || 
-            hasAuthority('ADMINISTRATOR') 
+            hasAuthority(T(org.icc.pecesatierra.utils.enums.AppPermission).ADMINISTRATOR.name()) 
             )
             && 
             @securityService.isActive(authentication)""")
@@ -77,9 +77,9 @@ public class UserController extends BaseController {
 
     @PreAuthorize("""
             (
-            hasAuthority('UPDATE_USER') 
+            hasAuthority(T(org.icc.pecesatierra.utils.enums.AppPermission).UPDATE_USER.name()) 
             || 
-            hasAuthority('ADMINISTRATOR')
+            hasAuthority(T(org.icc.pecesatierra.utils.enums.AppPermission).ADMINISTRATOR.name())
              )
              && 
              @securityService.isActive(authentication)
@@ -93,9 +93,9 @@ public class UserController extends BaseController {
 
     @PreAuthorize("""
             (
-            hasAuthority('UPDATE_USER') 
+            hasAuthority(T(org.icc.pecesatierra.utils.enums.AppPermission).UPDATE_USER.name()) 
             || 
-            hasAuthority('ADMINISTRATOR') 
+            hasAuthority(T(org.icc.pecesatierra.utils.enums.AppPermission).ADMINISTRATOR.name()) 
             )
             && 
             @securityService.isActive(authentication)""")
@@ -108,9 +108,9 @@ public class UserController extends BaseController {
 
     @PreAuthorize("""
             (
-            hasAuthority('DELETE_USER') 
+            hasAuthority(org.icc.pecesatierra.utils.enums.AppPermission).DELETE_USER.name()) 
             || 
-            hasAuthority('ADMINISTRATOR')
+            hasAuthority(T(org.icc.pecesatierra.utils.enums.AppPermission).ADMINISTRATOR.name())
             ) 
             && 
             @securityService.isActive(authentication)

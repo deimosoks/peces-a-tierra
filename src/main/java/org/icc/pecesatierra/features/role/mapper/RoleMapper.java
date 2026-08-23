@@ -49,7 +49,7 @@ public class RoleMapper {
         role.getPermissions().addAll(roleRequestDto.getPermissions().stream().map(p -> {
             RolePermissionId rolePermissionId = RolePermissionId.builder()
                     .roleId(role.getId())
-                    .permission(p.getName().getPermission())
+                    .permission(p.getName().name())
                     .build();
 
             return RolePermission.builder()

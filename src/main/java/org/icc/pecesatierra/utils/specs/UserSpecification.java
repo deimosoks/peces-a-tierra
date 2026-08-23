@@ -4,6 +4,7 @@ import jakarta.persistence.criteria.*;
 import org.icc.pecesatierra.features.user.dtos.UserFilterRequestDto;
 import org.icc.pecesatierra.features.member.Member;
 import org.icc.pecesatierra.features.user.User;
+import org.icc.pecesatierra.utils.enums.AppPermission;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
 
@@ -26,7 +27,7 @@ public class UserSpecification {
                 ));
             }
 
-            if (!currentUser.hasAuthority("ADMINISTRATOR")) {
+            if (!currentUser.hasAuthority(AppPermission.ADMINISTRATOR.name())) {
                 predicates.add(cb.equal(memberJoin.get("branch").get("id"),
                         currentUser.getMember().getBranch().getId()));
             } else if (dto.getBranchId() != null && !dto.getBranchId().isBlank()) {
