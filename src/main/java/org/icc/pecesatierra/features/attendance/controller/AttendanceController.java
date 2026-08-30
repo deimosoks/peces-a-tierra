@@ -27,7 +27,7 @@ public class AttendanceController extends BaseController {
 
     @PreAuthorize("""
             (
-            hasAuthority(T(org.icc.pecesatierra.utils.enums.AppPermission).REGISTER_EVENTS.name()) 
+            hasAuthority(T(org.icc.pecesatierra.utils.enums.AppPermission).REGISTER_ATTENDANCE.name()) 
             || 
             hasAuthority(T(org.icc.pecesatierra.utils.enums.AppPermission).ADMINISTRATOR.name()) 
             ) 
