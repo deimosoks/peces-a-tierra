@@ -8,6 +8,7 @@ import org.icc.pecesatierra.features.baptism.dtos.BaptismRequestDto;
 import org.icc.pecesatierra.features.baptism.dtos.BaptismResponseDto;
 import org.icc.pecesatierra.features.baptism.Baptism;
 import org.icc.pecesatierra.features.member.Member;
+import org.icc.pecesatierra.features.member.exceptions.MemberNotFoundException;
 import org.icc.pecesatierra.features.user.User;
 import org.icc.pecesatierra.features.baptism.exceptions.BaptismNotFoundException;
 import org.icc.pecesatierra.features.baptism.exceptions.CannotRegisterBaptismWithMemberOutsideYourBranch;
@@ -43,7 +44,7 @@ public class BaptismService {
     public BaptismResponseDto create(BaptismRequestDto baptismRequestDto, User user) {
 
         Member member = memberRepository.findById(baptismRequestDto.getMemberId())
-                .orElseThrow(NoteNotFoundException::new);
+                .orElseThrow(MemberNotFoundException::new);
 
         if (baptismRepository.existsByBaptizedMemberAndInvalidFalse(member)) {
             log.info("Usuario {} intento registrar un bautismo al integrante {} el cual ya tiene un bautismo registrado", user.getMember().getId(), member.getId());

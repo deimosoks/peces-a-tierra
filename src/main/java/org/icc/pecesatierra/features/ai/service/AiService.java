@@ -25,7 +25,7 @@ public class AiService {
 
     private final SqlExecutor sqlExecutor;
     private final SqlQueryValidator sqlQueryValidator;
-    private final RestTemplate restTemplate = new RestTemplate();
+    private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
 
     @Value("${google.gemini.api.key}")

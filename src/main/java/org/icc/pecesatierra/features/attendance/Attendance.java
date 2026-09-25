@@ -8,6 +8,7 @@ import org.icc.pecesatierra.features.category.MemberCategory;
 import org.icc.pecesatierra.features.category.MemberSubCategory;
 import org.icc.pecesatierra.features.service.ServiceEvent;
 import org.icc.pecesatierra.features.type.MemberType;
+import org.springframework.data.annotation.CreatedBy;
 
 import java.time.OffsetDateTime;
 

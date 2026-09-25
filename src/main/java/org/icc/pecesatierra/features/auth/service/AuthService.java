@@ -34,7 +34,7 @@ public class AuthService {
     @Transactional
     public AuthResponseDto login(AuthRequestDto authRequestDto) {
 
-        authenticationManager.authenticate(
+         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         authRequestDto.getUsername(),
                         authRequestDto.getPassword()
