@@ -108,7 +108,7 @@ public class UserController extends BaseController {
 
     @PreAuthorize("""
             (
-            hasAuthority(org.icc.pecesatierra.utils.enums.AppPermission).DELETE_USER.name()) 
+            hasAuthority(T(org.icc.pecesatierra.utils.enums.AppPermission).DELETE_USER.name()) 
             || 
             hasAuthority(T(org.icc.pecesatierra.utils.enums.AppPermission).ADMINISTRATOR.name())
             ) 

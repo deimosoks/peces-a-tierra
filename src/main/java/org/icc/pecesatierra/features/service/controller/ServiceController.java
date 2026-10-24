@@ -53,8 +53,10 @@ public class ServiceController extends BaseController {
     }
 
     @PreAuthorize("""
+    (
     hasAuthority(T(org.icc.pecesatierra.utils.enums.AppPermission).DELETE_SERVICE.name()) || 
-    hasAuthority(T(org.icc.pecesatierra.utils.enums.AppPermission).ADMINISTRATOR.name()) && 
+    hasAuthority(T(org.icc.pecesatierra.utils.enums.AppPermission).ADMINISTRATOR.name())
+    ) && 
     @securityService.isActive(authentication)
     """)
     @DeleteMapping("/{serviceId}")
