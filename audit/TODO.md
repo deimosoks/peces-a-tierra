@@ -36,10 +36,13 @@ técnica y deben retomarse cuando se cumpla su disparador.
 
 ## H-01 — Rol de base de datos de solo lectura para el endpoint de IA
 
-- **Estado**: acordado el **2026-10-24**. El rol se crea en Neon **por SQL**, nunca con el botón
-  "Add role" de la consola: los roles creados desde consola/CLI/API reciben membresía en
-  `neon_superuser` (`CREATEDB`, `CREATEROLE`, `BYPASSRLS`, `pg_read_all_data`/`pg_write_all_data`).
-- **Nombre**: `peces_ai_readonly`.
+- **Estado**: **rol creado en Neon** el 2026-10-24 y `SqlExecutor` cableado a un `JdbcTemplate`
+  dedicado (`aiJdbcTemplate`) que usa `AI_DB_URL`/`AI_DB_USER`/`AI_DB_PASS`, con `maxRows=1000` y
+  `queryTimeout=10`. El template usa un `DriverManagerDataSource` interno (sin pool) para no retirar
+  el `DataSourceAutoConfiguration` de JPA ni `@ServiceConnection` de Testcontainers.
+- **Rol**: `peces_ai_readonly`, creado **por SQL**, nunca con el botón "Add role" de la consola: los
+  roles creados desde consola/CLI/API reciben membresía en `neon_superuser` (`CREATEDB`,
+  `CREATEROLE`, `BYPASSRLS`, `pg_read_all_data`/`pg_write_all_data`).
 - **Acceso temporal**: `SELECT` sobre todas las tablas de `public` más `ALTER DEFAULT PRIVILEGES`,
   para no bloquear el trabajo. Es un riesgo aceptado y explícito.
 - **Riesgo aceptado**: mientras el rol tenga `SELECT` sobre `public`, un SQL generado por el LLM
@@ -48,11 +51,13 @@ técnica y deben retomarse cuando se cumpla su disparador.
 - **TODO**:
   1. Crear el esquema `ai_read` con vistas que excluyan columnas sensibles y PII.
   2. Revocar `SELECT` sobre `public`; dejar `USAGE` + `SELECT` solo sobre `ai_read`.
-  3. Configurar la conexión de IA con `currentSchema=ai_read`.
-  4. Usar un `DataSource`/`JdbcTemplate` separado en `SqlExecutor`, no el datasource principal.
-  5. Añadir filtro por sede (columna `branch_id` en las vistas + `SET LOCAL app.branch_id`, o RLS).
-  6. Rotar la contraseña, guardarla en el gestor de secretos y no commitearla.
+  3. Cambiar `AI_DB_URL` para usar `currentSchema=ai_read`.
+  4. Añadir filtro por sede (columna `branch_id` en las vistas + `SET LOCAL app.branch_id`, o RLS).
+  5. Endurecer `SqlQueryValidator` y el prompt: lista blanca de vistas, sin `UNION`/comentarios/`;`.
+  6. Rotar la contraseña (la actual quedó expuesta en el chat), guardarla en el gestor de secretos y
+     no commitearla.
   7. Verificar con `information_schema.role_table_grants` que no puede leer `users`/`refresh_token`.
   8. Añadir una prueba de integración que espere `permission denied` al consultar `password_hash`.
+  9. Valorar Hikari si sube el tráfico; hoy el `DriverManagerDataSource` abre una conexión por consulta.
 
 Runbook con el SQL: `audit/scripts/neon-ai-readonly.sql`.

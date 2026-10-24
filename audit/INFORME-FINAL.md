@@ -371,12 +371,12 @@ Para evitar retrabajo, estos puntos se revisaron y se descartaron con evidencia:
 | Estado | Hallazgos |
 |---|---|
 | **Corregidos y con prueba de regresión** | H-02, H-03, H-04, H-05, H-07, H-08, H-09, H-10, H-11, H-12, H-20, H-21, H-22, H-31, H-46, H-48 |
-| **Pendientes críticos/altos** | H-01 (IA) |
+| **Pendientes críticos/altos** | H-01 (IA, parcial: datasource de solo lectura cableado) |
 | **Descartados por regla de negocio** | H-06 (asistencia inter-sede permitida) |
 | **Aceptados temporalmente (TODO)** | H-41 (el lote debe llevar un solo `serviceEventId`; ver `audit/TODO.md`) |
 | **Pendientes medios/bajos** | H-13 a H-19, H-23 a H-30, H-32 a H-45, H-47, H-49 a H-51 |
 
-- Suite actual: **101 tests, 97 ejecutados, 4 saltados, 0 fallos**. Saltan 3 IT por Docker apagado y
+- Suite actual: **106 tests, 102 ejecutados, 4 saltados, 0 fallos**. Saltan 3 IT por Docker apagado y
   `ApplicationContextIT`.
 - Las regresiones de H-02, H-03, H-04, H-05, H-07, H-08, H-09, H-10, H-11, H-12, H-20, H-21, H-22,
   H-31 y H-48 se comprobaron con mutaciones: revertir cada fix hace fallar su prueba.
@@ -386,6 +386,9 @@ Para evitar retrabajo, estos puntos se revisaron y se descartaron con evidencia:
 - H-10/H-11/H-12 normalizan cuerpos nulos y devuelven 400/401/403 en vez de 500/401.
 - H-20 limita `update`/`delete` de sedes a la propia sede para no-admin; H-22 mueve la comprobación
   de sede antes del mapper de integrantes, cerrando la fuga del nombre entre sedes.
+- H-01 parcial: `SqlExecutor` usa un `JdbcTemplate` dedicado (`aiJdbcTemplate`) contra el rol
+  `peces_ai_readonly`, con `maxRows=1000` y `queryTimeout=10`. Sigue abierto porque el rol conserva
+  `SELECT` sobre todo `public`; faltan las vistas `ai_read`, el filtrado por sede y el validador SQL.
 - Las IT contra PostgreSQL (`AttendanceExportIT`, `ApplicationContextIT`) quedan pendientes de
   ejecutarse en CI con Docker.
 
