@@ -134,8 +134,16 @@ public class DiscipuladoService {
         DiscipuladoProgress discipuladoProgress = discipuladoProgressRepository.findById(dto.getDiscipuladoProgressId())
                 .orElseThrow(DiscipuladoProgressNotFoundException::new);
 
+        if (isOutsideUserBranch(discipuladoMemberOf(discipuladoProgress), user)) {
+            throw new CannotUpdateProgressWithMemberOutsideYourBranch();
+        }
+
         Member teacher = memberRepository.findById(dto.getTeacherId())
                 .orElseThrow(MemberNotFoundException::new);
+
+        if (isOutsideUserBranch(teacher, user)) {
+            throw new CannotAssignTeacherOutsideYourBranch();
+        }
 
         discipuladoProgress.setCompleted(true);
         discipuladoProgress.setDateCompleted(dateTimeUtils.toUTC(dto.getDateCompleted()));
@@ -150,10 +158,41 @@ public class DiscipuladoService {
         DiscipuladoProgress discipuladoProgress = discipuladoProgressRepository.findById(id)
                 .orElseThrow(DiscipuladoProgressNotFoundException::new);
 
-        discipuladoProgress.setTeacherId(memberRepository.findById(dto.getTeacherId())
-                .orElseThrow(MemberNotFoundException::new));
+        if (isOutsideUserBranch(discipuladoMemberOf(discipuladoProgress), user)) {
+            throw new CannotUpdateProgressWithMemberOutsideYourBranch();
+        }
+
+        Member teacher = memberRepository.findById(dto.getTeacherId())
+                .orElseThrow(MemberNotFoundException::new);
+
+        if (isOutsideUserBranch(teacher, user)) {
+            throw new CannotAssignTeacherOutsideYourBranch();
+        }
+
+        discipuladoProgress.setTeacherId(teacher);
         discipuladoProgress.setDateCompleted(dateTimeUtils.toUTC(dto.getDateCompleted()));
 
         return discipuladoProgressMapper.toDto(discipuladoProgress);
+    }
+
+    private Member discipuladoMemberOf(DiscipuladoProgress discipuladoProgress) {
+        return discipuladoProgress.getDiscipulado() == null
+                ? null
+                : discipuladoProgress.getDiscipulado().getMember();
+    }
+
+    private boolean isOutsideUserBranch(Member member, User user) {
+        if (user != null && user.hasAuthority(AppPermission.ADMINISTRATOR.name())) {
+            return false;
+        }
+
+        if (member == null || member.getBranch() == null || member.getBranch().getId() == null) {
+            return true;
+        }
+
+        return user == null
+                || user.getMember() == null
+                || user.getMember().getBranch() == null
+                || !member.getBranch().getId().equals(user.getMember().getBranch().getId());
     }
 }

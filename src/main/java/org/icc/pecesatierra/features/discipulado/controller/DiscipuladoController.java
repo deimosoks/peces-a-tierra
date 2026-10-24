@@ -90,8 +90,9 @@ public class DiscipuladoController {
             && 
             @securityService.isActive(authentication)
             """)
-    public ResponseEntity<DiscipuladoProgressResponseDto> progress(@RequestBody DiscipuladoProgressRequestDto dto) {
-        return ResponseEntity.ok(discipuladoService.progress(dto, null));
+    public ResponseEntity<DiscipuladoProgressResponseDto> progress(@RequestBody DiscipuladoProgressRequestDto dto,
+                                                                   @AuthenticationPrincipal User user) {
+        return ResponseEntity.ok(discipuladoService.progress(dto, user));
     }
 
     @PutMapping("/progress/{id}")
