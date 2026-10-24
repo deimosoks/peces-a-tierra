@@ -62,3 +62,19 @@ técnica y deben retomarse cuando se cumpla su disparador.
   9. Valorar Hikari si sube el tráfico; hoy el `DriverManagerDataSource` abre una conexión por consulta.
 
 Runbook con el SQL: `audit/scripts/neon-ai-readonly.sql`.
+
+## M-01 — El PWA hace `logout()` ante cualquier 403
+
+- **Estado**: aceptado temporalmente el **2026-10-24**. No se toca el bundle precompilado.
+- **Problema**: `src/main/resources/static/main-2X72WS5U.js` contiene
+  `if(i.status===403)return n.logout(),Cs(()=>i)`. El backend ahora devuelve 403 para permisos
+  denegados (H-11), así que un usuario autenticado sin permiso pierde la sesión al instante. Antes
+  recibía 401 y el interceptor intentaba refrescar.
+- **Opciones**:
+  1. Recompilar la PWA para distinguir 403 de permiso (mostrar "sin permisos", sin logout) de 401 de
+     sesión.
+  2. Mantener 401 para denegaciones de permiso hasta que el cliente esté migrado (reabre H-11).
+  3. Añadir un código de error estable en el cuerpo y actualizar el interceptor en el rebuild.
+- **Riesgo aceptado**: logout inesperado y pérdida de trabajo en el cliente; no es un bypass de
+  seguridad.
+- **Disparador**: rebuild del frontend Angular o cambio del contrato de errores.
