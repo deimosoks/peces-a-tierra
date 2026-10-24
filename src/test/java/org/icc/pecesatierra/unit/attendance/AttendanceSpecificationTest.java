@@ -21,12 +21,14 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Answers;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
@@ -83,18 +85,27 @@ class AttendanceSpecificationTest {
 
     @Test
     void nullFiltersForNonAdminStillRestrictsToTheUsersBranch_H02() {
+        Predicate branchPredicate = mock(Predicate.class);
         doReturn(branchIdPath).when(branchJoin).get("id");
+        doReturn(branchPredicate).when(cb).equal(branchIdPath, "branch-a");
 
         Predicate predicate = specification.build(null, operatorOf(branchA))
                 .toPredicate(root, query, cb);
 
         assertThat(predicate).isNotNull();
         verify(cb).equal(branchIdPath, "branch-a");
+
+        // El predicado de sede debe llegar al AND final, no solo construirse (M-12).
+        ArgumentCaptor<Predicate[]> captor = ArgumentCaptor.forClass(Predicate[].class);
+        verify(cb).and(captor.capture());
+        assertThat(captor.getValue()).contains(branchPredicate);
     }
 
     @Test
     void foreignBranchIdNeverOverridesTheUsersBranchForNonAdmin_H02() {
+        Predicate branchPredicate = mock(Predicate.class);
         doReturn(branchIdPath).when(branchJoin).get("id");
+        doReturn(branchPredicate).when(cb).equal(branchIdPath, "branch-a");
         AttendanceFiltersRequestDto dto = AttendanceFiltersRequestDto.builder()
                 .branchId(branchB.getId())
                 .build();
@@ -103,6 +114,10 @@ class AttendanceSpecificationTest {
 
         verify(cb).equal(branchIdPath, "branch-a");
         verify(cb, never()).equal(branchIdPath, "branch-b");
+
+        ArgumentCaptor<Predicate[]> captor = ArgumentCaptor.forClass(Predicate[].class);
+        verify(cb).and(captor.capture());
+        assertThat(captor.getValue()).contains(branchPredicate);
     }
 
     @Test
