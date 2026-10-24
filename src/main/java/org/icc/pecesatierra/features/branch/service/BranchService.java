@@ -7,11 +7,13 @@ import org.icc.pecesatierra.features.branch.dtos.BranchResponseDto;
 import org.icc.pecesatierra.features.branch.Branch;
 import org.icc.pecesatierra.features.user.User;
 import org.icc.pecesatierra.features.branch.exceptions.CannotDeleteBranchWithRecords;
+import org.icc.pecesatierra.features.branch.exceptions.CannotManageBranchOutsideYourBranchException;
 import org.icc.pecesatierra.features.branch.exceptions.BranchNotFoundException;
 import org.icc.pecesatierra.features.attendance.repository.AttendanceRepository;
 import org.icc.pecesatierra.features.branch.repository.BranchRepository;
 import org.icc.pecesatierra.features.member.repository.MemberRepository;
 import org.icc.pecesatierra.features.branch.mapper.BranchMapper;
+import org.icc.pecesatierra.utils.enums.AppPermission;
 import org.icc.pecesatierra.utils.time.DateTimeUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -64,6 +66,8 @@ public class BranchService {
         Branch branch = branchRepository.findById(branchId)
                 .orElseThrow(BranchNotFoundException::new);
 
+        assertCanManageBranch(branch, user);
+
         Branch beforeUpdate = Branch.builder()
                 .id(branch.getId())
                 .name(branch.getName())
@@ -108,6 +112,8 @@ public class BranchService {
         Branch branch = branchRepository.findById(branchId)
                 .orElseThrow(BranchNotFoundException::new);
 
+        assertCanManageBranch(branch, user);
+
         if (memberRepository.existsMemberByBranch(branch) || attendanceRepository.existsAttendanceByBranch(branch)) {
             log.warn("Usuario {} intentó eliminar la sede {} pero contiene registros asociados", user.getMember().getId(), branch.getId());
             throw new CannotDeleteBranchWithRecords();
@@ -130,6 +136,13 @@ public class BranchService {
         );
 
         branchRepository.delete(branch);
+    }
+
+    private void assertCanManageBranch(Branch branch, User user) {
+        if (!user.hasAuthority(AppPermission.ADMINISTRATOR.name())
+                && !user.getMember().getBranch().getId().equals(branch.getId())) {
+            throw new CannotManageBranchOutsideYourBranchException();
+        }
     }
 
     @Transactional(readOnly = true)

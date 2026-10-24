@@ -144,6 +144,10 @@ public class MemberPersistenceService {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(MemberNotFoundException::new);
 
+        if (!user.hasAuthority(AppPermission.ADMINISTRATOR.name()) && !user.getMember().getBranch().getId().equals(member.getBranch().getId())) {
+            throw new CannotCreateMembersOutsideYourBranch();
+        }
+
         Member beforeUpdate = Member.builder()
                 .id(member.getId())
                 .completeName(member.getCompleteName())
@@ -159,10 +163,6 @@ public class MemberPersistenceService {
 
         memberMapper.updateEntityFromDto(dto, member);
         member.setUpdatedAt(dateTimeUtils.nowUTC());
-
-        if (!user.hasAuthority(AppPermission.ADMINISTRATOR.name()) && !user.getMember().getBranch().getId().equals(member.getBranch().getId())) {
-            throw new CannotCreateMembersOutsideYourBranch();
-        }
 
         if (user.hasAuthority(AppPermission.ADMINISTRATOR.name())&& dto.getBranchId() != null) {
             Branch branch = branchRepository.findById(dto.getBranchId())
