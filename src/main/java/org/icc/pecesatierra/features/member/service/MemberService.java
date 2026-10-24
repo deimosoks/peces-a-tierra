@@ -178,6 +178,7 @@ public class MemberService {
         }
 
         String pictureUrl = member.getPictureProfileUrl();
+        String publicId = member.getPublicId();
 
         memberRepository.delete(member);
 
@@ -200,7 +201,7 @@ public class MemberService {
         );
 
 
-        if (pictureUrl != null) pictureUtils.delete(pictureUrl);
+        if (publicId != null) pictureUtils.delete(publicId);
     }
 
     @Transactional
