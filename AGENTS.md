@@ -23,7 +23,7 @@ No linter, formatter, type checker, CI, or codegen step is configured. Compile +
 
 ## Required environment
 
-`src/main/resources/application.properties` has no defaults for `DB_URL`, `DB_USER`, `DB_PASS`, `JWT_SECRET`, `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`, `GEMINI_API_KEY`, `AI_DB_URL`, `AI_DB_USER`, `AI_DB_PASS`; `PORT` defaults to 8080. `AI_DB_*` is a separate read-only role used only by the AI SQL executor. The `test` profile supplies literal values, so `.\gradlew.bat test` runs without real environment variables.
+`src/main/resources/application.properties` has no defaults for `DB_URL`, `DB_USER`, `DB_PASS`, `JWT_SECRET`, `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`, `GEMINI_API_KEY`, `AI_DB_USER`, `AI_DB_PASS`; `PORT` defaults to 8080. `AI_DB_USER`/`AI_DB_PASS` is a separate read-only role used only by the AI SQL executor; `AI_DB_URL` is optional and defaults to `DB_URL` (same database, different role). The `test` profile supplies literal values, so `.\gradlew.bat test` runs without real environment variables.
 
 ## Database
 

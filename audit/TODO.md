@@ -37,9 +37,10 @@ técnica y deben retomarse cuando se cumpla su disparador.
 ## H-01 — Rol de base de datos de solo lectura para el endpoint de IA
 
 - **Estado**: **rol creado en Neon** el 2026-10-24 y `SqlExecutor` cableado a un `JdbcTemplate`
-  dedicado (`aiJdbcTemplate`) que usa `AI_DB_URL`/`AI_DB_USER`/`AI_DB_PASS`, con `maxRows=1000` y
-  `queryTimeout=10`. El template usa un `DriverManagerDataSource` interno (sin pool) para no retirar
-  el `DataSourceAutoConfiguration` de JPA ni `@ServiceConnection` de Testcontainers.
+  dedicado (`aiJdbcTemplate`) que usa `DB_URL` (o `AI_DB_URL` si se define) con las credenciales
+  `AI_DB_USER`/`AI_DB_PASS`, `maxRows=1000` y `queryTimeout=10`. El template usa un
+  `DriverManagerDataSource` interno (sin pool) para no retirar el `DataSourceAutoConfiguration` de
+  JPA ni `@ServiceConnection` de Testcontainers.
 - **Rol**: `peces_ai_readonly`, creado **por SQL**, nunca con el botón "Add role" de la consola: los
   roles creados desde consola/CLI/API reciben membresía en `neon_superuser` (`CREATEDB`,
   `CREATEROLE`, `BYPASSRLS`, `pg_read_all_data`/`pg_write_all_data`).
@@ -51,7 +52,7 @@ técnica y deben retomarse cuando se cumpla su disparador.
 - **TODO**:
   1. Crear el esquema `ai_read` con vistas que excluyan columnas sensibles y PII.
   2. Revocar `SELECT` sobre `public`; dejar `USAGE` + `SELECT` solo sobre `ai_read`.
-  3. Cambiar `AI_DB_URL` para usar `currentSchema=ai_read`.
+  3. Definir `AI_DB_URL` con `currentSchema=ai_read` para la conexión de IA, dejando `DB_URL` para la app.
   4. Añadir filtro por sede (columna `branch_id` en las vistas + `SET LOCAL app.branch_id`, o RLS).
   5. Endurecer `SqlQueryValidator` y el prompt: lista blanca de vistas, sin `UNION`/comentarios/`;`.
   6. Rotar la contraseña (la actual quedó expuesta en el chat), guardarla en el gestor de secretos y

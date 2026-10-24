@@ -57,16 +57,17 @@ los impone el template dedicado.
 ## Variables de entorno
 
 ```properties
-ai.datasource.url=${AI_DB_URL}
+ai.datasource.url=${AI_DB_URL:${DB_URL}}
 ai.datasource.username=${AI_DB_USER}
 ai.datasource.password=${AI_DB_PASS}
 ai.datasource.driver-class-name=org.postgresql.Driver
 ```
 
-`AI_DB_URL`, `AI_DB_USER` y `AI_DB_PASS` **no tienen default**: pasan a ser obligatorias para
-arrancar la aplicación (incluido `bootRun`). En tests se sustituyen por los valores ficticios de
-`application-test.properties`. No se commiteó host, usuario ni contraseña de Neon. El rol y sus
-grants se crean con `audit/scripts/neon-ai-readonly.sql`.
+`AI_DB_USER` y `AI_DB_PASS` **no tienen default**: son obligatorias para arrancar la aplicación
+(incluido `bootRun`). `AI_DB_URL` es opcional y, si no se define, usa `DB_URL`: la IA apunta a la
+misma base que la app, pero con un rol de solo lectura. En tests se sustituyen por los valores
+ficticios de `application-test.properties`. No se commiteó host, usuario ni contraseña de Neon. El
+rol y sus grants se crean con `audit/scripts/neon-ai-readonly.sql`.
 
 ## Límites defensivos
 
@@ -132,8 +133,9 @@ Los 4 saltados son los de integración que dependen de Docker (`ApplicationConte
   debe reutilizarse para tráfico alto. Si hiciera falta, la alternativa es un `HikariDataSource`
   creado dentro del bean (sin exponerlo como bean `DataSource`), con pool pequeño y timeout de
   conexión.
-- **`AI_DB_URL`/`AI_DB_USER`/`AI_DB_PASS` ahora son obligatorias** para arrancar en producción y en
-  `bootRun`. Un despliegue sin ellas falla al resolver placeholders, no al conectar.
+- **`AI_DB_USER`/`AI_DB_PASS` ahora son obligatorias** para arrancar en producción y en `bootRun`.
+  `AI_DB_URL` es opcional y cae a `DB_URL`. Un despliegue sin las credenciales de IA falla al resolver
+  placeholders, no al conectar.
 - **La confidencialidad sigue abierta**: el rol tiene `SELECT` sobre todas las tablas de `public`
   (riesgo aceptado en `audit/TODO.md`), de modo que un SQL generado por el LLM todavía puede leer
   `users.password_hash`, `refresh_token` y PII de cualquier sede. Este cambio solo limita escritura,
