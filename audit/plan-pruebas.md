@@ -313,7 +313,7 @@ public final class TestDataFactory {
 | H-03 | Unitario/web | `unit/discipulado/DiscipuladoServiceTest`, `web/discipulado/DiscipuladoProgressUserTest` | `progress` recibe el usuario autenticado (no `null`) y rechaza integrante/maestro de otra sede → 409; admin permitido |
 | H-04 | Unitario | `unit/user/UserServiceTest` | No-admin no asigna rol `ADMINISTRATOR` ni crea rol con ese permiso |
 | H-05 | Unitario/integración | `unit/user/UserServiceTest`, `integration/user/UserRoleIT` | No-admin no modifica admin; `memberId` nuevo de otra sede → 409; reset de contraseña revoca refresh tokens |
-| H-06 | Unitario | `unit/attendance/AttendanceServiceTest` | Evento o integrante de sede B → 409; no se guarda ninguna fila |
+| ~~H-06~~ | **Descartado** | — | Regla de negocio (2026-10-24): un integrante de otra sede puede asistir a un evento de otra sede; no debe probarse el rechazo. Ver `00-aclaraciones-negocio.md`. |
 | H-07 | Integración | `integration/baptism/BaptismPersistenceIT` | `note` vuelve en el DTO; `municipality` se persiste en la entidad (no está en `BaptismResponseDto`) |
 | H-08 | Unitario | `unit/baptism/BaptismServiceTest` | Dos `Branch` con el mismo id permiten el bautismo; no se compara con `equals` |
 | H-09 | Web/SpEL | `web/security/PreAuthorizeSpelTest` | Las 65 expresiones parsean; `DELETE /api/users/{id}` evalúa sin excepción |
@@ -334,7 +334,7 @@ public final class TestDataFactory {
 | Fase | Días | Contenido | Depende de | Criterio de aceptación |
 |---|---:|---|---|---|
 | **0. Red mínima** | 2–3 | Dependencias, `application-test.properties`, `AbstractIntegrationTest`, init script, `ApplicationContextIT`, 3 unitarios, `PreAuthorizeSpelTest`, CI esqueleto | — | `.\gradlew.bat test` pasa con JDK 21 y Docker, **sin** variables de entorno; `compileJava` sigue pasando |
-| **1. Seguridad y multi-sede** | 5–6 | Matriz de 69 endpoints, principal de dominio, JWT filter, error mapping, suites cruzadas H-02/H-03/H-04/H-05/H-06/H-08/H-09/H-48/H-49 | Fase 0 | 100 % de handlers con fila en la matriz; cada hallazgo alto tiene al menos un test; los `@Tag("hallazgo")` pendientes están listados |
+| **1. Seguridad y multi-sede** | 5–6 | Matriz de 69 endpoints, principal de dominio, JWT filter, error mapping, suites cruzadas H-02/H-03/H-04/H-05/H-08/H-09/H-48/H-49 | Fase 0 | 100 % de handlers con fila en la matriz; cada hallazgo alto tiene al menos un test; los `@Tag("hallazgo")` pendientes están listados |
 | **2. Datos, fechas y transacciones** | 4–5 | Specs/repos con `unaccent`, paginación, constraints, lazy, rollback, `Clock`, report/dashboard, edad | Fase 0; puede ir en paralelo con 1 | Specs y repos cubiertos; sin `LazyInitializationException`; tests de fecha deterministas y repetibles |
 | **3. IA, funcional y CI** | 3–4 | Corpus del validador, `MockRestServiceServer`, límites del ejecutor, bautismo/validación, JaCoCo, CI completo, documentación | Fases 0–2 | CI verde en `push`/`PR`; umbral de cobertura; no quedan hallazgos altos sin prueba o justificación |
 

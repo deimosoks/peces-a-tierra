@@ -203,7 +203,8 @@ Detalle por suite:
 | Matriz completa de 69 endpoints | Solo se ejecutó el subconjunto de usuarios, servicios y health. El CSV está completo y con estados `pending`; falta poblar `bodyFixture` y ejecutar cada fila con `@WebMvcTest` o integración. |
 | H-02 (export sin cuerpo) | Requiere integración con dos sedes y `AttendanceSpecification`; no se ejecutó por no haber Docker. |
 | H-01 (IA) | No se escribieron pruebas que codifiquen la vulnerabilidad. Falta el corpus de `SqlQueryValidator` y `SqlExecutor` con límites. |
-| H-04, H-05, H-06, H-10, H-12, H-26/H-27, H-28, H-41, H-43, H-46, H-49 | Fuera del alcance P1–P4; quedan como deuda de las fases 1–3 del plan. |
+| H-04, H-05, H-10, H-12, H-26/H-27, H-28, H-41, H-43, H-46, H-49 | Fuera del alcance P1–P4; quedan como deuda de las fases 1–3 del plan. |
+| H-06 | Descartado por regla de negocio el 2026-10-24: la asistencia inter-sede está permitida, así que no debe probarse el rechazo. Ver `00-aclaraciones-negocio.md`. |
 | `Clock` determinista | `DateTimeUtils` no inyecta `Clock`; cambiarlo es una modificación de producción que esta tarea no permite. Por eso no se hacen aserciones exactas sobre `now()`. |
 | Integración real | `ApplicationContextIT` está listo, pero no se pudo ejecutar: Docker no está corriendo en esta máquina. Queda verificarlo en CI o en una máquina con Docker. |
 | CI y cobertura | No se añadió workflow ni JaCoCo; el plan lo reserva para la fase 3. |

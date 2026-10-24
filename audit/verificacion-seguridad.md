@@ -5,6 +5,10 @@ Se abrieron todas las ubicaciones citadas, se siguió el flujo controller → se
 y se contrastaron las mitigaciones de Spring Security, Spring MVC, Hibernate y jjwt contra los jars que resuelve
 el build (Boot 3.5.9, Spring 6.2.15, Security 6.5.7, Hibernate 6.6.39, jjwt 0.12.5).
 
+> **Actualización 2026-10-24**: S-06 (H-06) queda **descartado por regla de negocio**: un integrante
+> de una sede puede asistir a un evento de otra sede, así que la ausencia de validación de sede es
+> intencional. Ver `audit/00-aclaraciones-negocio.md`.
+
 ## Veredicto global
 
 El borrador es fiable en lo esencial: **20 de 22 hallazgos quedan CONFIRMADOS, 2 PARCIALES y 0 REFUTADOS**.
@@ -32,7 +36,7 @@ El informe es **apto para el consolidado con las correcciones de la sección de 
 | S-03 | CONFIRMADO | Alta → Alta | S | Explotable hoy: `DISCIPULADO_PROGRESS` | `progress` pasa `null` y ambos métodos ignoran `user`; se puede completar un progreso ajeno, fijar fecha y asignar un maestro de otra sede. El `create`/`findById`/`search`/`delete` del mismo servicio sí comparan `getId()`. |
 | S-04 | CONFIRMADO | Alta → Alta (latente) | M | Condicionado a `role_permission` | No hay lista blanca de roles ni de permisos; `RoleMapper` y `UserService` aceptan `ADMINISTRATOR`. `PermissionRequestDto.@NotBlank` sobre un enum no se valida porque el `Set` no lleva `@Valid`, así que el alta de rol funciona. Si esos permisos son solo de ADMIN, baja a Media/Baja. |
 | S-05 | CONFIRMADO | Alta → Alta (latente) | S | Condicionado a `role_permission` | La comprobación de sede usa la sede actual del target, no la del `memberId` nuevo; después reasigna `member` sin comprobar la sede. Resetea la contraseña sin la actual y el bloqueo de autoedición se evita con una segunda cuenta. No revoca refresh tokens. |
-| S-06 | CONFIRMADO | Alta → Alta | S | Explotable hoy: `REGISTER_ATTENDANCE` | Solo valida que el evento exista/esté activo y la ventana horaria; no valida la sede del evento ni la del integrante, y la fila toma `event.getBranch()`. El "oráculo de UUIDs" es débil: el endpoint devuelve 200 y hace `continue` si el integrante no existe/está inactivo. |
+| S-06 | **DESCARTADO** (regla de negocio, 2026-10-24) | Alta → N/A | — | No aplica: la asistencia inter-sede está permitida | Se conserva la evidencia histórica. El defecto independiente del lote (todos los registros al primer `serviceEventId`) sigue en H-41. Ver `00-aclaraciones-negocio.md`. |
 | S-07 | CONFIRMADO | Media → Media | M | Explotable hoy: roles operativos, misma sede | `MemberService.search` usa `toDto(member, true)` y devuelve cc, celular, dirección, nacimiento y notas; la specification sí limita a la sede. Es mínimo privilegio intra-sede, no una fuga entre sedes. |
 | S-08 | CONFIRMADO | Media → Media (Baja si se confirma que no hay cookies) | S | Condicionado a token robado/XSS | `allowedOriginPatterns("*")` + `allowCredentials(true)` refleja cualquier origen. Con Bearer en `localStorage` no es explotable por sí solo; es defensa en profundidad y sube si se migra a cookies. |
 | S-09 | CONFIRMADO | Media → Media | M | Condicionado a XSS o dependencia comprometida | `chunk-CJDLSKNK.js:5`: `storeTokens` guarda access y refresh en `localStorage`; el refresh dura 5 días. No hay CSP en `SecurityConfig` ni en `index.html`. |
@@ -344,3 +348,4 @@ También se comprobó el potencial `POST /api/members/export` con cuerpo `null`:
 **Nuevos**: 5 (VS-01…VS-05). **Inventario**: 69/69 handlers, 65 con `@PreAuthorize`, 4 sin él, sin diferencias.
 **Consolidado**: apto con las correcciones de S-13, S-17, S-18, S-06, S-04/S-05, los descartes de secretos/readOnly/
 foto y las recomendaciones de S-01/S-21.
+**Actualización 2026-10-24**: S-06 pasa a **DESCARTADO** por regla de negocio; quedan 19 CONFIRMADO y 2 PARCIAL.

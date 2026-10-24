@@ -26,7 +26,8 @@ detecte regresiones.
 
 **Resultado de la verificación**: de los 46 hallazgos originales, **42 quedaron confirmados, 4
 parciales, 0 refutados y 0 no verificables**. La ola 2 añadió 12 hallazgos nuevos y el consolidado
-fusionó 6 duplicados entre ejes: **51 hallazgos únicos** (1 crítica, 6 altas, 21 medias, 23 bajas).
+fusionó 6 duplicados entre ejes: **51 hallazgos únicos**, de los que **1 se descartó por regla de
+negocio** (H-06), quedando **50 vigentes** (1 crítica, 5 altas, 21 medias, 23 bajas).
 
 Los cinco riesgos que justifican actuar primero:
 
@@ -166,17 +167,6 @@ Los cinco riesgos que justifican actuar primero:
 - **Recomendación**: exigir `ADMINISTRATOR` para modificar a un usuario con `ADMINISTRATOR`; validar
   la sede del `memberId` nuevo; revocar refresh tokens al cambiar contraseña.
 
-### H-06 — Registro de asistencias sin validar la sede del evento ni de los integrantes
-- **Severidad**: Alta · **Esfuerzo**: S · **Origen**: S-06 · **Tipo**: real, explotable hoy
-- **Ubicación**: `features/attendance/service/AttendanceService.java:58-68,79-87`
-- **Evidencia**: solo valida que el evento exista/esté activo y la ventana horaria; el registro toma
-  `event.getBranch()` y hace `continue` si el integrante no existe o está inactivo.
-- **Impacto**: un usuario con `REGISTER_ATTENDANCE` registra asistencias en eventos de otra sede y con
-  integrantes de otra sede; la fila queda etiquetada con la sede del evento. Además, el lote asigna
-  todos los registros al primer `serviceEventId` (H-41).
-- **Recomendación**: validar sede del evento y de cada integrante contra la del usuario, salvo admin;
-  rechazar el lote completo o reportar por fila. Prueba con integrante de sede B.
-
 ### H-07 — El bautismo pierde la nota y guarda `city` como `municipality`
 - **Severidad**: Alta (funcional) · **Esfuerzo**: S · **Origen**: Q-01 · **Tipo**: real, ocurriendo ya
 - **Ubicación**: `features/baptism/service/BaptismService.java:62-68`, entidad `Baptism.java:31`
@@ -261,7 +251,7 @@ Los cinco riesgos que justifican actuar primero:
 7. **H-46**: timeouts en el `RestTemplate` de Gemini.
 
 ### Fase 1 — Aislamiento multi-sede (2–3 días)
-H-03, H-06, H-04, H-05, H-21, H-22, H-20, H-15. Requiere **verificar antes** el sembrado de
+H-03, H-04, H-05, H-21, H-22, H-20, H-15. Requiere **verificar antes** el sembrado de
 `role_permission` y decidir la jerarquía de roles. Añadir pruebas de acceso cruzado de sede para cada
 caso (dos usuarios, dos sedes, el mismo UUID).
 
@@ -299,6 +289,10 @@ Para evitar retrabajo, estos puntos se revisaron y se descartaron con evidencia:
   salvo en `UserService.search` y en `RoleMapper` (H-39).
 - Cron del reporte (`0 0 3 ? * 2#2`) y `registeredTo` con `T23:59:59`: correctos.
 - El `null` literal en `POST /api/members/export` no produce fuga: `required=true` devuelve 400.
+- **H-06 (descartado por regla de negocio, 2026-10-24)**: un integrante de una sede puede asistir a
+  un evento de otra sede, así que la ausencia de validación de sede en `AttendanceService` es
+  intencional. Se mantiene H-41 (el lote se asigna al primer evento) como defecto independiente.
+  Ver `audit/00-aclaraciones-negocio.md`.
 
 ---
 
@@ -325,7 +319,7 @@ Para evitar retrabajo, estos puntos se revisaron y se descartaron con evidencia:
 | H-03 | S-03 |
 | H-04 | S-04 |
 | H-05 | S-05 |
-| H-06 | S-06 |
+| H-06 | S-06 — descartado por regla de negocio (2026-10-24) |
 | H-07 | Q-01 |
 | H-08 | Q-02, S-17 |
 | H-09 | S-15 |
@@ -377,7 +371,8 @@ Para evitar retrabajo, estos puntos se revisaron y se descartaron con evidencia:
 | Estado | Hallazgos |
 |---|---|
 | **Corregidos y con prueba de regresión** | H-02, H-03, H-07, H-08, H-09, H-31, H-46, H-48 |
-| **Pendientes críticos/altos** | H-01 (IA), H-04, H-05, H-06 |
+| **Pendientes críticos/altos** | H-01 (IA), H-04, H-05 |
+| **Descartados por regla de negocio** | H-06 (asistencia inter-sede permitida) |
 | **Pendientes medios/bajos** | H-10 a H-30, H-32 a H-45, H-47, H-49 a H-51 |
 
 - Suite actual: **47 tests, 42 ejecutados, 5 saltados, 0 fallos**. Saltan 3 IT por Docker apagado,
@@ -398,6 +393,7 @@ el trabajo en el árbol de trabajo.
 | Archivo | Contenido |
 |---|---|
 | `audit/00-alcance.md` | Contrato, rúbrica, baseline de build |
+| `audit/00-aclaraciones-negocio.md` | Reglas de negocio que descartan hallazgos (H-06) |
 | `audit/borrador-calidad.md` | 24 hallazgos Q + descartados + límites |
 | `audit/borrador-seguridad.md` | 22 hallazgos S + anexo de 69 endpoints |
 | `audit/verificacion-calidad.md` | 22 CONFIRMADO / 2 PARCIAL + 7 nuevos (VQ) |

@@ -1,5 +1,10 @@
 # Borrador de auditoría — Seguridad
 
+> **Actualización 2026-10-24**: S-06 (H-06) queda **descartado por regla de negocio**: un integrante
+> de una sede puede asistir a un evento de otra sede. La ausencia de validación de sede en
+> `AttendanceService` es intencional. Ver `audit/00-aclaraciones-negocio.md`. El resto del borrador
+> se conserva como evidencia histórica.
+
 ## Resumen ejecutivo
 
 La API tiene una cobertura de guardas alta (69 handlers, 65 con `@PreAuthorize` y `isActive`, 0 endpoints públicos accidentales), pero la autorización multi-sede está implementada de forma ad hoc y falla en varios caminos concretos. El riesgo mayor es el endpoint de IA: ejecuta SQL generado por el LLM sobre cualquier tabla del esquema, sin filtro de sede y con un validador de lista negra trivialmente evadible, lo que permite leer `users.password_hash` y PII de todas las sedes (S-01, Crítica). Le siguen cinco hallazgos altos: exportación de asistencias sin filtro de sede cuando falta el cuerpo (S-02), IDOR de escritura en el progreso de discipulado (S-03), escalado a ADMINISTRATOR por asignación libre de roles/permisos (S-04), reseteo de la contraseña de un administrador por un usuario con `UPDATE_USER` (S-05) y registro de asistencias cruzando sedes (S-06). En el plano de sesión, el refresh token se guarda en claro en BD y en `localStorage`, vive 5 días y no se revoca al cambiar la contraseña; no hay rate limiting ni bloqueo en login y los errores permiten enumerar usuarios. También hay PII y notas pastorales en logs INFO, CORS comodín con credenciales y una guarda `@PreAuthorize` sintácticamente rota en `DELETE /api/users/{id}` que inutiliza el endpoint. No se encontraron secretos hardcodeados ni CVEs aplicables verificadas en las dependencias declaradas.

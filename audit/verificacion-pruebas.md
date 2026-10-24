@@ -1,6 +1,11 @@
 # Verificación de la implementación de pruebas
 
 **Rama:** `audit/arquitectura-y-seguridad` · **Fecha:** 2026-10-23
+
+> **Actualización 2026-10-24**: H-06 queda descartado por regla de negocio (un integrante de otra
+> sede puede asistir a un evento de otra sede). Se retira del backlog de pruebas; ver
+> `audit/00-aclaraciones-negocio.md`.
+
 **Alcance:** auditoría adversarial de `src/test`, `build.gradle` y de la infraestructura de pruebas descrita en `audit/implementacion-pruebas.md`. No se modificó `src/main`, `src/test`, `build.gradle` ni los informes existentes; las mutaciones se hicieron en una copia temporal.
 
 ## Veredicto global
@@ -113,7 +118,7 @@ Contraste con las fases del plan:
 | Fase | Estado | Motivo |
 |---|---|---|
 | **Fase 0 — red mínima** | **PARCIAL** | Dependencias, perfil, base Testcontainers, `ApplicationContextIT` y SpEL existen; el contexto no se ejecutó y no hay CI. |
-| **Fase 1 — seguridad y multi-sede** | **NO ENTREGADO / PARCIAL** | Solo 4 endpoints en la matriz; H-03, H-04, H-05, H-06, H-49 y H-12 sin pruebas activas; no hay `JwtAuthFilterTest`, `AuthEndpointSecurityTest`, `ValidationContractTest` ni `GlobalHandlerExceptionTest`. |
+| **Fase 1 — seguridad y multi-sede** | **NO ENTREGADO / PARCIAL** | Solo 4 endpoints en la matriz; H-03, H-04, H-05, H-49 y H-12 sin pruebas activas; no hay `JwtAuthFilterTest`, `AuthEndpointSecurityTest`, `ValidationContractTest` ni `GlobalHandlerExceptionTest`. |
 | **Fase 2 — datos, fechas y transacciones** | **NO ENTREGADO** | No hay `@DataJpaTest`, specs/repos con `unaccent`, lazy, rollback, `Clock`, `ReportServiceIT` ni `DashboardServiceIT`. |
 | **Fase 3 — IA, funcional y CI** | **NO ENTREGADO** | No hay `SqlQueryValidatorTest`, `AiServiceTest`, `SqlExecutorIT`, JaCoCo ni CI. H-01 queda sin red. |
 
@@ -158,7 +163,7 @@ Cobertura de los 7 fixes de Fase 0:
 | **T-08** | H-12/H-49: JWT inválido/expirado y `logout`/`changge-password` con usuario inactivo | **Alta** | No existe `JwtAuthFilterTest` ni `AuthEndpointSecurityTest`; `JwtAuthFilter.java:49-65` solo se mockea. |
 | **T-09** | H-01: validador SQL y ejecutor de IA sin pruebas | **Crítica** | No hay `SqlQueryValidatorTest`, `AiServiceTest` ni `SqlExecutorIT`; `SqlQueryValidator`/`SqlExecutor` quedan fuera de toda red. |
 | **T-10** | CI con Docker, `ApplicationContextIT` real, JaCoCo y `Clock` fijo | **Alta** | No hay `.github`; `ApplicationContextIT` se salta; `DateTimeUtils` no inyecta `Clock`. |
-| **T-11** | H-04, H-05, H-06, H-10, H-28, H-41, H-43… de fases 1–2 | **Media/Alta** | Sin `UserServiceTest`, `AttendanceServiceTest`, `NullableBodyTest`, `ValidationContractTest` ni ITs de specs/repos; el plan los exige. |
+| **T-11** | H-04, H-05, H-10, H-28, H-41, H-43… de fases 1–2 | **Media/Alta** | Sin `UserServiceTest`, `AttendanceServiceTest`, `NullableBodyTest`, `ValidationContractTest` ni ITs de specs/repos; el plan los exige. |
 
 ## Límites de la auditoría
 
