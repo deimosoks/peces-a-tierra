@@ -57,12 +57,6 @@ public class AttendanceSpecification {
                     predicates.add(cb.equal(root.get("invalid"), dto.getInvalid()));
                 }
 
-                if (!user.hasAuthority(AppPermission.ADMINISTRATOR.name())) {
-                    predicates.add(cb.equal(branch.get("id"), user.getMember().getBranch().getId()));
-                } else if (dto.getBranchId() != null) {
-                    predicates.add(cb.equal(branch.get("id"), dto.getBranchId()));
-                }
-
                 if (dto.getCategory() != null && !dto.getCategory().isEmpty()) {
                     Join<Attendance, MemberCategory> memberCategoryJoin = root.join("memberCategory", JoinType.INNER);
                     predicates.add(memberCategoryJoin.get("id").in(dto.getCategory()));
@@ -81,6 +75,12 @@ public class AttendanceSpecification {
                     predicates.add(cb.equal(branch.get("name"), dto.getBranchName()));
                 }
 
+            }
+
+            if (!user.hasAuthority(AppPermission.ADMINISTRATOR.name())) {
+                predicates.add(cb.equal(branch.get("id"), user.getMember().getBranch().getId()));
+            } else if (dto != null && dto.getBranchId() != null) {
+                predicates.add(cb.equal(branch.get("id"), dto.getBranchId()));
             }
 
             return cb.and(predicates.toArray(new Predicate[0]));
