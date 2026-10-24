@@ -373,6 +373,7 @@ Para evitar retrabajo, estos puntos se revisaron y se descartaron con evidencia:
 | **Corregidos y con prueba de regresión** | H-02, H-03, H-07, H-08, H-09, H-31, H-46, H-48 |
 | **Pendientes críticos/altos** | H-01 (IA), H-04, H-05 |
 | **Descartados por regla de negocio** | H-06 (asistencia inter-sede permitida) |
+| **Aceptados temporalmente (TODO)** | H-41 (el lote debe llevar un solo `serviceEventId`; ver `audit/TODO.md`) |
 | **Pendientes medios/bajos** | H-10 a H-30, H-32 a H-45, H-47, H-49 a H-51 |
 
 - Suite actual: **47 tests, 42 ejecutados, 5 saltados, 0 fallos**. Saltan 3 IT por Docker apagado,
@@ -394,6 +395,7 @@ el trabajo en el árbol de trabajo.
 |---|---|
 | `audit/00-alcance.md` | Contrato, rúbrica, baseline de build |
 | `audit/00-aclaraciones-negocio.md` | Reglas de negocio que descartan hallazgos (H-06) |
+| `audit/TODO.md` | Riesgos aceptados y cambios de diseño aplazados (H-41) |
 | `audit/borrador-calidad.md` | 24 hallazgos Q + descartados + límites |
 | `audit/borrador-seguridad.md` | 22 hallazgos S + anexo de 69 endpoints |
 | `audit/verificacion-calidad.md` | 22 CONFIRMADO / 2 PARCIAL + 7 nuevos (VQ) |
