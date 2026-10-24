@@ -1,6 +1,6 @@
 package org.icc.pecesatierra.features.role.dtos;
 
-import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import org.icc.pecesatierra.utils.enums.AppPermission;
 
@@ -11,6 +11,6 @@ import org.icc.pecesatierra.utils.enums.AppPermission;
 @NoArgsConstructor
 public class PermissionRequestDto {
 
-    @NotBlank(message = "Permiso invalido.")
+    @NotNull(message = "Permiso invalido.")
     private AppPermission name;
 }

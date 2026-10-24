@@ -11,6 +11,7 @@ import org.icc.pecesatierra.features.member.exceptions.MemberAlreadyRegisteredWi
 import org.icc.pecesatierra.features.member.exceptions.MemberNotFoundException;
 import org.icc.pecesatierra.features.user.dtos.*;
 import org.icc.pecesatierra.features.user.exceptions.*;
+import org.icc.pecesatierra.features.role.exceptions.CannotGrantPermissionsYouDoNotHaveException;
 import org.icc.pecesatierra.features.role.exceptions.RoleNotFoundException;
 import org.icc.pecesatierra.features.user.mapper.UserMapper;
 import org.icc.pecesatierra.features.member.repository.MemberRepository;
@@ -29,7 +30,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -44,6 +48,69 @@ public class UserService {
     private final UserMapper userMapper;
     private final UserSpecification userSpecification;
     private final DateTimeUtils dateTimeUtils;
+
+    /**
+     * Un ADMINISTRATOR conserva el bypass total sobre la gestión de usuarios y roles.
+     */
+    private boolean isAdministrator(User user) {
+        return user.hasAuthority(AppPermission.ADMINISTRATOR.name());
+    }
+
+    private Set<String> authoritiesOf(User user) {
+        return user.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.toSet());
+    }
+
+    private List<Role> loadRoles(Set<String> rolesId) {
+        return rolesId.stream()
+                .map(roleId -> roleRepository.findById(roleId)
+                        .orElseThrow(RoleNotFoundException::new))
+                .toList();
+    }
+
+    /**
+     * Principio de subconjunto: un no-admin solo puede asignar roles cuyos permisos
+     * ya posee. Como ADMINISTRATOR no lo tiene, nunca puede asignar ese rol.
+     */
+    private void validateCanGrantPermissions(User givenBy, Collection<Role> roles) {
+        if (isAdministrator(givenBy)) {
+            return;
+        }
+
+        Set<String> grantedPermissions = roles.stream()
+                .flatMap(role -> role.getPermissions().stream())
+                .map(rolePermission -> rolePermission.getId().getPermission())
+                .collect(Collectors.toSet());
+
+        if (!authoritiesOf(givenBy).containsAll(grantedPermissions)) {
+            throw new CannotGrantPermissionsYouDoNotHaveException();
+        }
+    }
+
+    /**
+     * Un no-admin no puede modificar ni desactivar cuentas con permisos que él no tenga.
+     */
+    private void validateCanManageUser(User givenBy, User target) {
+        if (isAdministrator(givenBy)) {
+            return;
+        }
+
+        if (!authoritiesOf(givenBy).containsAll(authoritiesOf(target))) {
+            throw new CannotManageUserWithMorePrivilegesException();
+        }
+    }
+
+    private void validateMemberBranch(User givenBy, Member member) {
+        if (isAdministrator(givenBy)) {
+            return;
+        }
+
+        if (member == null || member.getBranch() == null
+                || !member.getBranch().getId().equals(givenBy.getMember().getBranch().getId())) {
+            throw new CannotUpdateUserWithMemberOutSideYourBranchException();
+        }
+    }
 
     @Transactional
     public UserResponseDto create(UserRequestDto userRequestDto, User givenBy) {
@@ -61,6 +128,10 @@ public class UserService {
             throw new CannotCreateUsersWithMembersOutsideYourBranch();
         }
 
+        List<Role> roles = loadRoles(userRequestDto.getRolesId());
+
+        validateCanGrantPermissions(givenBy, roles);
+
         User user = User.builder()
                 .username(userRequestDto.getUsername())
                 .member(member)
@@ -72,21 +143,18 @@ public class UserService {
 
         userRepository.save(user);
 
-        user.getRoles().addAll(userRequestDto.getRolesId().stream().map(roleId -> {
-            Role role = roleRepository.findById(roleId)
-                    .orElseThrow(RoleNotFoundException::new);
-
-            return UserRole.builder()
-                    .id(UserRoleId.builder()
-                            .roleId(role.getId())
-                            .userId(user.getId())
-                            .build())
-                    .user(user)
-                    .role(role)
-                    .giverId(givenBy.getMember())
-                    .givenDate(dateTimeUtils.nowUTC())
-                    .build();
-        }).collect(Collectors.toSet()));
+        user.getRoles().addAll(roles.stream().map(role ->
+                UserRole.builder()
+                        .id(UserRoleId.builder()
+                                .roleId(role.getId())
+                                .userId(user.getId())
+                                .build())
+                        .user(user)
+                        .role(role)
+                        .giverId(givenBy.getMember())
+                        .givenDate(dateTimeUtils.nowUTC())
+                        .build()
+        ).collect(Collectors.toSet()));
 
         log.info("""
                         Usuario {} creó un nuevo usuario:
@@ -156,19 +224,32 @@ public class UserService {
 
         User user = userRepository.findById(userId)
                 .orElseThrow(UserNotFoundException::new);
-        Member member = memberRepository.findById(userRequestDto.getMemberId())
+        Member member = userRequestDto.getMemberId() == null
+                ? null
+                : memberRepository.findById(userRequestDto.getMemberId())
                 .orElseThrow(MemberNotFoundException::new);
 
         if (givenBy.getId().equals(user.getId()))
             throw new CannotUpdateYourSelfException();
 
-        if (!userRequestDto.getMemberId().equals(user.getMember().getId())
+        if (userRequestDto.getMemberId() != null
+                && !userRequestDto.getMemberId().equals(user.getMember().getId())
                 && userRepository.existsByMemberId(userRequestDto.getMemberId()))
             throw new MemberAlreadyRegisteredWithUserException();
 
         if (!givenBy.hasAuthority(AppPermission.ADMINISTRATOR.name()) && !user.getMember().getBranch().getId().equals(givenBy.getMember().getBranch().getId())) {
             throw new CannotUpdateUserWithMemberOutSideYourBranchException();
         }
+
+        validateCanManageUser(givenBy, user);
+
+        // La sede del miembro nuevo tambien debe pertenecer al actor; antes solo se
+        // validaba la sede actual del usuario objetivo.
+        validateMemberBranch(givenBy, member);
+
+        List<Role> roles = loadRoles(userRequestDto.getRolesId());
+
+        validateCanGrantPermissions(givenBy, roles);
 
         User beforeUpdate = User.builder()
                 .id(user.getId())
@@ -188,28 +269,33 @@ public class UserService {
             user.setUsername(userRequestDto.getUsername());
         }
 
+        boolean passwordChanged = false;
+
         if (userRequestDto.getPassword() != null
                 && !passwordEncoder.matches(userRequestDto.getPassword(), user.getPasswordHash())) {
             user.setPasswordHash(passwordEncoder.encode(userRequestDto.getPassword()));
+            passwordChanged = true;
+        }
+
+        if (passwordChanged) {
+            // Orphan removal borra los refresh tokens al vaciar la coleccion.
+            user.getRefreshTokens().clear();
         }
 
         user.getRoles().clear();
 
-        user.getRoles().addAll(userRequestDto.getRolesId().stream().map(roleId -> {
-            Role role = roleRepository.findById(roleId)
-                    .orElseThrow(RoleNotFoundException::new);
-
-            return UserRole.builder()
-                    .id(UserRoleId.builder()
-                            .roleId(role.getId())
-                            .userId(user.getId())
-                            .build())
-                    .user(user)
-                    .role(role)
-                    .giverId(givenBy.getMember())
-                    .givenDate(dateTimeUtils.nowUTC())
-                    .build();
-        }).collect(Collectors.toSet()));
+        user.getRoles().addAll(roles.stream().map(role ->
+                UserRole.builder()
+                        .id(UserRoleId.builder()
+                                .roleId(role.getId())
+                                .userId(user.getId())
+                                .build())
+                        .user(user)
+                        .role(role)
+                        .giverId(givenBy.getMember())
+                        .givenDate(dateTimeUtils.nowUTC())
+                        .build()
+        ).collect(Collectors.toSet()));
 
         user.setUpdatedAt(dateTimeUtils.nowUTC());
 
@@ -256,6 +342,8 @@ public class UserService {
             throw new CannotDeactivateYourselfUserException();
         }
 
+        validateCanManageUser(user, userToUpdate);
+
         if (!user.hasAuthority(AppPermission.ADMINISTRATOR.name()) && !user.getMember().getBranch().getId().equals(userToUpdate.getMember().getBranch().getId())) {
             throw new CannotUpdateUserWithMemberOutSideYourBranchException();
         }
@@ -286,6 +374,8 @@ public class UserService {
     public void delete(User user, String userId) {
         User userToDelete = userRepository.findById(userId)
                 .orElseThrow(UserNotFoundException::new);
+
+        validateCanManageUser(user, userToDelete);
 
         if (!user.hasAuthority(AppPermission.ADMINISTRATOR.name()) && !user.getMember().getBranch().getId().equals(userToDelete.getMember().getBranch().getId())) {
             throw new CannotUpdateUserWithMemberOutSideYourBranchException();

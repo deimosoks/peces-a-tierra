@@ -8,17 +8,24 @@ import org.icc.pecesatierra.features.role.RolePermissionId;
 import org.icc.pecesatierra.features.user.User;
 import org.icc.pecesatierra.features.role.dtos.RoleRequestDto;
 import org.icc.pecesatierra.features.role.dtos.RoleResponseDto;
+import org.icc.pecesatierra.features.role.dtos.PermissionRequestDto;
 import org.icc.pecesatierra.features.role.exceptions.CannotDeleteRoleInUseException;
+import org.icc.pecesatierra.features.role.exceptions.CannotGrantPermissionsYouDoNotHaveException;
+import org.icc.pecesatierra.features.role.exceptions.CannotManageRoleWithMorePrivilegesException;
 import org.icc.pecesatierra.features.role.exceptions.RoleNotFoundException;
 import org.icc.pecesatierra.features.role.repository.UserRoleRepository;
 import org.icc.pecesatierra.features.role.mapper.RoleMapper;
 import org.icc.pecesatierra.features.role.repository.RoleRepository;
+import org.icc.pecesatierra.utils.enums.AppPermission;
 import org.icc.pecesatierra.utils.time.DateTimeUtils;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -30,8 +37,59 @@ public class RoleService {
     private final UserRoleRepository userRoleRepository;
     private final DateTimeUtils dateTimeUtils;
 
+    /**
+     * Un ADMINISTRATOR conserva el bypass total sobre la gestión de roles.
+     */
+    private boolean isAdministrator(User user) {
+        return user.hasAuthority(AppPermission.ADMINISTRATOR.name());
+    }
+
+    private Set<String> authoritiesOf(User user) {
+        return user.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.toSet());
+    }
+
+    private Set<String> permissionNamesOf(Set<PermissionRequestDto> permissions) {
+        return permissions.stream()
+                .map(permission -> permission.getName().name())
+                .collect(Collectors.toSet());
+    }
+
+    /**
+     * Principio de subconjunto: un no-admin solo puede conceder permisos que ya tiene.
+     */
+    private void validateCanGrantPermissions(User user, Set<PermissionRequestDto> permissions) {
+        if (isAdministrator(user)) {
+            return;
+        }
+
+        if (!authoritiesOf(user).containsAll(permissionNamesOf(permissions))) {
+            throw new CannotGrantPermissionsYouDoNotHaveException();
+        }
+    }
+
+    /**
+     * Un no-admin no puede editar ni borrar un rol con permisos que él no tenga.
+     */
+    private void validateCanManageRole(User user, Role role) {
+        if (isAdministrator(user)) {
+            return;
+        }
+
+        Set<String> rolePermissions = role.getPermissions().stream()
+                .map(rolePermission -> rolePermission.getId().getPermission())
+                .collect(Collectors.toSet());
+
+        if (!authoritiesOf(user).containsAll(rolePermissions)) {
+            throw new CannotManageRoleWithMorePrivilegesException();
+        }
+    }
+
     @Transactional
     public RoleResponseDto create(RoleRequestDto roleRequestDto, User user) {
+
+        validateCanGrantPermissions(user, roleRequestDto.getPermissions());
 
         Role role = roleRepository.save(Role.builder()
                 .name(roleRequestDto.getName())
@@ -81,6 +139,10 @@ public class RoleService {
         Role role = roleRepository.findById(rolId)
                 .orElseThrow(RoleNotFoundException::new);
 
+        validateCanManageRole(user, role);
+
+        validateCanGrantPermissions(user, roleRequestDto.getPermissions());
+
         Role beforeUpdate = Role.builder()
                 .id(role.getId())
                 .name(role.getName())
@@ -125,6 +187,8 @@ public class RoleService {
     public void delete(String roleId, User user) {
         Role role = roleRepository.findById(roleId)
                 .orElseThrow(RoleNotFoundException::new);
+
+        validateCanManageRole(user, role);
 
         if (userRoleRepository.existsByRoleId(roleId)) {
             log.warn("Usuario {} intento eliminar rol '{}' pero está en uso.", user.getMember().getId(), role.getName());

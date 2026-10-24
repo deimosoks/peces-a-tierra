@@ -1,5 +1,6 @@
 package org.icc.pecesatierra.features.role.dtos;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -21,6 +22,7 @@ public class RoleRequestDto {
     private String color;
 
     @NotNull(message = "Permisos inválidos.")
+    @Valid
     private Set<PermissionRequestDto> permissions;
 
     @NotBlank(message = "Descripción invalida.")
