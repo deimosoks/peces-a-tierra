@@ -2,7 +2,7 @@
 
 - **Rama**: `audit/arquitectura-y-seguridad`
 - **Fecha**: 2026-10-24
-- **Base**: `master` (el trabajo empieza en `e3c0c83`)
+- **Base**: `master` (merge-base real `f3d07cc`; el trabajo de la rama empieza ahí)
 - **Objetivo**: auditar las implementaciones hechas después de la auditoría inicial, no re-auditar
   todo el código base. Se incluyen los fixes de Fase 0 porque son la base de los cambios posteriores.
 - **Método**: dos auditores en paralelo (seguridad y calidad/pruebas) y un tercer auditor que revisa

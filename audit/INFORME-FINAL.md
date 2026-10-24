@@ -3,7 +3,8 @@
 - **Repositorio**: `C:\dev\peces-a-tierra`
 - **Rama**: `audit/arquitectura-y-seguridad` (creada desde `master` en `f3d07cc`)
 - **Fecha**: 2026-10-23
-- **Alcance**: 243 archivos Java, 16 features, 19 controllers, 69 handlers HTTP, 7 Specifications,
+- **Alcance**: 250 archivos Java al cierre de la auditoría (251 tras el fix M-03), 16 features,
+  19 controllers, 69 handlers HTTP, 7 Specifications,
   `build.gradle`, `application.properties`, `logback.xml`, `Dockerfile`, wrapper y bundle de la PWA.
 - **Método**: 2 agentes de análisis en paralelo (calidad y seguridad, sin acceso cruzado), 2 agentes
   de verificación adversarial con contexto limpio (cada uno solo vio su eje) y consolidación con
@@ -370,22 +371,24 @@ Para evitar retrabajo, estos puntos se revisaron y se descartaron con evidencia:
 
 | Estado | Hallazgos |
 |---|---|
-| **Corregidos y con prueba de regresión** | H-02, H-03, H-04, H-05, H-07, H-08, H-09, H-10, H-11, H-12, H-20, H-21, H-22, H-31, H-46, H-48 |
-| **Pendientes críticos/altos** | H-01 (IA, parcial: datasource de solo lectura cableado) |
+| **Corregidos y con prueba de regresión (servidor)** | H-02, H-03, H-04, H-05, H-07, H-08, H-09, H-10, H-11, H-12, H-20, H-21, H-31, H-46, H-48 |
+| **Pendientes críticos/altos** | H-01 (IA, parcial) y H-22 (oráculo UUID, parcial) |
 | **Descartados por regla de negocio** | H-06 (asistencia inter-sede permitida) |
 | **Aceptados temporalmente (TODO)** | H-41 (lote de asistencias) y M-01 (el PWA hace logout con 403); ver `audit/TODO.md` |
 | **Pendientes medios/bajos** | H-13 a H-19, H-23 a H-30, H-32 a H-45, H-47, H-49 a H-51 |
 
-- Suite actual: **106 tests, 102 ejecutados, 4 saltados, 0 fallos**. Saltan 3 IT por Docker apagado y
-  `ApplicationContextIT`.
+- Suite actual: **135 tests, 131 ejecutados, 4 saltados, 0 fallos** (25 suites). Saltan 3 IT por Docker
+  apagado y `ApplicationContextIT`.
 - Las regresiones de H-02, H-03, H-04, H-05, H-07, H-08, H-09, H-10, H-11, H-12, H-20, H-21, H-22,
   H-31 y H-48 se comprobaron con mutaciones: revertir cada fix hace fallar su prueba.
 - H-03 valida la sede del integrante y del maestro en `progress`/`updateProgress`.
 - H-04/H-05/H-21 impiden que un no-admin conceda permisos que no tiene, gestione cuentas/roles con
   más privilegios o mueva usuarios de sede; el cambio de contraseña revoca refresh tokens.
-- H-10/H-11/H-12 normalizan cuerpos nulos y devuelven 400/401/403 en vez de 500/401.
-- H-20 limita `update`/`delete` de sedes a la propia sede para no-admin; H-22 mueve la comprobación
-  de sede antes del mapper de integrantes, cerrando la fuga del nombre entre sedes.
+- H-10/H-12 normalizan cuerpos nulos y el filtro JWT. H-11 queda corregido en servidor
+  (403/400/405/413/415 y `getAllErrors`); el 403 sigue provocando `logout()` en el PWA precompilado
+  (M-01, aceptado).
+- H-20 limita `update`/`delete` de sedes a la propia sede para no-admin; H-22 cierra la fuga del
+  nombre, pero el oráculo UUID 404 vs 409 sigue abierto (M-03 residual).
 - H-01 parcial: `SqlExecutor` usa un `JdbcTemplate` dedicado (`aiJdbcTemplate`) contra el rol
   `peces_ai_readonly`, con `maxRows=1000` y `queryTimeout=10`. Sigue abierto porque el rol conserva
   `SELECT` sobre todo `public`; faltan las vistas `ai_read`, el filtrado por sede y el validador SQL.
@@ -393,8 +396,12 @@ Para evitar retrabajo, estos puntos se revisaron y se descartaron con evidencia:
   0 REFUTADO. Ver `audit/verificacion-implementaciones.md`. Antes de fusionar: M-01 (el PWA hace
   `logout()` ante cualquier 403), M-02 (fuga de nombre en bautismos), M-05 (refresh tokens en cambio
   self-service), M-04 (500 residuales) y H-01.
+- **Corrección post-auditoría (2026-10-24)**: M-02, M-04, M-05, M-08, M-11, M-12, M-13, M-14, M-15,
+  M-16, M-17, M-19, M-23 y M-24 corregidos con test de regresión; M-03 parcial (datos cerrados,
+  oráculo UUID residual). Siguen abiertos H-01/M-07/M-22, M-01 (bundle del PWA), M-06/M-09/M-10/M-18/
+  M-21 y el residual de M-03. Ver `audit/fixes-m02-m24.md` y `audit/TODO.md`.
 - Las IT contra PostgreSQL (`AttendanceExportIT`, `ApplicationContextIT`) quedan pendientes de
-  ejecutarse en CI con Docker.
+  ejecutarse en un entorno con Docker; hoy no hay CI en el repositorio.
 
 Todo el trabajo está commiteado en la rama; no se ha hecho push.
 
@@ -409,6 +416,9 @@ Todo el trabajo está commiteado en la rama; no se ha hecho push.
 | `audit/borrador-seguridad.md` | 22 hallazgos S + anexo de 69 endpoints |
 | `audit/verificacion-calidad.md` | 22 CONFIRMADO / 2 PARCIAL + 7 nuevos (VQ) |
 | `audit/verificacion-seguridad.md` | 20 CONFIRMADO / 2 PARCIAL + 5 nuevos (VS) + cobertura reconstruida |
+| `audit/verificacion-implementaciones.md` | Meta-auditoría de las implementaciones (M-01..M-24) |
+| `audit/fixes-m02-m24.md` | Corrección post-auditoría de M-02 a M-24 |
 | `audit/INFORME-FINAL.md` | Este documento |
 
-Ninguno de estos archivos está commiteado todavía.
+Los artefactos de auditoría están commiteados en la rama desde `3b18ce2` (`git ls-files audit/`
+lista 23 archivos).

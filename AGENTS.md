@@ -8,7 +8,8 @@ Spring Boot 3.5.9 / Java 21 REST API with a prebuilt Angular PWA embedded in the
 .\gradlew.bat bootRun          # API on :8080
 .\gradlew.bat compileJava      # fastest compile check
 .\gradlew.bat build            # compile + test + bootJar
-.\gradlew.bat test --tests "org.icc.pecesatierra.PecesATierraApplicationTests"
+.\gradlew.bat test             # full suite (unit + web + integration)
+.\gradlew.bat test --tests "org.icc.pecesatierra.unit.user.*"   # focused run
 ```
 
 No linter, formatter, type checker, CI, or codegen step is configured. Compile + test are the verification steps. `build/`, `bin/`, `.gradle/` are artifacts; never edit them.
@@ -53,4 +54,9 @@ No linter, formatter, type checker, CI, or codegen step is configured. Compile +
 
 ## Testing reality
 
-There is only `contextLoads`; no unit, integration, fixture, or Testcontainers setup. Verify behavior through `compileJava`, a manual `bootRun` against a populated database, or by adding focused tests.
+The suite has 25 classes: unit tests under `src/test/java/.../unit`, MockMvc/security tests under
+`.../web`, and Testcontainers integration tests (`ApplicationContextIT`, `AttendanceExportIT`).
+`.\gradlew.bat test` runs everything; the 4 integration tests are skipped when Docker is absent
+(`@Testcontainers(disabledWithoutDocker = true)`). There is no JaCoCo coverage, no CI pipeline and no
+linter. Verify behaviour with `compileJava`, `test`, or a manual `bootRun` against a populated
+database. Behaviour changes need a regression test in the same commit.

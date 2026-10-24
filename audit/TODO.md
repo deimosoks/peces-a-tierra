@@ -78,3 +78,37 @@ Runbook con el SQL: `audit/scripts/neon-ai-readonly.sql`.
 - **Riesgo aceptado**: logout inesperado y pérdida de trabajo en el cliente; no es un bypass de
   seguridad.
 - **Disparador**: rebuild del frontend Angular o cambio del contrato de errores.
+
+## Pendientes del bloque M-02..M-24 (2026-10-24)
+
+Los IDs M-02 a M-24 se corrigieron en `audit/fixes-m02-m24.md` salvo los siguientes, que quedan
+abiertos por decisión de alcance o por no ser verificables en esta máquina:
+
+- **M-03 residual — oráculo de existencia de UUID (404 vs 409)**: los oráculos de datos
+  (CC, asistencias, maestro) están cerrados, pero un no-admin aún distingue un recurso inexistente
+  (404) de uno de otra sede (409) en `MemberService.update/delete/updateActive`,
+  `UserService.create` y `BaptismService.create/invalid`. Cerrarlo exige devolver 404 también para
+  recursos de otra sede, un cambio de contrato 409→404; no se aplicó. Riesgo bajo/medio de
+  enumeración. Disparador: endurecer anti-enumeración o cambiar el contrato.
+- **M-06 — pool/timeout del datasource de IA**: no se implementó. Un `HikariDataSource` interno
+  cambia el ciclo de vida de la conexión de IA y no hay entorno con Neon para probar el fallo rápido;
+  el driver PostgreSQL ya aplica `connectTimeout=10 s`. Disparador: subida de tráfico del endpoint o
+  incidente de agotamiento de hilos.
+- **M-07 — rol de IA en Neon**: **NO VERIFICABLE** sin acceso a Neon. Sigue el runbook
+  `audit/scripts/neon-ai-readonly.sql` y el riesgo aceptado de H-01.
+- **M-09 — mensaje accionable si faltan `AI_DB_USER`/`AI_DB_PASS`**: no se implementó. Hoy el arranque
+  falla con el placeholder sin resolver, que ya es fail-closed y está documentado en `AGENTS.md`.
+  Queda como nota de despliegue.
+- **M-10 — bean explícito del `JdbcTemplate` principal**: no se implementó. `SqlExecutor` usa
+  `@Qualifier("aiJdbcTemplate")` y hoy no hay ningún consumidor de `JdbcTemplate` por tipo; añadir el
+  bean obliga a construir el `JdbcTemplate` principal a mano y retira la autoconfiguración.
+- **M-18 — matriz completa de 69 endpoints**: no se completó. Requiere parametrizar las 69 filas del
+  CSV con permiso esperado y un usuario que solo tenga ese permiso; es un cambio grande y separado del
+  resto. La matriz actual cubre 4/69 y `PreAuthorizeSpelTest` sigue usando un superusuario.
+- **M-21 — `Clock` en `DateTimeUtils`**: no se implementó. El test actual es determinista salvo por la
+  tolerancia de 1 s; inyectar `Clock` obliga a tocar el constructor usado por todos los specs.
+- **M-22 / H-01**: fuera de alcance por instrucción explícita (pertenece a H-01: vistas `ai_read`,
+  RLS, validador SQL y `new User()`).
+
+M-01 (PWA y 403) sigue en la sección anterior: el bloque M-02..M-24 no tocó el bundle ni el contrato
+de 403.
