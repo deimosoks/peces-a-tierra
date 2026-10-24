@@ -389,6 +389,10 @@ Para evitar retrabajo, estos puntos se revisaron y se descartaron con evidencia:
 - H-01 parcial: `SqlExecutor` usa un `JdbcTemplate` dedicado (`aiJdbcTemplate`) contra el rol
   `peces_ai_readonly`, con `maxRows=1000` y `queryTimeout=10`. Sigue abierto porque el rol conserva
   `SELECT` sobre todo `public`; faltan las vistas `ai_read`, el filtrado por sede y el validador SQL.
+- **Auditoría de implementaciones (2026-10-24)**: 14 CONFIRMADO, 3 PARCIAL (H-01, H-11, H-22),
+  0 REFUTADO. Ver `audit/verificacion-implementaciones.md`. Antes de fusionar: M-01 (el PWA hace
+  `logout()` ante cualquier 403), M-02 (fuga de nombre en bautismos), M-05 (refresh tokens en cambio
+  self-service), M-04 (500 residuales) y H-01.
 - Las IT contra PostgreSQL (`AttendanceExportIT`, `ApplicationContextIT`) quedan pendientes de
   ejecutarse en CI con Docker.
 
