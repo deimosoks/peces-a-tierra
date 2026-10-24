@@ -366,28 +366,30 @@ Para evitar retrabajo, estos puntos se revisaron y se descartaron con evidencia:
 | H-50 | S-21 |
 | H-51 | S-22 |
 
-## Estado de implementación (actualizado 2026-10-23)
+## Estado de implementación (actualizado 2026-10-24)
 
 | Estado | Hallazgos |
 |---|---|
-| **Corregidos y con prueba de regresión** | H-02, H-03, H-07, H-08, H-09, H-31, H-46, H-48 |
-| **Pendientes críticos/altos** | H-01 (IA), H-04, H-05 |
+| **Corregidos y con prueba de regresión** | H-02, H-03, H-04, H-05, H-07, H-08, H-09, H-10, H-11, H-12, H-20, H-21, H-22, H-31, H-46, H-48 |
+| **Pendientes críticos/altos** | H-01 (IA) |
 | **Descartados por regla de negocio** | H-06 (asistencia inter-sede permitida) |
 | **Aceptados temporalmente (TODO)** | H-41 (el lote debe llevar un solo `serviceEventId`; ver `audit/TODO.md`) |
-| **Pendientes medios/bajos** | H-10 a H-30, H-32 a H-45, H-47, H-49 a H-51 |
+| **Pendientes medios/bajos** | H-13 a H-19, H-23 a H-30, H-32 a H-45, H-47, H-49 a H-51 |
 
-- Suite actual: **47 tests, 42 ejecutados, 5 saltados, 0 fallos**. Saltan 3 IT por Docker apagado,
-  `ApplicationContextIT` y el caso 403 de H-11.
-- Las regresiones de H-02, H-03, H-07, H-08, H-09, H-31 y H-48 se comprobaron con mutaciones:
-  revertir cada fix hace fallar su prueba.
-- H-03 ahora valida la sede del integrante y del maestro en `progress` y `updateProgress`, y el
-  controller pasa el `User` autenticado. `POST/PUT /api/discipulado/progress` devuelven 409 cuando
-  corresponde (antes 200 con escritura cruzada).
+- Suite actual: **101 tests, 97 ejecutados, 4 saltados, 0 fallos**. Saltan 3 IT por Docker apagado y
+  `ApplicationContextIT`.
+- Las regresiones de H-02, H-03, H-04, H-05, H-07, H-08, H-09, H-10, H-11, H-12, H-20, H-21, H-22,
+  H-31 y H-48 se comprobaron con mutaciones: revertir cada fix hace fallar su prueba.
+- H-03 valida la sede del integrante y del maestro en `progress`/`updateProgress`.
+- H-04/H-05/H-21 impiden que un no-admin conceda permisos que no tiene, gestione cuentas/roles con
+  más privilegios o mueva usuarios de sede; el cambio de contraseña revoca refresh tokens.
+- H-10/H-11/H-12 normalizan cuerpos nulos y devuelven 400/401/403 en vez de 500/401.
+- H-20 limita `update`/`delete` de sedes a la propia sede para no-admin; H-22 mueve la comprobación
+  de sede antes del mapper de integrantes, cerrando la fuga del nombre entre sedes.
 - Las IT contra PostgreSQL (`AttendanceExportIT`, `ApplicationContextIT`) quedan pendientes de
   ejecutarse en CI con Docker.
 
-Ninguno de estos archivos ni los cambios de código están commiteados todavía; la rama contiene todo
-el trabajo en el árbol de trabajo.
+Todo el trabajo está commiteado en la rama; no se ha hecho push.
 
 ## Anexo B — Artefactos
 
