@@ -33,3 +33,26 @@ técnica y deben retomarse cuando se cumpla su disparador.
   descuadrar reportes/dashboard. No es una fuga entre sedes; es integridad de datos.
 - **Disparadores para retomarlo**: rebuild del frontend Angular, aparición de un cliente API
   distinto de la PWA, o soporte de selección multi-evento.
+
+## H-01 — Rol de base de datos de solo lectura para el endpoint de IA
+
+- **Estado**: acordado el **2026-10-24**. El rol se crea en Neon **por SQL**, nunca con el botón
+  "Add role" de la consola: los roles creados desde consola/CLI/API reciben membresía en
+  `neon_superuser` (`CREATEDB`, `CREATEROLE`, `BYPASSRLS`, `pg_read_all_data`/`pg_write_all_data`).
+- **Nombre**: `peces_ai_readonly`.
+- **Acceso temporal**: `SELECT` sobre todas las tablas de `public` más `ALTER DEFAULT PRIVILEGES`,
+  para no bloquear el trabajo. Es un riesgo aceptado y explícito.
+- **Riesgo aceptado**: mientras el rol tenga `SELECT` sobre `public`, un SQL generado por el LLM
+  puede leer `users.password_hash`, `refresh_token` y PII de todas las sedes. El rol limita la
+  escritura, no la confidencialidad. **H-01 sigue abierto.**
+- **TODO**:
+  1. Crear el esquema `ai_read` con vistas que excluyan columnas sensibles y PII.
+  2. Revocar `SELECT` sobre `public`; dejar `USAGE` + `SELECT` solo sobre `ai_read`.
+  3. Configurar la conexión de IA con `currentSchema=ai_read`.
+  4. Usar un `DataSource`/`JdbcTemplate` separado en `SqlExecutor`, no el datasource principal.
+  5. Añadir filtro por sede (columna `branch_id` en las vistas + `SET LOCAL app.branch_id`, o RLS).
+  6. Rotar la contraseña, guardarla en el gestor de secretos y no commitearla.
+  7. Verificar con `information_schema.role_table_grants` que no puede leer `users`/`refresh_token`.
+  8. Añadir una prueba de integración que espere `permission denied` al consultar `password_hash`.
+
+Runbook con el SQL: `audit/scripts/neon-ai-readonly.sql`.
