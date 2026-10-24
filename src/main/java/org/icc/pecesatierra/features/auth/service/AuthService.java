@@ -130,14 +130,20 @@ public class AuthService {
 
         user.setPasswordHash(passwordEncoder.encode(dto.getPassword()));
 
+        // Revoca los refresh tokens del usuario en la misma transaccion: si la
+        // contrasena cambia, una sesion robada no debe poder refrescar. Se hace por
+        // repositorio porque el principal esta desacoplado y la coleccion es LAZY.
+        int revokedSessions = refreshTokenRepository.deleteByUserId(user.getId());
+
         log.info("""
                         Usuario: 
                         Id: {}
                         Name: {}
-                        Cambio su contraseña.
+                        Cambio su contraseña. Sesiones revocadas: {}
                         """
                 , user.getMember().getId()
-                , user.getMember().getCompleteName());
+                , user.getMember().getCompleteName()
+                , revokedSessions);
 
         userRepository.save(user);
     }

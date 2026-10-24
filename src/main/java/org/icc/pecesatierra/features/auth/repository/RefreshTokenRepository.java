@@ -35,4 +35,12 @@ public interface RefreshTokenRepository extends JpaRepository<RefreshToken, Stri
     @Query("DELETE FROM RefreshToken r WHERE r.expiresAt < :now")
     int deleteByExpiresAtBefore(@Param("now") Date now);
 
+    /**
+     * Revoca todas las sesiones de un usuario. Se usa al cambiar la contrasena
+     * para no dejar vivo un refresh token robado.
+     */
+    @Modifying
+    @Query("DELETE FROM RefreshToken r WHERE r.user.id = :userId")
+    int deleteByUserId(@Param("userId") String userId);
+
 }
