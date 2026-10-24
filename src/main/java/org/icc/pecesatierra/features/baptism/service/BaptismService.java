@@ -51,7 +51,7 @@ public class BaptismService {
             throw new MemberAlreadyHasRegisteredBaptismActiveException(member.getCompleteName());
         }
 
-        if (!user.hasAuthority("ADMINISTRATOR") && !member.getBranch().equals(user.getMember().getBranch())) {
+        if (!user.hasAuthority("ADMINISTRATOR") && !member.getBranch().getId().equals(user.getMember().getBranch().getId())) {
             log.warn("Usuario {} intento registrar un bautismo con el integrante {} que esta fuera de su sede.", user.getMember().getId(), member.getId());
             throw new CannotRegisterBaptismWithMemberOutsideYourBranch();
         }
@@ -59,13 +59,13 @@ public class BaptismService {
         Baptism baptism = Baptism.builder()
                 .baptizedMember(member)
                 .date(baptismRequestDto.getDate())
-                .neighborhood(baptismRequestDto.getNote())
+                .note(baptismRequestDto.getNote())
                 .createdAt(dateTimeUtils.nowUTC())
                 .registeredBy(user.getMember())
                 .address(baptismRequestDto.getAddress())
                 .neighborhood(baptismRequestDto.getNeighborhood())
                 .city(baptismRequestDto.getCity())
-                .municipality(baptismRequestDto.getCity())
+                .municipality(baptismRequestDto.getMunicipality())
                 .district(baptismRequestDto.getDistrict())
                 .postalCode(baptismRequestDto.getPostalCode())
                 .latitude(baptismRequestDto.getLatitude())
@@ -84,7 +84,7 @@ public class BaptismService {
         Baptism baptism = baptismRepository.findById(baptismInvalidRequestDto.getBaptismId())
                 .orElseThrow(BaptismNotFoundException::new);
 
-        if (!user.hasAuthority(AppPermission.ADMINISTRATOR.name()) && !baptism.getBaptizedMember().getBranch().equals(user.getMember().getBranch())) {
+        if (!user.hasAuthority(AppPermission.ADMINISTRATOR.name()) && !baptism.getBaptizedMember().getBranch().getId().equals(user.getMember().getBranch().getId())) {
             log.warn("Usuario {} intento invalidar un bautismo al integrante {} el cual esta fuera de su sede.", user.getMember().getId(), baptism.getBaptizedMember().getId());
             throw new CannotCreateMembersOutsideYourBranch();
         }
