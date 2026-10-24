@@ -13,11 +13,11 @@ import org.icc.pecesatierra.features.user.controller.UserController;
 import org.icc.pecesatierra.features.user.service.UserService;
 import org.icc.pecesatierra.support.TestFixtures;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -26,13 +26,11 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
 
 import java.util.Arrays;
 import java.util.List;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -46,6 +44,7 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
@@ -53,9 +52,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * de dominio real, no {@code @WithMockUser}, porque los controllers reciben
  * {@code @AuthenticationPrincipal User}.
  *
- * <p>Los casos sin permiso aceptan 401 o 403 mientras H-11 siga mapeando
- * {@code AuthorizationDeniedException} a 401; lo importante es que la operacion
- * no llegue al servicio.</p>
+ * <p>Tras H-11 las denegaciones por permiso o por cuenta inactiva responden 403;
+ * el 401 queda reservado a la falta de autenticacion.</p>
  */
 @WebMvcTest
 @ContextConfiguration(classes = {
@@ -166,11 +164,20 @@ class EndpointSecurityMatrixTest {
     }
 
     @Test
-    @Disabled("H-11 pendiente: GlobalHandlerException mapea AuthorizationDeniedException a 401, no a 403")
     void deniedRequestShouldReturn403_H11() throws Exception {
-        mockMvc.perform(delete("/api/users/user-2")
-                        .with(authentication(authFor("VIEW_USER_PANEL"))))
-                .andExpect(status().isForbidden());
+        assertDenied(mockMvc.perform(delete("/api/users/user-2")
+                .with(authentication(authFor("VIEW_USER_PANEL")))));
+
+        verify(userService, never()).delete(any(User.class), anyString());
+    }
+
+    @Test
+    void requestWithoutAuthenticationReturns401() throws Exception {
+        mockMvc.perform(get("/api/services")
+                        .param("onlyActive", "true"))
+                .andExpect(status().isUnauthorized());
+
+        verify(serviceService, never()).findAll(anyBoolean());
     }
 
     @Test
@@ -188,14 +195,15 @@ class EndpointSecurityMatrixTest {
     }
 
     /**
-     * H-11 sigue pendiente: {@code GlobalHandlerException} responde 401 en vez de
-     * 403. Se aceptan ambos y se exige que la respuesta sea de denegacion.
+     * Toda denegacion por permiso o por cuenta inactiva debe ser 403, con el
+     * cuerpo de error del contrato. El 401 se reserva a peticiones sin autenticar.
      */
     private void assertDenied(ResultActions result) throws Exception {
-        MvcResult mvcResult = result.andReturn();
-        int status = mvcResult.getResponse().getStatus();
-        assertThat(status)
-                .as("se esperaba denegacion (401 por H-11 o 403)")
-                .isIn(HttpStatus.UNAUTHORIZED.value(), HttpStatus.FORBIDDEN.value());
+        result.andExpect(status().isForbidden())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.status").value(HttpStatus.FORBIDDEN.value()))
+                .andExpect(jsonPath("$.error").value(HttpStatus.FORBIDDEN.getReasonPhrase()))
+                .andExpect(jsonPath("$.message").value("No tiene permisos para realizar esta acción."))
+                .andExpect(jsonPath("$.path").isNotEmpty());
     }
 }

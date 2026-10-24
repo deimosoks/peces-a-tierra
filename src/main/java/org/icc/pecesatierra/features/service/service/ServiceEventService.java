@@ -135,6 +135,8 @@ public class ServiceEventService {
             User user
     ) {
 
+        dto = dto == null ? new ServiceEventsFilterRequestDto() : dto;
+
         if (dto.getStartDate() == null || dto.getEndDate() == null) {
             throw new InvalidStartAndEndDatesException();
         }

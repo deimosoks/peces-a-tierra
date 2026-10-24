@@ -122,6 +122,8 @@ public class MemberService {
     @Transactional(readOnly = true)
     public PagesResponseDto<MemberResponseDto> search(int page, MemberFilterRequestDto dto, User user) {
 
+        dto = dto == null ? new MemberFilterRequestDto() : dto;
+
         Specification<Member> spec = memberSpecification.build(dto, user);
 
         Sort sort = Sort.by("completeName").ascending();

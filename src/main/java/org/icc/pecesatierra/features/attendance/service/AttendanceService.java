@@ -166,6 +166,8 @@ public class AttendanceService{
     @Transactional(readOnly = true)
     public PagesResponseDto<AttendanceResponseDto> search(int page, AttendanceFiltersRequestDto dto, User user) {
 
+        dto = dto == null ? new AttendanceFiltersRequestDto() : dto;
+
         Specification<Attendance> spec = attendanceSpecification.build(dto, user);
 
         Sort sort = Sort.by("serviceEvent.startDateTime").ascending();

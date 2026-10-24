@@ -190,6 +190,8 @@ public class UserService {
     @Transactional(readOnly = true)
     public PagesResponseDto<UserResponseDto> search(int page, UserFilterRequestDto dto, User user) {
 
+        dto = dto == null ? new UserFilterRequestDto() : dto;
+
         Specification<User> spec = userSpecification.build(dto, user);
 
         Sort sort = Sort.by("username").ascending();
