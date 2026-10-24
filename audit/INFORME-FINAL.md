@@ -402,6 +402,9 @@ Para evitar retrabajo, estos puntos se revisaron y se descartaron con evidencia:
   M-21 y el residual de M-03. Ver `audit/fixes-m02-m24.md` y `audit/TODO.md`.
 - Las IT contra PostgreSQL (`AttendanceExportIT`, `ApplicationContextIT`) quedan pendientes de
   ejecutarse en un entorno con Docker; hoy no hay CI en el repositorio.
+- **Estado al cierre del 2026-10-24**: 15 hallazgos H corregidos en servidor, H-01 y H-22 parciales,
+  M-01 y H-41 aceptados, 135 tests verdes (131 ejecutados, 4 saltados). El código y la auditoría están
+  commiteados; no se ha hecho push.
 
 Todo el trabajo está commiteado en la rama; no se ha hecho push.
 

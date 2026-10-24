@@ -1,3 +1,6 @@
+<!-- estado-doc -->
+> **Estado actual (2026-10-24).** La suite tiene 25 clases y 135 tests (131 ejecutados, 4 saltados sin Docker, 0 fallos). T-01..T-05 y los gaps M-08..M-14 ya están cerrados; el estado vigente está en `audit/INFORME-FINAL.md` y `audit/TODO.md`.
+
 # Implementación de pruebas — Fase 0
 
 **Rama:** `audit/arquitectura-y-seguridad` · **Fecha:** 2026-10-23 ·

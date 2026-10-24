@@ -1,3 +1,6 @@
+<!-- estado-doc -->
+> **Actualización post-corrección (2026-10-24).** Después de este informe se corrigieron M-02..M-24. H-11 quedó cerrado en servidor (M-04/M-19); M-03 es parcial (oráculo UUID 404/409); H-01 y M-01 siguen abiertos. Ver `audit/fixes-m02-m24.md` y `audit/TODO.md`.
+
 # Auditoría de implementaciones — calidad, correctitud y pruebas
 
 - **Rama**: `audit/arquitectura-y-seguridad` · **Fecha**: 2026-10-24

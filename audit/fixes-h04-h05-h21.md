@@ -1,3 +1,6 @@
+<!-- estado-doc -->
+> **Estado posterior (2026-10-24).** Este informe es histórico. La suite final tiene 135 tests (131 ejecutados, 4 saltados, 0 fallos); los pendientes están en `audit/TODO.md` y el estado consolidado en `audit/INFORME-FINAL.md`.
+
 # Corrección H-04, H-05 y H-21 — privilegios de usuario y rol
 
 - **Rama**: `audit/arquitectura-y-seguridad`

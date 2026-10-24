@@ -1,3 +1,6 @@
+<!-- estado-doc -->
+> **Documento histórico (2026-10-24).** Refleja el estado en el momento de su creación; varios hallazgos ya fueron corregidos. El estado vigente está en `audit/INFORME-FINAL.md`, `audit/TODO.md` y `audit/fixes-m02-m24.md`.
+
 # Borrador de auditoría — Arquitectura y calidad (Q)
 
 **Cobertura**: inventario de los 243 archivos Java y de las 16 features (`ai`, `attendance`, `auth`, `baptism`, `branch`, `category`, `dashboard`, `discipulado`, `health`, `log`, `member`, `report`, `role`, `service`, `type`, `user`); 19/19 controllers y 7/7 Specifications revisados; lectura completa de 106 archivos Java (44 % aproximado del total), más `build.gradle`, `application.properties`, `logback.xml`, `Dockerfile`, wrapper y los bundles `main-2X72WS5U.js`, `chunk-NCMHTITX.js` y `chunk-CJDLSKNK.js` de la PWA. `compileJava` ejecutado con JDK 21 (BUILD SUCCESSFUL).

@@ -61,14 +61,24 @@ El proyecto sigue una arquitectura en capas limpia y escalable:
     cd peces-a-tierra
     ```
 
-2.  **Configurar la Base de Datos:**
-    Asegúrate de crear una base de datos en PostgreSQL y configurar las credenciales en `src/main/resources/application.properties` (o mediante variables de entorno):
+2.  **Configurar el entorno:**
+    La aplicación no trae valores por defecto para las credenciales. Definí al menos:
 
-    ```properties
-    spring.datasource.url=jdbc:postgresql://localhost:5432/peces_a_tierra_db
-    spring.datasource.username=tu_usuario
-    spring.datasource.password=tu_contraseña
+    ```powershell
+    $env:DB_URL="jdbc:postgresql://localhost:5432/peces_a_tierra_db"
+    $env:DB_USER="tu_usuario"
+    $env:DB_PASS="tu_contraseña"
+    $env:JWT_SECRET="una-clave-larga"
+    $env:CLOUDINARY_CLOUD_NAME="..."
+    $env:CLOUDINARY_API_KEY="..."
+    $env:CLOUDINARY_API_SECRET="..."
+    $env:GEMINI_API_KEY="..."
+    $env:AI_DB_USER="peces_ai_readonly"
+    $env:AI_DB_PASS="..."
     ```
+
+    `AI_DB_URL` es opcional: si no se define, el endpoint de IA usa `DB_URL` con el rol de solo
+    lectura. Para pruebas: `.\gradlew.bat test` con JDK 21; las IT se saltan si no hay Docker.
 
 3.  **Ejecutar la aplicación:**
     ```bash

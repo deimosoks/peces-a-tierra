@@ -2,6 +2,11 @@
 
 **Rama:** `audit/arquitectura-y-seguridad` · **Fecha:** 2026-10-23 · **Naturaleza:** diseño; este documento no modifica producción, `build.gradle` ni los informes de auditoría.
 
+> **Estado de ejecución al 2026-10-24:** Fase 0 completada (25 suites, 135 tests); Fase 1 parcial
+> (fixes de seguridad aplicados, matriz 4/69 pendiente, M-18); Fase 2 no entregada (sin IT de
+> specs/repos ni `Clock`, M-21); Fase 3 no entregada (sin tests del validador de IA, sin CI/JaCoCo).
+> El estado vigente está en `audit/INFORME-FINAL.md` y `audit/TODO.md`.
+
 ## 0. Punto de partida
 
 - 19 controllers de features (20 archivos `*Controller`, incluido el `BaseController` abstracto), **69 handlers** y **65 `@PreAuthorize`**. Sin anotación quedan `POST /api/auth/login`, `POST /api/auth/logout`, `POST /api/auth/changge-password` y `GET /api/health`; `POST /api/auth/refresh` usa una expresión de bean (`@securityService.isActive(#refreshTokenRequestDto)`).

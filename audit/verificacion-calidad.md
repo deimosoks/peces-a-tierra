@@ -1,3 +1,6 @@
+<!-- estado-doc -->
+> **Documento histórico (2026-10-24).** Refleja el estado en el momento de su creación; varios hallazgos ya fueron corregidos. El estado vigente está en `audit/INFORME-FINAL.md`, `audit/TODO.md` y `audit/fixes-m02-m24.md`.
+
 # Verificación — eje de calidad
 
 ## Veredicto global

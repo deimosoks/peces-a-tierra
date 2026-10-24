@@ -8,6 +8,10 @@
 - **Método**: dos auditores en paralelo (seguridad y calidad/pruebas) y un tercer auditor que revisa
   los dos informes. Ningún auditor modifica código; cada uno escribe solo su informe en `audit/`.
 
+> **Estado post-corrección (2026-10-24):** M-02..M-24 corregidos salvo los pendientes de
+> `audit/TODO.md`; H-01 y M-01 abiertos. Suite: 135 tests (131 ejecutados, 4 saltados, 0 fallos).
+> Ver `audit/fixes-m02-m24.md` y `audit/INFORME-FINAL.md`.
+
 ## Alcance funcional
 
 Hallazgos implementados y sujetos a revisión:

@@ -1,3 +1,6 @@
+<!-- estado-doc -->
+> **Documento histórico (2026-10-24).** Refleja el estado en el momento de su creación; varios hallazgos ya fueron corregidos. El estado vigente está en `audit/INFORME-FINAL.md`, `audit/TODO.md` y `audit/fixes-m02-m24.md`.
+
 # Borrador de auditoría — Seguridad
 
 > **Actualización 2026-10-24**: S-06 (H-06) queda **descartado por regla de negocio**: un integrante
