@@ -115,18 +115,21 @@ public class UserService {
     @Transactional
     public UserResponseDto create(UserRequestDto userRequestDto, User givenBy) {
 
+        // El integrante se carga y se comprueba su sede antes de las unicidades:
+        // asi un no-admin no puede saber si un integrante ajeno ya tiene cuenta.
+        Member member = memberRepository.findById(userRequestDto.getMemberId())
+                .orElseThrow(MemberNotFoundException::new);
+
+        if (!isAdministrator(givenBy)
+                && !member.getBranch().getId().equals(givenBy.getMember().getBranch().getId())) {
+            throw new CannotCreateUsersWithMembersOutsideYourBranch();
+        }
+
         if (userRepository.existsByMemberId(userRequestDto.getMemberId()))
             throw new MemberAlreadyRegisteredWithUserException();
 
         if (userRepository.findByUsername(userRequestDto.getUsername()).isPresent())
             throw new UsernameAlreadyRegister(userRequestDto.getUsername());
-
-        Member member = memberRepository.findById(userRequestDto.getMemberId())
-                .orElseThrow(MemberNotFoundException::new);
-
-        if (!givenBy.hasAuthority(AppPermission.ADMINISTRATOR.name()) && !member.getBranch().getId().equals(givenBy.getMember().getBranch().getId())) {
-            throw new CannotCreateUsersWithMembersOutsideYourBranch();
-        }
 
         List<Role> roles = loadRoles(userRequestDto.getRolesId());
 
@@ -246,8 +249,11 @@ public class UserService {
         validateCanManageUser(givenBy, user);
 
         // La sede del miembro nuevo tambien debe pertenecer al actor; antes solo se
-        // validaba la sede actual del usuario objetivo.
-        validateMemberBranch(givenBy, member);
+        // validaba la sede actual del usuario objetivo. Un memberId nulo no cambia
+        // el integrante y no debe validarse (M-24).
+        if (member != null) {
+            validateMemberBranch(givenBy, member);
+        }
 
         List<Role> roles = loadRoles(userRequestDto.getRolesId());
 
@@ -344,11 +350,14 @@ public class UserService {
             throw new CannotDeactivateYourselfUserException();
         }
 
-        validateCanManageUser(user, userToUpdate);
-
-        if (!user.hasAuthority(AppPermission.ADMINISTRATOR.name()) && !user.getMember().getBranch().getId().equals(userToUpdate.getMember().getBranch().getId())) {
+        // La sede se comprueba antes que los privilegios: un objetivo de otra sede
+        // responde 409 y no revela si su cuenta tiene permisos que el actor no tiene.
+        if (!isAdministrator(user)
+                && !user.getMember().getBranch().getId().equals(userToUpdate.getMember().getBranch().getId())) {
             throw new CannotUpdateUserWithMemberOutSideYourBranchException();
         }
+
+        validateCanManageUser(user, userToUpdate);
 
         boolean beforeActive = userToUpdate.isActive();
 
@@ -377,11 +386,14 @@ public class UserService {
         User userToDelete = userRepository.findById(userId)
                 .orElseThrow(UserNotFoundException::new);
 
-        validateCanManageUser(user, userToDelete);
-
-        if (!user.hasAuthority(AppPermission.ADMINISTRATOR.name()) && !user.getMember().getBranch().getId().equals(userToDelete.getMember().getBranch().getId())) {
+        // La sede se comprueba antes que los privilegios: un objetivo de otra sede
+        // responde 409 y no revela si su cuenta tiene permisos que el actor no tiene.
+        if (!isAdministrator(user)
+                && !user.getMember().getBranch().getId().equals(userToDelete.getMember().getBranch().getId())) {
             throw new CannotUpdateUserWithMemberOutSideYourBranchException();
         }
+
+        validateCanManageUser(user, userToDelete);
 
         if (user.getId().equals(userToDelete.getId())) {
             throw new CannotDeactivateYourselfUserException();

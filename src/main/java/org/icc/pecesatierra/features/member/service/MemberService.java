@@ -8,8 +8,8 @@ import org.icc.pecesatierra.features.member.dtos.MemberRequestDto;
 import org.icc.pecesatierra.features.member.dtos.MemberResponseDto;
 import org.icc.pecesatierra.features.member.Member;
 import org.icc.pecesatierra.features.member.exceptions.AlreadyExistsMemberWithCc;
-import org.icc.pecesatierra.features.member.exceptions.CannotDeleteMemberOutSideYourBranchException;
 import org.icc.pecesatierra.features.member.exceptions.CannotDeleteMemberWithRecords;
+import org.icc.pecesatierra.features.member.exceptions.CannotUpdateMemberOutsideYourBranchException;
 import org.icc.pecesatierra.features.member.exceptions.MemberNotFoundException;
 import org.icc.pecesatierra.features.user.User;
 import org.icc.pecesatierra.features.category.repository.mapper.MemberMapper;
@@ -89,6 +89,10 @@ public class MemberService {
 
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(MemberNotFoundException::new);
+
+        // La sede se comprueba antes de la unicidad de CC y antes de subir la foto:
+        // un no-admin no debe distinguir un UUID/CC ajeno de uno inexistente.
+        assertCanManageMember(user, member);
 
         if (memberRequestDto.getCc() != null && !memberRequestDto.getCc().equals(member.getCc()) && memberRepository.existsByCc(memberRequestDto.getCc())) {
             log.warn("Usuario {} intento actualizar integrante {} con CC {} pero ya existe.", user.getMember().getId(), memberId, memberRequestDto.getCc());
@@ -172,12 +176,12 @@ public class MemberService {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(MemberNotFoundException::new);
 
+        // La sede se comprueba antes de mirar asistencias: no se filtra si un
+        // integrante ajeno tiene registros.
+        assertCanManageMember(user, member);
+
         if (attendanceRepository.existsByMember(member))
             throw new CannotDeleteMemberWithRecords();
-
-        if (!user.hasAuthority(AppPermission.ADMINISTRATOR.name()) && !user.getMember().getBranch().getId().equals(member.getBranch().getId())) {
-            throw new CannotDeleteMemberOutSideYourBranchException();
-        }
 
         String pictureUrl = member.getPictureProfileUrl();
         String publicId = member.getPublicId();
@@ -211,9 +215,7 @@ public class MemberService {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(MemberNotFoundException::new);
 
-        if (!user.hasAuthority(AppPermission.ADMINISTRATOR.name()) && !user.getMember().getBranch().getId().equals(member.getBranch().getId())) {
-            throw new CannotDeleteMemberOutSideYourBranchException();
-        }
+        assertCanManageMember(user, member);
 
         boolean previousState = member.isActive();
         member.setActive(active);
@@ -240,6 +242,22 @@ public class MemberService {
         );
 
         return member.isActive();
+    }
+
+    /**
+     * Un no-admin solo puede operar sobre integrantes de su propia sede. Se llama
+     * inmediatamente despues de cargar el integrante y antes de cualquier otra
+     * comprobacion que pueda revelar su existencia o sus datos.
+     */
+    private void assertCanManageMember(User user, Member member) {
+        if (user.hasAuthority(AppPermission.ADMINISTRATOR.name())) {
+            return;
+        }
+
+        if (member.getBranch() == null
+                || !user.getMember().getBranch().getId().equals(member.getBranch().getId())) {
+            throw new CannotUpdateMemberOutsideYourBranchException();
+        }
     }
 
 }

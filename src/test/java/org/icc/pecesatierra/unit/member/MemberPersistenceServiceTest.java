@@ -8,7 +8,7 @@ import org.icc.pecesatierra.features.category.repository.MemberSubCategoryReposi
 import org.icc.pecesatierra.features.category.repository.mapper.MemberMapper;
 import org.icc.pecesatierra.features.member.Member;
 import org.icc.pecesatierra.features.member.dtos.MemberRequestDto;
-import org.icc.pecesatierra.features.member.exceptions.CannotCreateMembersOutsideYourBranch;
+import org.icc.pecesatierra.features.member.exceptions.CannotUpdateMemberOutsideYourBranchException;
 import org.icc.pecesatierra.features.member.exceptions.MemberNoHasCategoryForThisSubCategoryException;
 import org.icc.pecesatierra.features.member.repository.MemberRepository;
 import org.icc.pecesatierra.features.member.service.MemberPersistenceService;
@@ -138,7 +138,7 @@ class MemberPersistenceServiceTest {
 
         assertThatThrownBy(() -> memberPersistenceService.update(
                 foreignMember.getId(), request("Nombre Hackeado", "sub-incoherente"), null, operatorA()))
-                .isInstanceOfSatisfying(CannotCreateMembersOutsideYourBranch.class,
+                .isInstanceOfSatisfying(CannotUpdateMemberOutsideYourBranchException.class,
                         exception -> assertThat(exception.getStatus()).isEqualTo(HttpStatus.CONFLICT))
                 .isNotInstanceOf(MemberNoHasCategoryForThisSubCategoryException.class);
 

@@ -12,6 +12,7 @@ import org.icc.pecesatierra.features.user.User;
 import org.icc.pecesatierra.features.user.dtos.UserRequestDto;
 import org.icc.pecesatierra.features.user.dtos.UserResponseDto;
 import org.icc.pecesatierra.features.user.exceptions.CannotManageUserWithMorePrivilegesException;
+import org.icc.pecesatierra.features.user.exceptions.CannotCreateUsersWithMembersOutsideYourBranch;
 import org.icc.pecesatierra.features.user.exceptions.CannotUpdateUserWithMemberOutSideYourBranchException;
 import org.icc.pecesatierra.features.user.mapper.UserMapper;
 import org.icc.pecesatierra.features.user.repository.UserRepository;
@@ -294,6 +295,79 @@ class UserServiceTest {
 
         assertThat(target.getRefreshTokens()).hasSize(1);
         assertThat(target.getPasswordHash()).isEqualTo("not-a-real-password-hash");
+    }
+
+    @Test
+    void nonAdminCannotLearnPrivilegesOfAnAccountInAnotherBranch_M16() {
+        User actor = operator(AppPermission.UPDATE_USER.name());
+        User target = TestFixtures.user("user-admin-target", "admin-dos", memberB,
+                AppPermission.ADMINISTRATOR.name());
+
+        when(userRepository.findById(target.getId())).thenReturn(Optional.of(target));
+
+        // La sede se comprueba antes que los privilegios: 409, no 403.
+        assertThatThrownBy(() -> userService.updateActive(actor, target.getId(), false))
+                .isInstanceOfSatisfying(CannotUpdateUserWithMemberOutSideYourBranchException.class,
+                        exception -> assertThat(exception.getStatus()).isEqualTo(HttpStatus.CONFLICT));
+
+        verify(userRepository, never()).save(any(User.class));
+        assertThat(target.isActive()).isTrue();
+    }
+
+    @Test
+    void nonAdminCannotLearnPrivilegesOfAnAccountInAnotherBranchOnDelete_M16() {
+        User actor = operator(AppPermission.DELETE_USER.name());
+        User target = TestFixtures.user("user-admin-target", "admin-dos", memberB,
+                AppPermission.ADMINISTRATOR.name());
+
+        when(userRepository.findById(target.getId())).thenReturn(Optional.of(target));
+
+        assertThatThrownBy(() -> userService.delete(actor, target.getId()))
+                .isInstanceOfSatisfying(CannotUpdateUserWithMemberOutSideYourBranchException.class,
+                        exception -> assertThat(exception.getStatus()).isEqualTo(HttpStatus.CONFLICT));
+
+        verify(userRepository, never()).delete(any(User.class));
+    }
+
+    // ---------- M-23: oraculo de cuentas de integrantes ajenos ----------
+
+    @Test
+    void createForMemberOfAnotherBranchDoesNotRevealWhetherItHasAnAccount_M23() {
+        User actor = operator(AppPermission.CREATE_USER.name(), AppPermission.VIEW_MEMBER_PANEL.name());
+        when(memberRepository.findById(memberB.getId())).thenReturn(Optional.of(memberB));
+
+        assertThatThrownBy(() -> userService.create(
+                request(memberB.getId(), "nuevo-usuario", "password123", Set.of("role-view")), actor))
+                .isInstanceOfSatisfying(CannotCreateUsersWithMembersOutsideYourBranch.class,
+                        exception -> assertThat(exception.getStatus()).isEqualTo(HttpStatus.CONFLICT));
+
+        // Ni la unicidad del integrante ni la del username se consultan antes de la sede.
+        verify(userRepository, never()).existsByMemberId(any());
+        verify(userRepository, never()).findByUsername(any());
+        verify(userRepository, never()).save(any(User.class));
+    }
+
+    // ---------- M-24: memberId nulo al actualizar ----------
+
+    @Test
+    void updateWithoutMemberIdDoesNotValidateMemberBranch_M24() {
+        User actor = operator(AppPermission.UPDATE_USER.name(), AppPermission.VIEW_MEMBER_PANEL.name());
+        User target = TestFixtures.user("user-target", "usuario-destino", memberA,
+                AppPermission.VIEW_MEMBER_PANEL.name());
+        Role allowedRole = role("role-view", AppPermission.VIEW_MEMBER_PANEL);
+
+        when(userRepository.findById(target.getId())).thenReturn(Optional.of(target));
+        when(roleRepository.findById("role-view")).thenReturn(Optional.of(allowedRole));
+        when(dateTimeUtils.nowUTC()).thenReturn(TestFixtures.FIXED_NOW);
+        when(userMapper.toDto(any(User.class))).thenReturn(UserResponseDto.builder().id(target.getId()).build());
+
+        userService.update(
+                request(null, "usuario-destino-actualizado", null, Set.of("role-view")),
+                target.getId(), actor);
+
+        assertThat(target.getMember()).isSameAs(memberA);
+        assertThat(target.getUsername()).isEqualTo("usuario-destino-actualizado");
+        verify(userRepository).save(target);
     }
 
     // ---------- El administrador conserva el bypass ----------

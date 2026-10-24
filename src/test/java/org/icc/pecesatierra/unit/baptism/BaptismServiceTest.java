@@ -4,13 +4,13 @@ import org.icc.pecesatierra.features.baptism.Baptism;
 import org.icc.pecesatierra.features.baptism.dtos.BaptismInvalidRequestDto;
 import org.icc.pecesatierra.features.baptism.dtos.BaptismRequestDto;
 import org.icc.pecesatierra.features.baptism.dtos.BaptismResponseDto;
+import org.icc.pecesatierra.features.baptism.exceptions.CannotInvalidBaptismOutsideYourBranch;
 import org.icc.pecesatierra.features.baptism.exceptions.CannotRegisterBaptismWithMemberOutsideYourBranch;
 import org.icc.pecesatierra.features.baptism.mapper.BaptismMapper;
 import org.icc.pecesatierra.features.baptism.repository.BaptismRepository;
 import org.icc.pecesatierra.features.baptism.service.BaptismService;
 import org.icc.pecesatierra.features.branch.Branch;
 import org.icc.pecesatierra.features.member.Member;
-import org.icc.pecesatierra.features.member.exceptions.CannotCreateMembersOutsideYourBranch;
 import org.icc.pecesatierra.features.member.exceptions.MemberAlreadyHasRegisteredBaptismActiveException;
 import org.icc.pecesatierra.features.member.repository.MemberRepository;
 import org.icc.pecesatierra.features.user.User;
@@ -33,6 +33,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -102,8 +103,9 @@ class BaptismServiceTest {
 
     @Test
     void twoBranchInstancesWithTheSameIdAreTheSameBranch_H08() {
+        // Mismo id, nombre distinto: si la produccion comparase nombres, este test falla.
         Branch userBranch = TestFixtures.branch("branch-a", "Sede A");
-        Branch memberBranch = TestFixtures.branch("branch-a", "Sede A");
+        Branch memberBranch = TestFixtures.branch("branch-a", "Sede A - copia");
         Member baptized = TestFixtures.member("member-1", memberBranch, "Ana Perez");
         User user = TestFixtures.user("user-1", "operador-a",
                 TestFixtures.member("operator-1", userBranch, "Operador A"));
@@ -139,12 +141,37 @@ class BaptismServiceTest {
                 .build();
 
         when(memberRepository.findById(baptized.getId())).thenReturn(Optional.of(baptized));
-        when(baptismRepository.existsByBaptizedMemberAndInvalidFalse(baptized)).thenReturn(false);
 
         assertThatThrownBy(() -> baptismService.create(request, user))
                 .isInstanceOfSatisfying(CannotRegisterBaptismWithMemberOutsideYourBranch.class,
                         exception -> assertThat(exception.getStatus()).isEqualTo(HttpStatus.CONFLICT));
 
+        verify(baptismRepository, never()).save(any(Baptism.class));
+    }
+
+    @Test
+    void createForMemberOfAnotherBranchWithActiveBaptismDoesNotLeakTheName_M02() {
+        Branch branchB = TestFixtures.branch("branch-b", "Sede B");
+        Member baptized = TestFixtures.member("member-1", branchB, "Ana Perez B");
+        User user = TestFixtures.user("user-1", "operador-a",
+                TestFixtures.member("operator-1", branchA, "Operador A"));
+        BaptismRequestDto request = BaptismRequestDto.builder()
+                .memberId(baptized.getId())
+                .date(LocalDate.of(2026, 1, 15))
+                .build();
+
+        when(memberRepository.findById(baptized.getId())).thenReturn(Optional.of(baptized));
+        // El bautismo activo existe, pero un no-admin de otra sede no debe saberlo.
+        lenient().when(baptismRepository.existsByBaptizedMemberAndInvalidFalse(baptized)).thenReturn(true);
+
+        assertThatThrownBy(() -> baptismService.create(request, user))
+                .isInstanceOfSatisfying(CannotRegisterBaptismWithMemberOutsideYourBranch.class, exception -> {
+                    assertThat(exception.getStatus()).isEqualTo(HttpStatus.CONFLICT);
+                    assertThat(exception.getMessage()).doesNotContain("Ana Perez B");
+                });
+
+        // La comprobacion de sede corta antes de consultar el duplicado.
+        verify(baptismRepository, never()).existsByBaptizedMemberAndInvalidFalse(any(Member.class));
         verify(baptismRepository, never()).save(any(Baptism.class));
     }
 
@@ -183,7 +210,11 @@ class BaptismServiceTest {
 
         assertThatThrownBy(() -> baptismService.create(request, user))
                 .isInstanceOfSatisfying(MemberAlreadyHasRegisteredBaptismActiveException.class,
-                        exception -> assertThat(exception.getStatus()).isEqualTo(HttpStatus.CONFLICT));
+                        exception -> {
+                            assertThat(exception.getStatus()).isEqualTo(HttpStatus.CONFLICT);
+                            // Dentro de la misma sede el mensaje sigue siendo util.
+                            assertThat(exception.getMessage()).contains("Ana Perez");
+                        });
 
         verify(baptismRepository, never()).save(any(Baptism.class));
         verify(baptismMapper, never()).toDto(any(Baptism.class));
@@ -201,7 +232,7 @@ class BaptismServiceTest {
         when(baptismRepository.findById(baptism.getId())).thenReturn(Optional.of(baptism));
 
         assertThatThrownBy(() -> baptismService.invalid(request, user))
-                .isInstanceOfSatisfying(CannotCreateMembersOutsideYourBranch.class,
+                .isInstanceOfSatisfying(CannotInvalidBaptismOutsideYourBranch.class,
                         exception -> assertThat(exception.getStatus()).isEqualTo(HttpStatus.CONFLICT));
 
         // La rama protegida no debe mutar el bautismo antes de lanzar.
@@ -214,8 +245,9 @@ class BaptismServiceTest {
 
     @Test
     void invalidAllowsTwoBranchInstancesWithTheSameId_H08() {
+        // Mismo id, nombre distinto: si la produccion comparase nombres, este test falla.
         Branch userBranch = TestFixtures.branch("branch-a", "Sede A");
-        Branch baptismBranch = TestFixtures.branch("branch-a", "Sede A");
+        Branch baptismBranch = TestFixtures.branch("branch-a", "Sede A - copia");
         Member baptized = TestFixtures.member("member-1", baptismBranch, "Ana Perez");
         Baptism baptism = baptismOf(baptized);
         User user = TestFixtures.user("user-1", "operador-a",

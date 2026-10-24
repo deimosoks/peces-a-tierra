@@ -11,8 +11,8 @@ import org.icc.pecesatierra.features.member.Member;
 import org.icc.pecesatierra.features.member.exceptions.MemberNotFoundException;
 import org.icc.pecesatierra.features.user.User;
 import org.icc.pecesatierra.features.baptism.exceptions.BaptismNotFoundException;
+import org.icc.pecesatierra.features.baptism.exceptions.CannotInvalidBaptismOutsideYourBranch;
 import org.icc.pecesatierra.features.baptism.exceptions.CannotRegisterBaptismWithMemberOutsideYourBranch;
-import org.icc.pecesatierra.features.member.exceptions.CannotCreateMembersOutsideYourBranch;
 import org.icc.pecesatierra.features.member.exceptions.MemberAlreadyHasRegisteredBaptismActiveException;
 import org.icc.pecesatierra.features.member.exceptions.notes.NoteNotFoundException;
 import org.icc.pecesatierra.features.baptism.repository.BaptismRepository;
@@ -46,14 +46,16 @@ public class BaptismService {
         Member member = memberRepository.findById(baptismRequestDto.getMemberId())
                 .orElseThrow(MemberNotFoundException::new);
 
+        // La sede se comprueba antes que cualquier dato del integrante: un no-admin con
+        // un memberId de otra sede no debe recibir el nombre en el 409 de duplicado.
+        if (!user.hasAuthority(AppPermission.ADMINISTRATOR.name()) && !member.getBranch().getId().equals(user.getMember().getBranch().getId())) {
+            log.warn("Usuario {} intento registrar un bautismo con el integrante {} que esta fuera de su sede.", user.getMember().getId(), member.getId());
+            throw new CannotRegisterBaptismWithMemberOutsideYourBranch();
+        }
+
         if (baptismRepository.existsByBaptizedMemberAndInvalidFalse(member)) {
             log.info("Usuario {} intento registrar un bautismo al integrante {} el cual ya tiene un bautismo registrado", user.getMember().getId(), member.getId());
             throw new MemberAlreadyHasRegisteredBaptismActiveException(member.getCompleteName());
-        }
-
-        if (!user.hasAuthority("ADMINISTRATOR") && !member.getBranch().getId().equals(user.getMember().getBranch().getId())) {
-            log.warn("Usuario {} intento registrar un bautismo con el integrante {} que esta fuera de su sede.", user.getMember().getId(), member.getId());
-            throw new CannotRegisterBaptismWithMemberOutsideYourBranch();
         }
 
         Baptism baptism = Baptism.builder()
@@ -86,7 +88,7 @@ public class BaptismService {
 
         if (!user.hasAuthority(AppPermission.ADMINISTRATOR.name()) && !baptism.getBaptizedMember().getBranch().getId().equals(user.getMember().getBranch().getId())) {
             log.warn("Usuario {} intento invalidar un bautismo al integrante {} el cual esta fuera de su sede.", user.getMember().getId(), baptism.getBaptizedMember().getId());
-            throw new CannotCreateMembersOutsideYourBranch();
+            throw new CannotInvalidBaptismOutsideYourBranch();
         }
 
         baptism.setInvalid(true);

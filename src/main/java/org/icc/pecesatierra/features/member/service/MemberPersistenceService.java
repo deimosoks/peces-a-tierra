@@ -12,7 +12,7 @@ import org.icc.pecesatierra.features.type.MemberType;
 import org.icc.pecesatierra.features.member.dtos.MemberRequestDto;
 import org.icc.pecesatierra.features.member.dtos.MemberResponseDto;
 import org.icc.pecesatierra.features.branch.exceptions.BranchNotFoundException;
-import org.icc.pecesatierra.features.member.exceptions.CannotCreateMembersOutsideYourBranch;
+import org.icc.pecesatierra.features.member.exceptions.CannotUpdateMemberOutsideYourBranchException;
 import org.icc.pecesatierra.features.member.exceptions.MemberNoHasCategoryForThisSubCategoryException;
 import org.icc.pecesatierra.features.member.exceptions.MemberNotFoundException;
 import org.icc.pecesatierra.features.type.exceptions.TypeNotFoundException;
@@ -145,7 +145,7 @@ public class MemberPersistenceService {
                 .orElseThrow(MemberNotFoundException::new);
 
         if (!user.hasAuthority(AppPermission.ADMINISTRATOR.name()) && !user.getMember().getBranch().getId().equals(member.getBranch().getId())) {
-            throw new CannotCreateMembersOutsideYourBranch();
+            throw new CannotUpdateMemberOutsideYourBranchException();
         }
 
         Member beforeUpdate = Member.builder()

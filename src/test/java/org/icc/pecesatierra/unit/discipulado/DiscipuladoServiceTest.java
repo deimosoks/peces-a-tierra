@@ -13,6 +13,7 @@ import org.icc.pecesatierra.features.discipulado.repository.DiscipuladoProgressR
 import org.icc.pecesatierra.features.discipulado.repository.DiscipuladoRepository;
 import org.icc.pecesatierra.features.discipulado.service.DiscipuladoService;
 import org.icc.pecesatierra.features.member.Member;
+import org.icc.pecesatierra.features.member.exceptions.MemberNotFoundException;
 import org.icc.pecesatierra.features.member.repository.MemberRepository;
 import org.icc.pecesatierra.features.user.User;
 import org.icc.pecesatierra.support.TestFixtures;
@@ -31,6 +32,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
@@ -151,6 +153,55 @@ class DiscipuladoServiceTest {
 
         assertThat(progress.getTeacherId()).isNull();
         assertThat(progress.getDateCompleted()).isNull();
+    }
+
+    @Test
+    void missingTeacherLooksLikeForeignTeacherForNonAdminInProgress_M03() {
+        DiscipuladoProgress progress = progressOf(memberA, memberA);
+        DiscipuladoProgressRequestDto request = progressRequest("teacher-inexistente");
+
+        when(discipuladoProgressRepository.findById(progress.getId())).thenReturn(Optional.of(progress));
+        when(memberRepository.findById(request.getTeacherId())).thenReturn(Optional.empty());
+
+        Throwable missingTeacher = catchThrowable(() -> discipuladoService.progress(request, userA));
+
+        assertThat(missingTeacher).isInstanceOfSatisfying(CannotAssignTeacherOutsideYourBranch.class,
+                exception -> assertThat(exception.getStatus()).isEqualTo(HttpStatus.CONFLICT));
+        assertThat(missingTeacher.getMessage())
+                .isEqualTo(new CannotAssignTeacherOutsideYourBranch().getMessage());
+        assertThat(progress.isCompleted()).isFalse();
+        assertThat(progress.getTeacherId()).isNull();
+    }
+
+    @Test
+    void missingTeacherLooksLikeForeignTeacherForNonAdminInUpdateProgress_M03() {
+        DiscipuladoProgress progress = progressOf(memberA, memberA);
+        DiscipuladoProgressRequestDto request = progressRequest("teacher-inexistente");
+
+        when(discipuladoProgressRepository.findById(progress.getId())).thenReturn(Optional.of(progress));
+        when(memberRepository.findById(request.getTeacherId())).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> discipuladoService.updateProgress(request, userA, progress.getId()))
+                .isInstanceOfSatisfying(CannotAssignTeacherOutsideYourBranch.class,
+                        exception -> assertThat(exception.getStatus()).isEqualTo(HttpStatus.CONFLICT));
+
+        assertThat(progress.getTeacherId()).isNull();
+        assertThat(progress.getDateCompleted()).isNull();
+    }
+
+    @Test
+    void administratorStillGetsNotFoundForAMissingTeacher_M03() {
+        DiscipuladoProgress progress = progressOf(memberA, memberA);
+        DiscipuladoProgressRequestDto request = progressRequest("teacher-inexistente");
+
+        when(discipuladoProgressRepository.findById(progress.getId())).thenReturn(Optional.of(progress));
+        when(memberRepository.findById(request.getTeacherId())).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> discipuladoService.progress(request, admin))
+                .isInstanceOfSatisfying(MemberNotFoundException.class,
+                        exception -> assertThat(exception.getStatus()).isEqualTo(HttpStatus.NOT_FOUND));
+
+        assertThat(progress.isCompleted()).isFalse();
     }
 
     @Test

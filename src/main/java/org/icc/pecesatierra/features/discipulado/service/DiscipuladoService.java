@@ -138,8 +138,7 @@ public class DiscipuladoService {
             throw new CannotUpdateProgressWithMemberOutsideYourBranch();
         }
 
-        Member teacher = memberRepository.findById(dto.getTeacherId())
-                .orElseThrow(MemberNotFoundException::new);
+        Member teacher = findTeacherForActor(dto.getTeacherId(), user);
 
         if (isOutsideUserBranch(teacher, user)) {
             throw new CannotAssignTeacherOutsideYourBranch();
@@ -162,8 +161,7 @@ public class DiscipuladoService {
             throw new CannotUpdateProgressWithMemberOutsideYourBranch();
         }
 
-        Member teacher = memberRepository.findById(dto.getTeacherId())
-                .orElseThrow(MemberNotFoundException::new);
+        Member teacher = findTeacherForActor(dto.getTeacherId(), user);
 
         if (isOutsideUserBranch(teacher, user)) {
             throw new CannotAssignTeacherOutsideYourBranch();
@@ -179,6 +177,21 @@ public class DiscipuladoService {
         return discipuladoProgress.getDiscipulado() == null
                 ? null
                 : discipuladoProgress.getDiscipulado().getMember();
+    }
+
+    /**
+     * Un no-admin no debe poder distinguir un maestro inexistente (404) de uno
+     * existente en otra sede (409): ambos casos devuelven el mismo 409. El
+     * administrador mantiene el 404 real.
+     */
+    private Member findTeacherForActor(String teacherId, User user) {
+        return memberRepository.findById(teacherId)
+                .orElseThrow(() -> {
+                    if (user != null && user.hasAuthority(AppPermission.ADMINISTRATOR.name())) {
+                        return new MemberNotFoundException();
+                    }
+                    return new CannotAssignTeacherOutsideYourBranch();
+                });
     }
 
     private boolean isOutsideUserBranch(Member member, User user) {
