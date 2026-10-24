@@ -5,6 +5,7 @@ import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Path;
+import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import org.icc.pecesatierra.features.attendance.Attendance;
 import org.icc.pecesatierra.features.attendance.mapper.AttendanceMapper;
@@ -188,13 +189,39 @@ class NullFilterBodyTest {
 
         Path<Object> branchPath = mock(Path.class);
         Path<Object> branchIdPath = mock(Path.class);
+        Predicate branchPredicate = mock(Predicate.class);
         doReturn(branchPath).when(memberRoot).get("branch");
         doReturn(branchIdPath).when(branchPath).get("id");
+        doReturn(branchPredicate).when(memberCriteriaBuilder).equal(branchIdPath, branchA.getId());
 
         captor.getValue().toPredicate(memberRoot, memberQuery, memberCriteriaBuilder);
 
         verify(memberCriteriaBuilder).equal(branchIdPath, branchA.getId());
         verify(memberCriteriaBuilder, never()).equal(branchIdPath, branchB.getId());
+
+        // M-12: el predicado de sede debe estar en el AND final, no solo construirse.
+        ArgumentCaptor<Predicate[]> predicates = ArgumentCaptor.forClass(Predicate[].class);
+        verify(memberCriteriaBuilder).and(predicates.capture());
+        assertThat(predicates.getValue()).contains(branchPredicate);
+    }
+
+    @Test
+    void memberSpecificationWithNullDtoStillRestrictsToTheUsersBranch_M17() {
+        Path<Object> branchPath = mock(Path.class);
+        Path<Object> branchIdPath = mock(Path.class);
+        Predicate branchPredicate = mock(Predicate.class);
+        doReturn(branchPath).when(memberRoot).get("branch");
+        doReturn(branchIdPath).when(branchPath).get("id");
+        doReturn(branchPredicate).when(memberCriteriaBuilder).equal(branchIdPath, branchA.getId());
+
+        // build(null, noAdmin) ya no puede devolver cb.conjunction().
+        new MemberSpecification(dateTimeUtils).build(null, operatorOf(branchA))
+                .toPredicate(memberRoot, memberQuery, memberCriteriaBuilder);
+
+        verify(memberCriteriaBuilder).equal(branchIdPath, branchA.getId());
+        ArgumentCaptor<Predicate[]> predicates = ArgumentCaptor.forClass(Predicate[].class);
+        verify(memberCriteriaBuilder).and(predicates.capture());
+        assertThat(predicates.getValue()).contains(branchPredicate);
     }
 
     @Test
@@ -205,7 +232,9 @@ class NullFilterBodyTest {
         doReturn(memberJoin).when(attendanceRoot).join("member", JoinType.INNER);
         doReturn(attendanceBranchJoin).when(attendanceRoot).join("branch", JoinType.INNER);
         Path<Object> branchIdPath = mock(Path.class);
+        Predicate branchPredicate = mock(Predicate.class);
         doReturn(branchIdPath).when(attendanceBranchJoin).get("id");
+        doReturn(branchPredicate).when(attendanceCriteriaBuilder).equal(branchIdPath, branchA.getId());
 
         assertThatCode(() -> attendanceService.search(0, null, operatorOf(branchA)))
                 .doesNotThrowAnyException();
@@ -217,6 +246,11 @@ class NullFilterBodyTest {
 
         verify(attendanceCriteriaBuilder).equal(branchIdPath, branchA.getId());
         verify(attendanceCriteriaBuilder, never()).equal(branchIdPath, branchB.getId());
+
+        // M-12: el predicado de sede debe estar en el AND final, no solo construirse.
+        ArgumentCaptor<Predicate[]> predicates = ArgumentCaptor.forClass(Predicate[].class);
+        verify(attendanceCriteriaBuilder).and(predicates.capture());
+        assertThat(predicates.getValue()).contains(branchPredicate);
     }
 
     @Test

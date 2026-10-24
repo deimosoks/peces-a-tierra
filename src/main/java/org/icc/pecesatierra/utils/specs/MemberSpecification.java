@@ -22,53 +22,53 @@ public class MemberSpecification {
     private final DateTimeUtils dateTimeUtils;
 
     public Specification<Member> build(MemberFilterRequestDto dto, User user) {
+        // Un DTO nulo se normaliza a filtros vacios en lugar de devolver
+        // cb.conjunction(): el filtro de sede debe aplicarse siempre (M-17).
+        MemberFilterRequestDto filters = dto == null ? new MemberFilterRequestDto() : dto;
+
         return (Root<Member> root, CriteriaQuery<?> query, CriteriaBuilder cb) -> {
             List<Predicate> predicates = new ArrayList<>();
 
-            if (dto == null) {
-                return cb.conjunction();
+            if (filters.getMemberType() != null && !filters.getMemberType().isEmpty()) {
+                predicates.add(root.get("typeId").get("id").in(filters.getMemberType()));
             }
-
-            if (dto.getMemberType() != null && !dto.getMemberType().isEmpty()) {
-                predicates.add(root.get("typeId").get("id").in(dto.getMemberType()));
+            if (filters.getMemberCategory() != null && !filters.getMemberCategory().isEmpty()) {
+                predicates.add(root.get("categoryId").get("id").in(filters.getMemberCategory()));
             }
-            if (dto.getMemberCategory() != null && !dto.getMemberCategory().isEmpty()) {
-                predicates.add(root.get("categoryId").get("id").in(dto.getMemberCategory()));
-            }
-            if (dto.getSubCategory() != null && !dto.getSubCategory().isEmpty()) {
-                predicates.add(root.get("subcategoryId").get("id").in(dto.getSubCategory()));
+            if (filters.getSubCategory() != null && !filters.getSubCategory().isEmpty()) {
+                predicates.add(root.get("subcategoryId").get("id").in(filters.getSubCategory()));
             }
 
             if (!user.hasAuthority(AppPermission.ADMINISTRATOR.name())) {
                 predicates.add(cb.equal(root.get("branch").get("id"), user.getMember().getBranch().getId()));
-            } else if (dto.getBranchId() != null) {
-                predicates.add(root.get("branch").get("id").in(dto.getBranchId()));
+            } else if (filters.getBranchId() != null) {
+                predicates.add(root.get("branch").get("id").in(filters.getBranchId()));
             }
 
-            if (dto.getGender() != null && !dto.getGender().isEmpty()) {
-                predicates.add(cb.equal(root.get("gender"), dto.getGender()));
+            if (filters.getGender() != null && !filters.getGender().isEmpty()) {
+                predicates.add(cb.equal(root.get("gender"), filters.getGender()));
             }
 
-            if (Boolean.TRUE.equals(dto.getOnlyActive())) {
+            if (Boolean.TRUE.equals(filters.getOnlyActive())) {
                 predicates.add(cb.equal(root.get("active"), true));
             }
 
-            if (Boolean.FALSE.equals(dto.getOnlyActive())) {
+            if (Boolean.FALSE.equals(filters.getOnlyActive())) {
                 predicates.add(cb.equal(root.get("active"), false));
             }
 
-            if (Boolean.TRUE.equals(dto.getHasCc())) predicates.add(cb.isNotNull(root.get("cc")));
-            if (Boolean.TRUE.equals(dto.getHasCellphone())) predicates.add(cb.isNotNull(root.get("cellphone")));
-            if (Boolean.TRUE.equals(dto.getHasAddress())) predicates.add(cb.isNotNull(root.get("address")));
-            if (Boolean.TRUE.equals(dto.getHasBirthdate())) predicates.add(cb.isNotNull(root.get("birthdate")));
+            if (Boolean.TRUE.equals(filters.getHasCc())) predicates.add(cb.isNotNull(root.get("cc")));
+            if (Boolean.TRUE.equals(filters.getHasCellphone())) predicates.add(cb.isNotNull(root.get("cellphone")));
+            if (Boolean.TRUE.equals(filters.getHasAddress())) predicates.add(cb.isNotNull(root.get("address")));
+            if (Boolean.TRUE.equals(filters.getHasBirthdate())) predicates.add(cb.isNotNull(root.get("birthdate")));
 
-            if (Boolean.FALSE.equals(dto.getHasCc())) predicates.add(cb.isNull(root.get("cc")));
-            if (Boolean.FALSE.equals(dto.getHasCellphone())) predicates.add(cb.isNull(root.get("cellphone")));
-            if (Boolean.FALSE.equals(dto.getHasAddress())) predicates.add(cb.isNull(root.get("address")));
-            if (Boolean.FALSE.equals(dto.getHasBirthdate())) predicates.add(cb.isNull(root.get("birthdate")));
+            if (Boolean.FALSE.equals(filters.getHasCc())) predicates.add(cb.isNull(root.get("cc")));
+            if (Boolean.FALSE.equals(filters.getHasCellphone())) predicates.add(cb.isNull(root.get("cellphone")));
+            if (Boolean.FALSE.equals(filters.getHasAddress())) predicates.add(cb.isNull(root.get("address")));
+            if (Boolean.FALSE.equals(filters.getHasBirthdate())) predicates.add(cb.isNull(root.get("birthdate")));
 
-            if (dto.getQuery() != null && !dto.getQuery().isBlank()) {
-                String normalizedQuery = Normalizer.normalize(dto.getQuery(), Normalizer.Form.NFD)
+            if (filters.getQuery() != null && !filters.getQuery().isBlank()) {
+                String normalizedQuery = Normalizer.normalize(filters.getQuery(), Normalizer.Form.NFD)
                         .replaceAll("\\p{M}", "")
                         .toLowerCase();
 
@@ -96,21 +96,21 @@ public class MemberSpecification {
                 predicates.add(cb.or(completeNamePredicate, otherFieldsPredicate));
             }
 
-            if (dto.getAgeFilterRange1() != null && dto.getAgeFilterRange2() != null) {
-                int minAge = Math.min(dto.getAgeFilterRange1(), dto.getAgeFilterRange2());
-                int maxAge = Math.max(dto.getAgeFilterRange1(), dto.getAgeFilterRange2());
+            if (filters.getAgeFilterRange1() != null && filters.getAgeFilterRange2() != null) {
+                int minAge = Math.min(filters.getAgeFilterRange1(), filters.getAgeFilterRange2());
+                int maxAge = Math.max(filters.getAgeFilterRange1(), filters.getAgeFilterRange2());
                 LocalDate today = LocalDate.now();
                 LocalDate maxBirthdate = today.minusYears(minAge);
                 LocalDate minBirthdate = today.minusYears(maxAge);
                 predicates.add(cb.between(root.get("birthdate"), minBirthdate, maxBirthdate));
             }
 
-            if (dto.getRegisteredFrom() != null && dto.getRegisteredTo() != null) {
-                predicates.add(cb.between(root.get("createdAt"), dateTimeUtils.toUTC(dto.getRegisteredFrom()), dateTimeUtils.toUTC(dto.getRegisteredTo())));
+            if (filters.getRegisteredFrom() != null && filters.getRegisteredTo() != null) {
+                predicates.add(cb.between(root.get("createdAt"), dateTimeUtils.toUTC(filters.getRegisteredFrom()), dateTimeUtils.toUTC(filters.getRegisteredTo())));
             }
 
-            if (dto.getLocation() != null && !dto.getLocation().isBlank()) {
-                String searchLike = "%" + dto.getLocation().toLowerCase() + "%";
+            if (filters.getLocation() != null && !filters.getLocation().isBlank()) {
+                String searchLike = "%" + filters.getLocation().toLowerCase() + "%";
                 predicates.add(cb.or(
                         cb.like(cb.lower(root.get("address")), searchLike),
                         cb.like(cb.lower(root.get("neighborhood")), searchLike),
