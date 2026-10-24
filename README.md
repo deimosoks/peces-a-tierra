@@ -77,8 +77,9 @@ El proyecto sigue una arquitectura en capas limpia y escalable:
     $env:AI_DB_PASS="..."
     ```
 
-    `AI_DB_URL` es opcional: si no se define, el endpoint de IA usa `DB_URL` con el rol de solo
-    lectura. Para pruebas: `.\gradlew.bat test` con JDK 21; las IT se saltan si no hay Docker.
+    `AI_DB_USER` y `AI_DB_PASS` son obligatorias; `AI_DB_URL` es opcional. Si no se define, el
+    endpoint de IA usa `DB_URL` con el rol de solo lectura. Para pruebas: `.\gradlew.bat test` con
+    JDK 21; las IT se saltan si no hay Docker.
 
 3.  **Ejecutar la aplicación:**
     ```bash

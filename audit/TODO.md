@@ -8,6 +8,8 @@ técnica y deben retomarse cuando se cumpla su disparador.
 - Suite: **135 tests, 131 ejecutados, 4 saltados** (Docker), **0 fallos**.
 - Abiertos: **H-01** (P0), **M-01** (PWA/403), **M-03 residual** (UUID 404/409), **M-06, M-07,
   M-09, M-10, M-18, M-21, M-22**.
+- Despliegue: `master` publicado en `origin/master` (`fdd5ea6`); producción incluye H-01 y M-01
+  abiertos. `AI_DB_USER`/`AI_DB_PASS` son obligatorias en el entorno de producción.
 - Siguiente paso recomendado: H-01 (vistas `ai_read` + validador) y rebuild del PWA para M-01.
 
 ## H-41 — El lote de asistencias debe llevar un solo `serviceEventId`

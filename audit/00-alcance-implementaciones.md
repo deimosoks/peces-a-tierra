@@ -10,7 +10,8 @@
 
 > **Estado post-corrección (2026-10-24):** M-02..M-24 corregidos salvo los pendientes de
 > `audit/TODO.md`; H-01 y M-01 abiertos. Suite: 135 tests (131 ejecutados, 4 saltados, 0 fallos).
-> Ver `audit/fixes-m02-m24.md` y `audit/INFORME-FINAL.md`.
+> `master` publicado en `origin/master` (`fdd5ea6`). Ver `audit/fixes-m02-m24.md` y
+> `audit/INFORME-FINAL.md`.
 
 ## Alcance funcional
 

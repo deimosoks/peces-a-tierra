@@ -50,7 +50,7 @@ No linter, formatter, type checker, CI, or codegen step is configured. Compile +
 
 ## AI endpoint caution
 
-`POST /api/ai/chat` sends the user prompt to Gemini, extracts generated SQL, checks it only with `SqlQueryValidator` (keyword/`;` checks), then runs it directly via `JdbcTemplate` in `SqlExecutor`. It passes a dummy `new User()` and applies no branch scoping. Treat changes here as security-sensitive.
+`POST /api/ai/chat` sends the user prompt to Gemini, extracts generated SQL, checks it only with `SqlQueryValidator` (keyword/`;` checks), then runs it via the dedicated `aiJdbcTemplate` (`ai.datasource.*` / `AI_DB_*`, read-only role). It passes a dummy `new User()` and applies no branch scoping. The validator is still a blacklist and H-01 remains open; treat changes here as security-sensitive.
 
 ## Testing reality
 
