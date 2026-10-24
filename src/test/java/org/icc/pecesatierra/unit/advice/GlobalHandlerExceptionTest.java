@@ -19,6 +19,7 @@ import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.BindException;
 import org.springframework.validation.FieldError;
+import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
@@ -97,6 +98,33 @@ class GlobalHandlerExceptionTest {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
         assertThat(response.getBody()).isNotNull();
         assertThat(response.getBody().getMessage()).isEqualTo("El nombre es obligatorio");
+    }
+
+    @Test
+    void beanValidationWithOnlyGlobalErrorsIs400_M19() throws Exception {
+        BeanPropertyBindingResult bindingResult = new BeanPropertyBindingResult(new Object(), "dto");
+        bindingResult.addError(new ObjectError("dto", "La combinación de datos no es válida"));
+        MethodParameter parameter = new MethodParameter(dummyMethod(), 0);
+
+        ResponseEntity<ErrorResponseDto> response = handler.handlerMethodArgumentNotValidException(
+                request, new MethodArgumentNotValidException(parameter, bindingResult));
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody().getMessage()).isEqualTo("La combinación de datos no es válida");
+    }
+
+    @Test
+    void beanValidationWithoutAnyErrorFallsBackToAGenericMessage_M19() throws Exception {
+        BeanPropertyBindingResult bindingResult = new BeanPropertyBindingResult(new Object(), "dto");
+        MethodParameter parameter = new MethodParameter(dummyMethod(), 0);
+
+        ResponseEntity<ErrorResponseDto> response = handler.handlerMethodArgumentNotValidException(
+                request, new MethodArgumentNotValidException(parameter, bindingResult));
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody().getMessage()).isEqualTo("La petición contiene datos inválidos.");
     }
 
     @Test

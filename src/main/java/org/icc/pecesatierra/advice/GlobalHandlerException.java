@@ -15,12 +15,19 @@ import org.springframework.security.authentication.InternalAuthenticationService
 import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.validation.BindException;
 import org.springframework.validation.FieldError;
+import org.springframework.validation.ObjectError;
+import org.springframework.web.HttpMediaTypeNotSupportedException;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 @Slf4j
 @RestControllerAdvice
@@ -80,11 +87,61 @@ public class GlobalHandlerException {
     public ResponseEntity<ErrorResponseDto> handlerMethodArgumentNotValidException(HttpServletRequest httpServletRequest,
                                                                                    MethodArgumentNotValidException exception) {
         printStackTrace(exception);
-        return buildResponse(HttpStatus.BAD_REQUEST, exception.getBindingResult()
-                .getFieldErrors()
-                .getFirst()
-                .getDefaultMessage(), httpServletRequest.getRequestURI());
+        // Puede haber solo errores globales (constraints de clase), sin FieldError.
+        String message = exception.getBindingResult()
+                .getAllErrors()
+                .stream()
+                .map(ObjectError::getDefaultMessage)
+                .filter(Objects::nonNull)
+                .findFirst()
+                .orElse("La petición contiene datos inválidos.");
+        return buildResponse(HttpStatus.BAD_REQUEST, message, httpServletRequest.getRequestURI());
 
+    }
+
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    public ResponseEntity<ErrorResponseDto> handleMissingServletRequestParameterException(MissingServletRequestParameterException ex,
+                                                                                         HttpServletRequest request) {
+        log.warn("Falta el parametro requerido: {}", ex.getParameterName());
+        return buildResponse(HttpStatus.BAD_REQUEST,
+                "El parámetro '" + ex.getParameterName() + "' es obligatorio.", request.getRequestURI());
+    }
+
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    public ResponseEntity<ErrorResponseDto> handleHttpRequestMethodNotSupportedException(HttpRequestMethodNotSupportedException ex,
+                                                                                         HttpServletRequest request) {
+        log.warn("Metodo HTTP no soportado: {} {}", ex.getMethod(), request.getRequestURI());
+        return buildResponse(HttpStatus.METHOD_NOT_ALLOWED,
+                "El método HTTP no está soportado para esta ruta.", request.getRequestURI());
+    }
+
+    @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
+    public ResponseEntity<ErrorResponseDto> handleHttpMediaTypeNotSupportedException(HttpMediaTypeNotSupportedException ex,
+                                                                                    HttpServletRequest request) {
+        log.warn("Tipo de contenido no soportado: {}", ex.getContentType());
+        return buildResponse(HttpStatus.UNSUPPORTED_MEDIA_TYPE,
+                "El tipo de contenido no está soportado.", request.getRequestURI());
+    }
+
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ResponseEntity<ErrorResponseDto> handleMaxUploadSizeExceededException(MaxUploadSizeExceededException ex,
+                                                                                HttpServletRequest request) {
+        log.warn("Archivo demasiado grande en {}: {}", request.getRequestURI(), ex.getMessage());
+        return buildResponse(HttpStatus.PAYLOAD_TOO_LARGE,
+                "El archivo supera el tamaño máximo permitido.", request.getRequestURI());
+    }
+
+    /**
+     * Sin este handler, un recurso inexistente cae en el catch-all y responde 500.
+     * Las rutas no-API siguen sirviendo {@code index.html} desde {@code MvcConfig};
+     * solo se llega aqui cuando el resource resolver no encuentra nada.
+     */
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<ErrorResponseDto> handleNoResourceFoundException(NoResourceFoundException ex,
+                                                                          HttpServletRequest request) {
+        log.warn("Recurso no encontrado: {}", request.getRequestURI());
+        return buildResponse(HttpStatus.NOT_FOUND,
+                "El recurso solicitado no existe.", request.getRequestURI());
     }
 
     @ExceptionHandler(Exception.class)
