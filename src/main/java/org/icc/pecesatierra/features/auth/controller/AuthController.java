@@ -35,6 +35,7 @@ public class AuthController extends BaseController {
         return ResponseEntity.ok(authService.refresh(refreshTokenRequestDto));
     }
 
+    @PreAuthorize("@securityService.isActive(authentication)")
     @PostMapping("/logout")
     public ResponseEntity<Void> logout(@AuthenticationPrincipal User user,
                                        @RequestBody @Valid RefreshTokenRequestDto refreshTokenRequestDto) {
@@ -42,6 +43,7 @@ public class AuthController extends BaseController {
         return ResponseEntity.ok().build();
     }
 
+    @PreAuthorize("@securityService.isActive(authentication)")
     @PostMapping("/changge-password")
     public ResponseEntity<Void> changgePassword(@AuthenticationPrincipal User user,
                                                 @RequestBody @Valid ChanggePasswordRequest dto){

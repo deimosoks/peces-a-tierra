@@ -5,6 +5,10 @@ import org.icc.pecesatierra.advice.GlobalHandlerException;
 import org.icc.pecesatierra.configurations.JwtAuthFilter;
 import org.icc.pecesatierra.configurations.SecurityConfig;
 import org.icc.pecesatierra.configurations.SecurityService;
+import org.icc.pecesatierra.features.auth.controller.AuthController;
+import org.icc.pecesatierra.features.auth.dtos.ChanggePasswordRequest;
+import org.icc.pecesatierra.features.auth.dtos.RefreshTokenRequestDto;
+import org.icc.pecesatierra.features.auth.service.AuthService;
 import org.icc.pecesatierra.features.health.HealthController;
 import org.icc.pecesatierra.features.service.controller.ServiceController;
 import org.icc.pecesatierra.features.service.service.ServiceService;
@@ -43,6 +47,7 @@ import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -60,6 +65,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         UserController.class,
         ServiceController.class,
         HealthController.class,
+        AuthController.class,
         SecurityConfig.class,
         GlobalHandlerException.class
 })
@@ -73,6 +79,8 @@ class EndpointSecurityMatrixTest {
     private UserService userService;
     @MockitoBean
     private ServiceService serviceService;
+    @MockitoBean
+    private AuthService authService;
     @MockitoBean(name = "securityService")
     private SecurityService securityService;
     @MockitoBean
@@ -161,6 +169,52 @@ class EndpointSecurityMatrixTest {
                         .with(authentication(authFor("VIEW_SERVICE_PANEL"))))
                 .andExpect(status().isOk())
                 .andExpect(content().json("[]"));
+    }
+
+    @Test
+    void logoutWithInactiveAccountIsDenied_H49() throws Exception {
+        when(securityService.isActive(any(Authentication.class))).thenReturn(false);
+
+        assertDenied(mockMvc.perform(post("/api/auth/logout")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"refreshToken\":\"token-de-prueba\"}")
+                .with(authentication(authFor()))));
+
+        verify(authService, never()).logout(any(User.class), any(RefreshTokenRequestDto.class));
+    }
+
+    @Test
+    void logoutWithActiveAccountSucceeds_H49() throws Exception {
+        mockMvc.perform(post("/api/auth/logout")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"refreshToken\":\"token-de-prueba\"}")
+                        .with(authentication(authFor())))
+                .andExpect(status().isOk());
+
+        verify(authService).logout(same(domainUser), any(RefreshTokenRequestDto.class));
+    }
+
+    @Test
+    void changePasswordWithInactiveAccountIsDenied_H49() throws Exception {
+        when(securityService.isActive(any(Authentication.class))).thenReturn(false);
+
+        assertDenied(mockMvc.perform(post("/api/auth/changge-password")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"password\":\"nueva1234\",\"confirmPassword\":\"nueva1234\",\"oldPassword\":\"vieja1234\"}")
+                .with(authentication(authFor()))));
+
+        verify(authService, never()).changgePassword(any(User.class), any(ChanggePasswordRequest.class));
+    }
+
+    @Test
+    void changePasswordWithActiveAccountSucceeds_H49() throws Exception {
+        mockMvc.perform(post("/api/auth/changge-password")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"password\":\"nueva1234\",\"confirmPassword\":\"nueva1234\",\"oldPassword\":\"vieja1234\"}")
+                        .with(authentication(authFor())))
+                .andExpect(status().isOk());
+
+        verify(authService).changgePassword(same(domainUser), any(ChanggePasswordRequest.class));
     }
 
     @Test

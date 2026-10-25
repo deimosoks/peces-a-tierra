@@ -37,7 +37,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 /**
- * Evalua (no solo parsea) las 65 expresiones {@code @PreAuthorize} sin arrancar
+ * Evalua (no solo parsea) las 67 expresiones {@code @PreAuthorize} sin arrancar
  * Spring Boot. Un {@link GenericApplicationContext} registra el bean
  * {@code securityService} y {@link DefaultMethodSecurityExpressionHandler}
  * resuelve los beans y las variables de metodo igual que en produccion.
@@ -49,7 +49,7 @@ import static org.mockito.Mockito.when;
 class PreAuthorizeSpelTest {
 
     private static final SpelExpressionParser PARSER = new SpelExpressionParser();
-    private static final int EXPECTED_EXPRESSIONS = 65;
+    private static final int EXPECTED_EXPRESSIONS = 67;
 
     private static GenericApplicationContext applicationContext;
     private static DefaultMethodSecurityExpressionHandler expressionHandler;

@@ -33,7 +33,7 @@ class EndpointInventoryTest {
 
     private static final String MATRIX = "security/endpoint-matrix.csv";
     private static final int EXPECTED_HANDLERS = 69;
-    private static final int EXPECTED_PRE_AUTHORIZE = 65;
+    private static final int EXPECTED_PRE_AUTHORIZE = 67;
 
     @Test
     void everyHandlerHasARowInTheEndpointMatrix() throws Exception {
