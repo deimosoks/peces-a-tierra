@@ -78,7 +78,7 @@ public class MemberService {
 
             return response;
         } catch (ApiException e) {
-            if (pictureData.get("publicId") != null) {
+            if (pictureData != null && pictureData.get("publicId") != null) {
                 pictureUtils.delete(pictureData.get("publicId"));
             }
             throw e;

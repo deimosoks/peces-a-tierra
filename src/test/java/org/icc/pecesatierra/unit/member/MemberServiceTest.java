@@ -6,6 +6,7 @@ import org.icc.pecesatierra.features.category.repository.mapper.MemberMapper;
 import org.icc.pecesatierra.features.member.Member;
 import org.icc.pecesatierra.features.member.dtos.MemberRequestDto;
 import org.icc.pecesatierra.features.member.exceptions.CannotUpdateMemberOutsideYourBranchException;
+import org.icc.pecesatierra.features.member.exceptions.MemberNoHasCategoryForThisSubCategoryException;
 import org.icc.pecesatierra.features.member.repository.MemberRepository;
 import org.icc.pecesatierra.features.member.service.MemberPersistenceService;
 import org.icc.pecesatierra.features.member.service.MemberService;
@@ -26,6 +27,7 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -131,6 +133,28 @@ class MemberServiceTest {
 
         assertThat(member.isActive()).isTrue();
         verify(memberRepository, never()).save(any(Member.class));
+    }
+
+    @Test
+    void createWithoutPicturePropagatesTheBusinessException_H23() {
+        User user = TestFixtures.user("user-1", "operador-a",
+                TestFixtures.member("operator-1", branchA, "Operador A"));
+        MemberRequestDto request = MemberRequestDto.builder()
+                .completeName("Ana Perez")
+                .categoryId("categoria-inexistente")
+                .build();
+        MemberNoHasCategoryForThisSubCategoryException businessException =
+                new MemberNoHasCategoryForThisSubCategoryException("Ana Perez");
+
+        when(memberPersistenceService.save(any(MemberRequestDto.class), isNull(), any(User.class)))
+                .thenThrow(businessException);
+
+        // El alta sin foto deja pictureData en null: el catch no debe desreferenciarlo.
+        assertThatThrownBy(() -> memberService.create(request, user))
+                .isSameAs(businessException)
+                .isNotInstanceOf(NullPointerException.class);
+
+        verifyNoInteractions(pictureUtils);
     }
 
     @Test
