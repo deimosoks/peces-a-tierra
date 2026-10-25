@@ -45,7 +45,10 @@ public class MemberRequestDto {
     private String postalCode;
     private String latitude;
     private String longitude;
+
+    @NotNull(message = "Debe seleccionar un género válido.")
     private Gender gender;
+
     private String branchId;
 
 }
