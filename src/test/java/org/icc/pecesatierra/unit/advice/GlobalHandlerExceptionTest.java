@@ -5,6 +5,7 @@ import org.icc.pecesatierra.utils.models.ApiException;
 import org.icc.pecesatierra.utils.models.ErrorResponseDto;
 import org.junit.jupiter.api.Test;
 import org.springframework.core.MethodParameter;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.mapping.PropertyReferenceException;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.http.HttpInputMessage;
@@ -177,6 +178,23 @@ class GlobalHandlerExceptionTest {
         assertThat(response.getBody()).isNotNull();
         assertThat(response.getBody().getStatus()).isEqualTo(HttpStatus.CONFLICT.value());
         assertThat(response.getBody().getMessage()).isEqualTo("Ya existe un registro con ese dato.");
+    }
+
+    @Test
+    void dataIntegrityViolationIs409WithoutLeakingSchemaDetails_H42() {
+        ResponseEntity<ErrorResponseDto> response = handler.handleDataIntegrityViolationException(
+                new DataIntegrityViolationException(
+                        "duplicate key value violates unique constraint \"member_types_name_key\""),
+                request);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody().getStatus()).isEqualTo(HttpStatus.CONFLICT.value());
+        assertThat(response.getBody().getError()).isEqualTo("Conflict");
+        assertThat(response.getBody().getMessage())
+                .isEqualTo("La operación entra en conflicto con datos existentes.");
+        assertThat(response.getBody().getMessage()).doesNotContain("member_types_name_key");
+        assertThat(response.getBody().getPath()).isEqualTo("/api/prueba");
     }
 
     @Test

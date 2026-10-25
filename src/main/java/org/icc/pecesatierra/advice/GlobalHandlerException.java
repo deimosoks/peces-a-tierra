@@ -6,6 +6,7 @@ import org.icc.pecesatierra.utils.models.ErrorResponseDto;
 import org.icc.pecesatierra.utils.models.ApiException;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.mapping.PropertyReferenceException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -142,6 +143,20 @@ public class GlobalHandlerException {
         log.warn("Recurso no encontrado: {}", request.getRequestURI());
         return buildResponse(HttpStatus.NOT_FOUND,
                 "El recurso solicitado no existe.", request.getRequestURI());
+    }
+
+    /**
+     * Un choque de unicidad o de clave foranea no controlado por el servicio es
+     * un conflicto con el estado actual de la base, no un fallo inesperado.
+     */
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ErrorResponseDto> handleDataIntegrityViolationException(DataIntegrityViolationException ex,
+                                                                                 HttpServletRequest request) {
+        // El SQL y el nombre de la constraint quedan solo en el log.
+        log.warn("Violacion de integridad en {}: {}", request.getRequestURI(),
+                ex.getMostSpecificCause().getMessage());
+        return buildResponse(HttpStatus.CONFLICT,
+                "La operación entra en conflicto con datos existentes.", request.getRequestURI());
     }
 
     @ExceptionHandler(Exception.class)

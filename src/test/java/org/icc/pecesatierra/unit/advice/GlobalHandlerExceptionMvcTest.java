@@ -3,6 +3,7 @@ package org.icc.pecesatierra.unit.advice;
 import org.icc.pecesatierra.advice.GlobalHandlerException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.mapping.PropertyReferenceException;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.http.HttpMethod;
@@ -125,6 +126,17 @@ class GlobalHandlerExceptionMvcTest {
                 .andExpect(jsonPath("$.message").value("El archivo supera el tamaño máximo permitido."));
     }
 
+    @Test
+    void dataIntegrityViolationIs409OverTheRealMvcPipeline_H42() throws Exception {
+        mockMvc.perform(post("/api/probe/integrity"))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.status").value(HttpStatus.CONFLICT.value()))
+                .andExpect(jsonPath("$.error").value("Conflict"))
+                .andExpect(jsonPath("$.message")
+                        .value("La operación entra en conflicto con datos existentes."))
+                .andExpect(jsonPath("$.path").value("/api/probe/integrity"));
+    }
+
     @RestController
     @RequestMapping("/api/probe")
     static class ProbeController {
@@ -170,6 +182,12 @@ class GlobalHandlerExceptionMvcTest {
         @PostMapping("/upload-exceeded")
         String uploadExceeded() {
             throw new MaxUploadSizeExceededException(5_242_880L);
+        }
+
+        @PostMapping("/integrity")
+        String integrity() {
+            throw new DataIntegrityViolationException(
+                    "duplicate key value violates unique constraint \"member_types_name_key\"");
         }
     }
 
