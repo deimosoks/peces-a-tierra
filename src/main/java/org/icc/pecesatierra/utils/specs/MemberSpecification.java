@@ -100,9 +100,16 @@ public class MemberSpecification {
                 int minAge = Math.min(filters.getAgeFilterRange1(), filters.getAgeFilterRange2());
                 int maxAge = Math.max(filters.getAgeFilterRange1(), filters.getAgeFilterRange2());
                 LocalDate today = LocalDate.now();
-                LocalDate maxBirthdate = today.minusYears(minAge);
-                LocalDate minBirthdate = today.minusYears(maxAge);
-                predicates.add(cb.between(root.get("birthdate"), minBirthdate, maxBirthdate));
+                // La edad es un intervalo de anios, no un punto: quien todavia no
+                // ha cumplido maxAge+1 tambien tiene maxAge. Por eso el limite
+                // inferior de fecha es EXCLUSIVO en el cumpleanios de maxAge+1 y
+                // el superior INCLUSIVO en el de minAge (H-43).
+                LocalDate maxAgeExclusiveBirthdate = today.minusYears(maxAge + 1L);
+                LocalDate minAgeBirthdate = today.minusYears(minAge);
+                predicates.add(cb.and(
+                        cb.greaterThan(root.get("birthdate"), maxAgeExclusiveBirthdate),
+                        cb.lessThanOrEqualTo(root.get("birthdate"), minAgeBirthdate)
+                ));
             }
 
             if (filters.getRegisteredFrom() != null && filters.getRegisteredTo() != null) {
