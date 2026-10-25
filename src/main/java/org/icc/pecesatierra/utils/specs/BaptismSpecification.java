@@ -26,13 +26,17 @@ public class BaptismSpecification {
 
             Join<Baptism, Member> baptizedMember = root.join("baptizedMember", JoinType.INNER);
 
-            if (dto != null) {
+            // H-02: el filtro por sede del no-admin va fuera del if (dto != null).
+            // Antes solo se aplicaba cuando llegaba un DTO de filtros, y ademas
+            // comparaba la entidad Branch en vez de su id.
+            if (!currentUser.hasAuthority(AppPermission.ADMINISTRATOR.name())) {
+                predicates.add(cb.equal(baptizedMember.get("branch").get("id"),
+                        currentUser.getMember().getBranch().getId()));
+            } else if (dto != null && dto.getBranchId() != null) {
+                predicates.add(cb.equal(baptizedMember.get("branch").get("id"), dto.getBranchId()));
+            }
 
-                if (!currentUser.hasAuthority(AppPermission.ADMINISTRATOR.name())) {
-                    predicates.add(cb.equal(baptizedMember.get("branch"), currentUser.getMember().getBranch()));
-                } else if (dto.getBranchId() != null) {
-                    predicates.add(cb.equal(baptizedMember.get("branch").get("id"), dto.getBranchId()));
-                }
+            if (dto != null) {
 
                 if (dto.getMemberId() != null) {
                     predicates.add(cb.equal(baptizedMember.get("id"), dto.getMemberId()));
