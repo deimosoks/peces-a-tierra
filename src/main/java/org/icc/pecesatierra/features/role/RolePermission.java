@@ -8,10 +8,14 @@ import lombok.*;
 @Getter
 @Setter
 @Builder
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @Entity
 @Table(name = "role_permission")
 public class RolePermission {
 
+    // Identidad de negocio de la PK compuesta (rol + permiso). Sin esto, el
+    // HashSet del rol no deduplica y dos permisos repetidos chocan al insertar.
+    @EqualsAndHashCode.Include
     @EmbeddedId
     private RolePermissionId id;
 

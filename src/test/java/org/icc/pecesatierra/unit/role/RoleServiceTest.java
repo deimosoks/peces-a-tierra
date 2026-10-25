@@ -194,6 +194,60 @@ class RoleServiceTest {
         verifyNoInteractions(userRoleRepository);
     }
 
+    // ---------- H-45: permisos repetidos en el payload ----------
+
+    @Test
+    void createWithRepeatedPermissionPersistsOnlyOne_H45() {
+        User actor = administrator();
+        // PermissionRequestDto no tiene equals/hashCode: dos instancias con el
+        // mismo enum llegan como dos elementos del Set, tal como desde la API.
+        RoleRequestDto request = roleRequest("Duplicado",
+                AppPermission.VIEW_MEMBER_PANEL, AppPermission.VIEW_MEMBER_PANEL);
+        assertThat(request.getPermissions()).hasSize(2);
+
+        when(roleRepository.save(any(Role.class))).thenAnswer(invocation -> {
+            Role role = invocation.getArgument(0);
+            role.setId("role-dup");
+            return role;
+        });
+        when(dateTimeUtils.nowUTC()).thenReturn(TestFixtures.FIXED_NOW);
+        when(roleMapper.toDto(any(Role.class))).thenReturn(RoleResponseDto.builder().id("role-dup").build());
+
+        roleService.create(request, actor);
+
+        ArgumentCaptor<Role> captor = ArgumentCaptor.forClass(Role.class);
+        verify(roleRepository).save(captor.capture());
+        assertThat(captor.getValue().getPermissions()).hasSize(1);
+        assertThat(captor.getValue().getPermissions())
+                .extracting(permission -> permission.getId().getPermission())
+                .containsExactly(AppPermission.VIEW_MEMBER_PANEL.name());
+    }
+
+    @Test
+    void updateWithRepeatedPermissionDoesNotFailAndKeepsOnlyOne_H45() {
+        User actor = administrator();
+        Role existing = role("role-1", AppPermission.VIEW_MEMBER_PANEL);
+        when(roleRepository.findById("role-1")).thenReturn(Optional.of(existing));
+        when(dateTimeUtils.nowUTC()).thenReturn(TestFixtures.FIXED_NOW);
+        // Mapper real: la deduplicacion del PUT vive en updateEntityFromDto.
+        RoleService serviceWithRealMapper = new RoleService(
+                roleRepository, new RoleMapper(userRoleRepository, dateTimeUtils),
+                userRoleRepository, dateTimeUtils);
+
+        RoleRequestDto request = roleRequest("Rol role-1",
+                AppPermission.VIEW_MEMBER_PANEL, AppPermission.VIEW_MEMBER_PANEL);
+        assertThat(request.getPermissions()).hasSize(2);
+
+        RoleResponseDto response = serviceWithRealMapper.update(request, "role-1", actor);
+
+        assertThat(response.getId()).isEqualTo("role-1");
+        assertThat(existing.getPermissions()).hasSize(1);
+        assertThat(existing.getPermissions())
+                .extracting(permission -> permission.getId().getPermission())
+                .containsExactly(AppPermission.VIEW_MEMBER_PANEL.name());
+        verify(roleRepository).save(existing);
+    }
+
     // ---------- El administrador conserva el bypass ----------
 
     @Test

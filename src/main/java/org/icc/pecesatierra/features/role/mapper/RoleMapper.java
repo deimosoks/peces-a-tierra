@@ -1,6 +1,7 @@
 package org.icc.pecesatierra.features.role.mapper;
 
 import lombok.RequiredArgsConstructor;
+import org.icc.pecesatierra.features.role.dtos.PermissionRequestDto;
 import org.icc.pecesatierra.features.role.dtos.PermissionResponseDto;
 import org.icc.pecesatierra.features.role.dtos.RoleRequestDto;
 import org.icc.pecesatierra.features.role.dtos.RoleResponseDto;
@@ -46,17 +47,23 @@ public class RoleMapper {
 
         role.getPermissions().clear();
 
-        role.getPermissions().addAll(roleRequestDto.getPermissions().stream().map(p -> {
-            RolePermissionId rolePermissionId = RolePermissionId.builder()
-                    .roleId(role.getId())
-                    .permission(p.getName().name())
-                    .build();
+        // Mismo criterio que en el alta: deduplicar por nombre de permiso antes
+        // de construir las entidades (H-45).
+        role.getPermissions().addAll(roleRequestDto.getPermissions().stream()
+                .map(PermissionRequestDto::getName)
+                .distinct()
+                .map(permission -> {
+                    RolePermissionId rolePermissionId = RolePermissionId.builder()
+                            .roleId(role.getId())
+                            .permission(permission.name())
+                            .build();
 
-            return RolePermission.builder()
-                    .id(rolePermissionId)
-                    .role(role)
-                    .build();
-        }).collect(Collectors.toSet()));
+                    return RolePermission.builder()
+                            .id(rolePermissionId)
+                            .role(role)
+                            .build();
+                })
+                .collect(Collectors.toSet()));
 
     }
 }

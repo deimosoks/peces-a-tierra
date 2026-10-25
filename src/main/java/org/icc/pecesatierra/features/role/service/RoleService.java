@@ -99,10 +99,14 @@ public class RoleService {
                 .permissions(new HashSet<>())
                 .build());
 
-        roleRequestDto.getPermissions().forEach(
-                permissionRequestDto -> {
+        // El permiso es la clave natural: se deduplica antes de construir la
+        // entidad para no intentar insertar dos veces la misma PK (H-45).
+        roleRequestDto.getPermissions().stream()
+                .map(PermissionRequestDto::getName)
+                .distinct()
+                .forEach(permission -> {
                     RolePermissionId rolePermissionId = RolePermissionId.builder()
-                            .permission(permissionRequestDto.getName().name())
+                            .permission(permission.name())
                             .roleId(role.getId())
                             .build();
 
@@ -111,8 +115,7 @@ public class RoleService {
                             .role(role)
                             .build();
                     role.getPermissions().add(rolePermission);
-                }
-        );
+                });
 
         log.info("""
                         Usuario {} creó un rol:
