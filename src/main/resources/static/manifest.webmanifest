@@ -2,7 +2,7 @@
   "id": "./",
   "name": "ICC Tabernáculo de Adoración",
   "short_name": "ICC-TDA",
-  "theme_color": "#4f46e5",
+  "theme_color": "#2563eb",
   "background_color": "#f8fafc",
   "display": "standalone",
   "scope": "./",
