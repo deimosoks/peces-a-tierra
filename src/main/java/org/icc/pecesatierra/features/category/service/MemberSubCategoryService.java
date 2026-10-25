@@ -71,7 +71,7 @@ public class MemberSubCategoryService {
         MemberSubCategory memberSubCategory = memberSubCategoryRepository.findById(subCategoryId)
                 .orElseThrow(SubCategoryNotFoundException::new);
 
-        if (memberSubCategoryRepository.existsByCategoryAndName(memberSubCategory.getCategory(), memberSubCategoryRequestDto.getName())) {
+        if (memberSubCategoryRepository.existsByCategoryAndNameAndIdNot(memberSubCategory.getCategory(), memberSubCategoryRequestDto.getName(), memberSubCategory.getId())) {
             log.warn("Usuario {} intento actualizar sub-categoria {} en la categoria {} pero ya existe una sub-categoria dentro de esa categoria con ese nombre.",
                     user.getMember().getId(), memberSubCategoryRequestDto.getName(), memberSubCategory.getCategory().getId());
             throw new AlreadyExistsSubCategoryWithName(memberSubCategoryRequestDto.getName(), memberSubCategory.getCategory().getName());

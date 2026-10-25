@@ -9,4 +9,6 @@ import org.springframework.stereotype.Repository;
 public interface MemberSubCategoryRepository extends JpaRepository<MemberSubCategory, String> {
 
     boolean existsByCategoryAndName(MemberCategory category,String name);
+
+    boolean existsByCategoryAndNameAndIdNot(MemberCategory category, String name, String id);
 }
