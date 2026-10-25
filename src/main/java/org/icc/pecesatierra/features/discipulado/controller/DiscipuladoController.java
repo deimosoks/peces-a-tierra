@@ -1,5 +1,6 @@
 package org.icc.pecesatierra.features.discipulado.controller;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.icc.pecesatierra.features.discipulado.dtos.*;
 import org.icc.pecesatierra.features.discipulado.service.DiscipuladoService;
@@ -28,7 +29,7 @@ public class DiscipuladoController {
             && 
             @securityService.isActive(authentication)
             """)
-    public ResponseEntity<DiscipuladoResponseDto> create(@RequestBody DiscipuladoRequestDto dto,
+    public ResponseEntity<DiscipuladoResponseDto> create(@Valid @RequestBody DiscipuladoRequestDto dto,
                                                          @AuthenticationPrincipal User user) {
         return ResponseEntity.status(HttpStatus.CREATED).body(discipuladoService.create(dto, user));
     }
@@ -58,7 +59,7 @@ public class DiscipuladoController {
             && 
             @securityService.isActive(authentication)
             """)
-    public ResponseEntity<PagesResponseDto<DiscipuladoResponseDto>> search(@RequestBody DiscipuladoFilterRequestDto filters,
+    public ResponseEntity<PagesResponseDto<DiscipuladoResponseDto>> search(@Valid @RequestBody DiscipuladoFilterRequestDto filters,
                                                                            @RequestParam(required = false, defaultValue = "0") int page,
                                                                            @AuthenticationPrincipal User user) {
         return ResponseEntity.ok(discipuladoService.search(page, filters, user));
@@ -90,7 +91,7 @@ public class DiscipuladoController {
             && 
             @securityService.isActive(authentication)
             """)
-    public ResponseEntity<DiscipuladoProgressResponseDto> progress(@RequestBody DiscipuladoProgressRequestDto dto,
+    public ResponseEntity<DiscipuladoProgressResponseDto> progress(@Valid @RequestBody DiscipuladoProgressRequestDto dto,
                                                                    @AuthenticationPrincipal User user) {
         return ResponseEntity.ok(discipuladoService.progress(dto, user));
     }
@@ -105,7 +106,7 @@ public class DiscipuladoController {
             && 
             @securityService.isActive(authentication)
             """)
-    public ResponseEntity<DiscipuladoProgressResponseDto> progressUpdate(@RequestBody DiscipuladoProgressRequestDto dto,
+    public ResponseEntity<DiscipuladoProgressResponseDto> progressUpdate(@Valid @RequestBody DiscipuladoProgressRequestDto dto,
                                                                          @PathVariable String id,
                                                                          @AuthenticationPrincipal User user) {
         return ResponseEntity.ok(discipuladoService.updateProgress(dto, user, id));
