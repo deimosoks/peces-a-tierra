@@ -32,8 +32,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 class EndpointInventoryTest {
 
     private static final String MATRIX = "security/endpoint-matrix.csv";
-    private static final int EXPECTED_HANDLERS = 69;
-    private static final int EXPECTED_PRE_AUTHORIZE = 67;
+    private static final int EXPECTED_HANDLERS = 71;
+    private static final int EXPECTED_PRE_AUTHORIZE = 69;
 
     @Test
     void everyHandlerHasARowInTheEndpointMatrix() throws Exception {

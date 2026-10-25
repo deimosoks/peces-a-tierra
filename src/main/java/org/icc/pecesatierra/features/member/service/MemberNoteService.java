@@ -8,6 +8,8 @@ import org.icc.pecesatierra.features.member.Member;
 import org.icc.pecesatierra.features.member.MemberNotes;
 import org.icc.pecesatierra.features.user.User;
 import org.icc.pecesatierra.features.member.exceptions.CannotDeleteMemberOutSideYourBranchException;
+import org.icc.pecesatierra.features.member.exceptions.MemberNotFoundException;
+import org.icc.pecesatierra.features.member.exceptions.notes.CannotManageNotesOutsideYourBranchException;
 import org.icc.pecesatierra.features.member.exceptions.notes.NoteNotFoundException;
 import org.icc.pecesatierra.features.member.repository.MemberNotesRepository;
 import org.icc.pecesatierra.features.member.repository.MemberRepository;
@@ -16,6 +18,8 @@ import org.icc.pecesatierra.utils.enums.AppPermission;
 import org.icc.pecesatierra.utils.time.DateTimeUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Slf4j
 @Service
@@ -93,5 +97,79 @@ public class MemberNoteService {
         );
 
         memberNotesRepositor.delete(memberNotes);
+    }
+
+    /**
+     * Notas de un integrante, de la mas reciente a la mas antigua. La sede se
+     * comprueba antes de leer las notas: un no-admin solo ve notas de
+     * integrantes de su propia sede.
+     */
+    @Transactional(readOnly = true)
+    public List<MemberNoteResponseDto> findByMember(String memberId, User user) {
+
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(MemberNotFoundException::new);
+
+        assertCanManageNotes(user, member);
+
+        return memberNotesRepositor.findByMember_IdOrderByCreatedAtDesc(memberId)
+                .stream()
+                .map(memberNotesMapper::toDto)
+                .toList();
+    }
+
+    /**
+     * Actualiza el contenido de una nota existente. El {@code memberId} del DTO
+     * no mueve la nota de integrante: solo se cambia el texto.
+     */
+    @Transactional
+    public MemberNoteResponseDto updateNote(String noteId, MemberNoteRequestDto memberNoteRequestDto, User user) {
+
+        MemberNotes memberNotes = memberNotesRepositor.findById(noteId)
+                .orElseThrow(NoteNotFoundException::new);
+
+        assertCanManageNotes(user, memberNotes.getMember());
+
+        String previousNote = memberNotes.getNote();
+        memberNotes.setNote(memberNoteRequestDto.getNote());
+
+        memberNotesRepositor.save(memberNotes);
+
+        log.info("""
+                        Se actualizó una nota de integrante:
+                        Nota ID: {}
+                        Integrante: {} ({})
+                        Contenido anterior: {}
+                        Contenido nuevo: {}
+                        Actualizada por: {} ({})
+                        Fecha actualización: {}
+                        """,
+                memberNotes.getId(),
+                memberNotes.getMember().getCompleteName(),
+                memberNotes.getMember().getId(),
+                previousNote,
+                memberNotes.getNote(),
+                user.getUsername(),
+                user.getId(),
+                dateTimeUtils.nowUTC()
+        );
+
+        return memberNotesMapper.toDto(memberNotes);
+    }
+
+    /**
+     * Mismo criterio de sede que {@link #deleteNote(String, User)}: el
+     * administrador conserva el bypass y cualquier otro usuario solo opera sobre
+     * integrantes de su sede.
+     */
+    private void assertCanManageNotes(User user, Member member) {
+        if (user.hasAuthority(AppPermission.ADMINISTRATOR.name())) {
+            return;
+        }
+
+        if (member.getBranch() == null
+                || !user.getMember().getBranch().getId().equals(member.getBranch().getId())) {
+            throw new CannotManageNotesOutsideYourBranchException();
+        }
     }
 }

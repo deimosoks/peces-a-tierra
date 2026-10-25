@@ -43,6 +43,8 @@ MemberController,POST,/api/members,CREATE_MEMBER,multipart,pending
 MemberController,POST,/api/members/export,VIEW_MEMBER_PANEL,json,pending
 MemberNoteController,POST,/api/members/notes,CREATE_NOTE,json,pending
 MemberNoteController,DELETE,/api/members/notes/{noteId},DELETE_NOTE,none,pending
+MemberNoteController,GET,/api/members/{memberId}/notes,VIEW_MEMBER_PANEL,none,pending
+MemberNoteController,PUT,/api/members/notes/{noteId},CREATE_NOTE,json,pending
 MemberController,POST,/api/members/search,VIEW_MEMBER_PANEL,json,pending
 MemberController,DELETE,/api/members/{memberId},DELETE_MEMBER,none,pending
 MemberController,PATCH,/api/members/{memberId},UPDATE_MEMBER,none,pending
