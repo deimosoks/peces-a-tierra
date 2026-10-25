@@ -44,7 +44,7 @@ El proyecto sigue una arquitectura en capas limpia y escalable:
 2.  **Services:** Lógica de negocio pura, transaccionalidad y validaciones complejas.
 3.  **Repositories:** Acceso a datos y consultas dinámicas mediante `JpaSpecificationExecutor`.
 4.  **Domain/Entities:** Modelado de datos relacional.
-5.  **Exceptions:** Manejo centralizado de errores con `GlobalExceptionHandler` y respuestas estandarizadas (`ApiException`).
+5.  **Exceptions:** Manejo centralizado de errores con `GlobalHandlerException` y respuestas estandarizadas (`ApiException` → `ErrorResponseDto`).
 
 ## ⚙️ Configuración e Instalación
 

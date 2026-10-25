@@ -3,6 +3,33 @@
 Decisiones de producto que aplazan un cambio de diseño. No son "descartados": siguen siendo deuda
 técnica y deben retomarse cuando se cumpla su disparador.
 
+## Estado al cierre del 2026-10-25
+
+- Suite: **158 tests en 29 clases, 154 ejecutados, 4 saltados** (Docker), **0 fallos / 0 errores**.
+- Cerrados en la ronda: H-23, H-24, H-25, H-28, H-42, H-42a, H-43, H-45, H-49 y, con el despliegue del
+  estático, **M-01**. Detalle, tests de regresión y evidencia en `audit/ronda-2026-10-25.md`.
+- Abiertos: **H-01** (P0), **H-41**, **H-42b**, **M-03 residual**, **M-06, M-07, M-09, M-10, M-18,
+  M-21, M-22**, más los medios/bajos H-13 a H-19 y H-51.
+- Despliegue: último commit de código `eb186ac`; estático `main-PCRBV2VD.js` (34 archivos, 0
+  apariciones de `ui-avatars.com`). Sigue sin CI y sin migraciones (`ddl-auto=validate`).
+- Siguiente paso recomendado: H-01 (vistas `ai_read` + validador de lista blanca); es el único P0.
+
+### Hallazgos cerrados el 2026-10-25
+
+| Hallazgo | Estado | Fecha | Commit |
+|---|---|---|---|
+| H-23 — NPE/foto huérfana en el alta sin foto | **RESUELTO** | 2026-10-25 | `af288e2` |
+| H-24 — `categoryLocked` ignorado al actualizar integrante | **RESUELTO** | 2026-10-25 | `51a8ecc` |
+| H-25 — 409 falso al guardar una subcategoría sin cambiar el nombre | **RESUELTO** | 2026-10-25 | `a6ecb1d` |
+| H-28 — cuerpos sin `@Valid`/`@NotNull` en discipulado | **RESUELTO** | 2026-10-25 | `5041ae4` |
+| H-42 — violaciones de integridad no controladas devolvían 500 | **RESUELTO** | 2026-10-25 | `2eb48f9` |
+| H-42a — nombre de tipo duplicado al actualizar no se detectaba | **RESUELTO** | 2026-10-25 | `eb186ac` |
+| H-43 — el filtro de edad perdía el último año de cada rango | **RESUELTO** | 2026-10-25 | `a6e0218` |
+| H-45 — permisos repetidos rompían el alta/edición de rol | **RESUELTO** | 2026-10-25 | `9929952` |
+| H-49 — logout y cambio de contraseña sin exigir cuenta activa | **RESUELTO** | 2026-10-25 | `8c5e88b` |
+| M-01 — el PWA hacía `logout()` ante cualquier 403 | **RESUELTO** | 2026-10-25 | `ed937a8` |
+| Estático PWA — bundle de julio con `ui-avatars.com` | **RESUELTO** | 2026-10-25 | `ed937a8` |
+
 ## Estado al cierre del 2026-10-24
 
 - Suite: **135 tests, 131 ejecutados, 4 saltados** (Docker), **0 fallos**.
@@ -43,6 +70,21 @@ técnica y deben retomarse cuando se cumpla su disparador.
 - **Disparadores para retomarlo**: rebuild del frontend Angular, aparición de un cliente API
   distinto de la PWA, o soporte de selección multi-evento.
 
+## H-42b — `Services.name` no tiene restricción única (ABIERTO)
+
+- **Estado**: **ABIERTO**. Separado de H-42 durante la verificación adversarial del 2026-10-25: la
+  tabla `member_types` tiene `unique` en `name` y por eso el alta duplicada acaba en 409; la tabla
+  `services` no lo tiene.
+- **Problema actual**: `Services.java:22` declara `@Column(nullable = false)` sin `unique = true`, y
+  `ServiceService.create`/`update` (`:31`, `:60`) no llaman a ningún `existsByName` equivalente al de
+  `MemberTypeService:33,66`. Dos servicios con el mismo nombre conviven sin error: **duplicado
+  silencioso**, no 500. El handler 409 de H-42 no lo cubre porque la base no lo rechaza.
+- **Cierre propuesto**: validación de nombre único en `ServiceService` (con su excepción `ApiException`
+  y su test) y, aparte, `unique` en la tabla, que es un cambio de esquema: hoy no hay migraciones y
+  `ddl-auto=validate` no crea ni altera índices.
+- **Riesgo**: reportes y filtros por servicio se duplican o se atribuyen al servicio equivocado; no
+  es una fuga entre sedes.
+
 ## H-01 — Rol de base de datos de solo lectura para el endpoint de IA
 
 - **Estado**: **rol creado en Neon** el 2026-10-24 y `SqlExecutor` cableado a un `JdbcTemplate`
@@ -74,19 +116,18 @@ Runbook con el SQL: `audit/scripts/neon-ai-readonly.sql`.
 
 ## M-01 — El PWA hace `logout()` ante cualquier 403
 
-- **Estado**: aceptado temporalmente el **2026-10-24**. No se toca el bundle precompilado.
-- **Problema**: `src/main/resources/static/main-2X72WS5U.js` contiene
-  `if(i.status===403)return n.logout(),Cs(()=>i)`. El backend ahora devuelve 403 para permisos
-  denegados (H-11), así que un usuario autenticado sin permiso pierde la sesión al instante. Antes
-  recibía 401 y el interceptor intentaba refrescar.
-- **Opciones**:
-  1. Recompilar la PWA para distinguir 403 de permiso (mostrar "sin permisos", sin logout) de 401 de
-     sesión.
-  2. Mantener 401 para denegaciones de permiso hasta que el cliente esté migrado (reabre H-11).
-  3. Añadir un código de error estable en el cuerpo y actualizar el interceptor en el rebuild.
-- **Riesgo aceptado**: logout inesperado y pérdida de trabajo en el cliente; no es un bypass de
-  seguridad.
-- **Disparador**: rebuild del frontend Angular o cambio del contrato de errores.
+- **Estado**: **RESUELTO** el **2026-10-25** por el despliegue del build de la remediación
+  (`ed937a8`). Queda solo como referencia histórica del defecto.
+- **Problema (bundle anterior `main-2X72WS5U.js`)**:
+  `if(i.status===403)return n.logout(),Cs(()=>i)`. El backend devuelve 403 para permisos denegados
+  (H-11), así que un usuario autenticado sin permiso perdía la sesión al instante. Antes recibía 401 y
+  el interceptor intentaba refrescar.
+- **Verificación (bundle desplegado `main-PCRBV2VD.js`)**: la única rama que hace `logout()` es
+  `n.status===403 && r.url.includes("/users/@me")`, es decir, el sondeo de sesión; un 403 de permiso en
+  cualquier otro endpoint ya no cierra la sesión. Es el comportamiento que pedía la primera de las
+  opciones barajadas en el 2026-10-24 (distinguir 403 de permiso de sesión inválida).
+- **Residual**: si `/users/@me` responde 403 por una cuenta desactivada, el cliente cierra la sesión,
+  que es el comportamiento buscado (H-49).
 
 ## Pendientes del bloque M-02..M-24 (2026-10-24)
 
@@ -119,5 +160,5 @@ abiertos por decisión de alcance o por no ser verificables en esta máquina:
 - **M-22 / H-01**: fuera de alcance por instrucción explícita (pertenece a H-01: vistas `ai_read`,
   RLS, validador SQL y `new User()`).
 
-M-01 (PWA y 403) sigue en la sección anterior: el bloque M-02..M-24 no tocó el bundle ni el contrato
-de 403.
+M-01 (PWA y 403) quedó **RESUELTO** el 2026-10-25 con el despliegue del bundle (`ed937a8`): el bloque
+M-02..M-24 no lo tocó, lo cerró el rebuild del frontend.
