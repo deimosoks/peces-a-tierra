@@ -61,6 +61,14 @@ public class MemberTypeService {
         MemberType memberType = memberTypeRepository.findById(typeId)
                 .orElseThrow(TypeNotFoundException::new);
 
+        // Excluye el propio tipo: guardar sin cambiar el nombre no es conflicto
+        // (mismo criterio que H-25 en sub-categorias).
+        if (memberTypeRepository.existsByNameAndIdNot(memberCategoryRequestDto.getName(), memberType.getId())) {
+            log.warn("Intento de actualizar el tipo {} con el nombre '{}' pero ya existe otro tipo con ese nombre.",
+                    memberType.getId(), memberCategoryRequestDto.getName());
+            throw new TypeWithNameAlreadyExistsException(memberCategoryRequestDto.getName());
+        }
+
         MemberType beforeUpdate = MemberType.builder()
                 .id(memberType.getId())
                 .name(memberType.getName())
