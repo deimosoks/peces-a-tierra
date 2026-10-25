@@ -150,7 +150,7 @@ public class MemberMapper {
         member.setPostalCode(memberRequestDto.getPostalCode());
         member.setLatitude(memberRequestDto.getLatitude());
         member.setLongitude(memberRequestDto.getLongitude());
-        member.setCategoryLocked(member.isCategoryLocked());
+        member.setCategoryLocked(memberRequestDto.isCategoryLocked());
 
     }
 }
