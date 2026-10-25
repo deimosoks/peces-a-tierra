@@ -1,6 +1,7 @@
 package org.icc.pecesatierra.features.user.controller;
 
 import jakarta.validation.Valid;
+import jakarta.validation.groups.Default;
 import lombok.RequiredArgsConstructor;
 import org.icc.pecesatierra.utils.models.BaseController;
 import org.icc.pecesatierra.features.user.User;
@@ -11,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -44,7 +46,9 @@ public class UserController extends BaseController {
              @securityService.isActive(authentication)
             """)
     @PostMapping
-    public ResponseEntity<UserResponseDto> create(@RequestBody @Valid UserRequestDto userRequestDto,
+    public ResponseEntity<UserResponseDto> create(@RequestBody
+                                                  @Validated({Default.class, UserRequestDto.CreateValidation.class})
+                                                  UserRequestDto userRequestDto,
                                                   @AuthenticationPrincipal User givenBy) {
         return ResponseEntity.status(HttpStatus.CREATED).body(userService.create(userRequestDto, givenBy));
     }

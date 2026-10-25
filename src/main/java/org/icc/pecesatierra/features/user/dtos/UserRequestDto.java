@@ -14,6 +14,14 @@ import java.util.Set;
 @AllArgsConstructor
 public class UserRequestDto {
 
+    /**
+     * Grupo de validacion del alta. {@code update} reutiliza este DTO y debe
+     * seguir funcionando sin contraseña, asi que la obligatoriedad solo se
+     * evalua cuando el controller valida este grupo (H-42b).
+     */
+    public interface CreateValidation {
+    }
+
     @NotBlank(message = "Debe ingresar un id de miembro valido.")
     private String memberId;
 
@@ -21,7 +29,7 @@ public class UserRequestDto {
     @Size(min = 5, max = 20, message = "El nombre de usuario debe tener entre 3 y 20 caracteres.")
     private String username;
 
-//    @NotBlank(message = "Debe ingresar una contraseña valida.")
+    @NotBlank(groups = CreateValidation.class, message = "Debe ingresar una contraseña válida.")
     @Size(min = 8, message = "La contraseña debe tener al menos 8 caracteres.")
     private String password;
 
