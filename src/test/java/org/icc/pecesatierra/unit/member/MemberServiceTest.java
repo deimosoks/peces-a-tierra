@@ -3,7 +3,16 @@ package org.icc.pecesatierra.unit.member;
 import org.icc.pecesatierra.features.attendance.repository.AttendanceRepository;
 import org.icc.pecesatierra.features.branch.Branch;
 import org.icc.pecesatierra.configurations.ExportLimits;
+import org.icc.pecesatierra.features.branch.mapper.BranchMapper;
+import org.icc.pecesatierra.features.category.MemberCategory;
+import org.icc.pecesatierra.features.category.MemberSubCategory;
+import org.icc.pecesatierra.features.category.mapper.MemberCategoryMapper;
+import org.icc.pecesatierra.features.category.mapper.MemberSubCategoryMapper;
+import org.icc.pecesatierra.features.category.repository.MemberCategoryRepository;
+import org.icc.pecesatierra.features.category.repository.MemberSubCategoryRepository;
 import org.icc.pecesatierra.features.category.repository.mapper.MemberMapper;
+import org.icc.pecesatierra.features.category.repository.mapper.MemberNotesMapper;
+import org.icc.pecesatierra.features.category.repository.mapper.MemberTypeMapper;
 import org.icc.pecesatierra.features.member.Member;
 import org.icc.pecesatierra.features.member.MemberNotes;
 import org.icc.pecesatierra.features.member.dtos.MemberExportDto;
@@ -16,6 +25,8 @@ import org.icc.pecesatierra.features.member.repository.MemberNotesRepository;
 import org.icc.pecesatierra.features.member.repository.MemberRepository;
 import org.icc.pecesatierra.features.member.service.MemberPersistenceService;
 import org.icc.pecesatierra.features.member.service.MemberService;
+import org.icc.pecesatierra.features.type.MemberType;
+import org.icc.pecesatierra.features.type.repository.MemberTypeRepository;
 import org.icc.pecesatierra.features.user.User;
 import org.icc.pecesatierra.support.TestFixtures;
 import org.icc.pecesatierra.utils.cloudinary.PictureUtils;
@@ -23,6 +34,7 @@ import org.icc.pecesatierra.utils.exceptions.ExportLimitExceededException;
 import org.icc.pecesatierra.utils.models.ExportResponseDto;
 import org.icc.pecesatierra.utils.models.PagesResponseDto;
 import org.icc.pecesatierra.utils.specs.MemberSpecification;
+import org.icc.pecesatierra.utils.time.DateTimeUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -38,6 +50,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.lang.reflect.Method;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -327,5 +341,75 @@ class MemberServiceTest {
         EntityGraph notesGraph = notesQuery.getAnnotation(EntityGraph.class);
         assertThat(notesGraph).isNotNull();
         assertThat(notesGraph.attributePaths()).contains("createdBy");
+    }
+
+    // ---------- H-39: grafo de la exportacion ----------
+
+    @Test
+    void exportEntityGraphFetchesOnlyTheToOneAssociationsReadByTheExportMapper_H39() throws NoSuchMethodException {
+        Method exportQuery = MemberRepository.class.getMethod("findAll", Specification.class);
+        EntityGraph graph = exportQuery.getAnnotation(EntityGraph.class);
+
+        assertThat(graph).isNotNull();
+        // toExportDto solo pide el nombre del tipo, de la categoria y de la
+        // subcategoria, asi que esas tres to-one bastan.
+        assertThat(graph.attributePaths()).containsExactlyInAnyOrder("typeId", "categoryId", "subcategoryId");
+        // notes es una coleccion: unirla multiplicaria las filas del export.
+        // branch/registeredBy no los lee el mapper de exportacion.
+        assertThat(graph.attributePaths()).doesNotContain("notes", "branch", "registeredBy");
+    }
+
+    @Test
+    void exportMapsTheSameFieldsForEveryRowAfterPreloadingTheGraph_H39() {
+        DateTimeUtils dateTimeUtils = mock(DateTimeUtils.class);
+        when(dateTimeUtils.nowColombia()).thenReturn(LocalDateTime.of(2026, 1, 15, 7, 0));
+        MemberMapper realMapper = new MemberMapper(
+                mock(MemberNotesMapper.class),
+                mock(MemberCategoryMapper.class),
+                mock(MemberTypeMapper.class),
+                mock(MemberCategoryRepository.class),
+                mock(MemberTypeRepository.class),
+                mock(MemberSubCategoryRepository.class),
+                mock(MemberSubCategoryMapper.class),
+                mock(BranchMapper.class),
+                dateTimeUtils);
+
+        MemberType type = MemberType.builder().id("type-1").name("Adulto").color("#112233").build();
+        MemberCategory category = MemberCategory.builder().id("cat-1").name("Jovenes").color("#112233").build();
+        MemberSubCategory subCategory = MemberSubCategory.builder()
+                .id("sub-1").name("Universitarios").color("#112233").category(category).build();
+        Member member = TestFixtures.member("member-1", branchA, "Ana Perez");
+        member.setTypeId(type);
+        member.setCategoryId(category);
+        member.setSubcategoryId(subCategory);
+        member.setGender("F");
+        member.setCellphone("3000000000");
+        member.setAddress("Calle 1 # 2-3");
+        member.setCc("123456789");
+        member.setBirthdate(LocalDate.of(2000, 1, 1));
+
+        MemberService service = new MemberService(memberRepository, realMapper, attendanceRepository,
+                memberPersistenceService, pictureUtils, memberSpecification, new ExportLimits(10),
+                memberNotesRepository);
+        Specification<Member> spec = mock(Specification.class);
+        when(memberSpecification.build(any(MemberFilterRequestDto.class), any(User.class))).thenReturn(spec);
+        when(memberRepository.count(spec)).thenReturn(1L);
+        when(memberRepository.findAll(spec)).thenReturn(List.of(member));
+
+        ExportResponseDto<MemberExportDto> response = service.export(new MemberFilterRequestDto(), operator());
+
+        // Las mismas columnas que el export entregaba antes del grafo.
+        assertThat(response.getTotalElements()).isEqualTo(1);
+        MemberExportDto dto = response.getData().get(0);
+        assertThat(dto.getCompleteName()).isEqualTo("Ana Perez");
+        assertThat(dto.getType()).isEqualTo("Adulto");
+        assertThat(dto.getCategory()).isEqualTo("Jovenes");
+        assertThat(dto.getSubCategory()).isEqualTo("Universitarios");
+        assertThat(dto.getGender()).isEqualTo("F");
+        assertThat(dto.getCellphone()).isEqualTo("3000000000");
+        assertThat(dto.getAddress()).isEqualTo("Calle 1 # 2-3");
+        assertThat(dto.getCc()).isEqualTo("123456789");
+        assertThat(dto.getBirthdate()).isEqualTo(LocalDate.of(2000, 1, 1));
+        assertThat(dto.getAge()).isEqualTo(26);
     }
 }

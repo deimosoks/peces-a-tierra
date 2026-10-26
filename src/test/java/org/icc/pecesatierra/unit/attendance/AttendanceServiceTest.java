@@ -11,12 +11,19 @@ import org.icc.pecesatierra.features.attendance.service.AttendanceService;
 import org.icc.pecesatierra.configurations.ExportLimits;
 import org.icc.pecesatierra.features.branch.Branch;
 import org.icc.pecesatierra.features.category.MemberCategory;
+import org.icc.pecesatierra.features.category.MemberSubCategory;
+import org.icc.pecesatierra.features.category.dtos.MemberCategoryResponseDto;
+import org.icc.pecesatierra.features.category.dtos.MemberSubCategoryResponseDto;
+import org.icc.pecesatierra.features.category.mapper.MemberCategoryMapper;
+import org.icc.pecesatierra.features.category.mapper.MemberSubCategoryMapper;
+import org.icc.pecesatierra.features.category.repository.mapper.MemberTypeMapper;
 import org.icc.pecesatierra.features.member.Member;
 import org.icc.pecesatierra.features.member.repository.MemberRepository;
 import org.icc.pecesatierra.features.service.ServiceEvent;
 import org.icc.pecesatierra.features.service.Services;
 import org.icc.pecesatierra.features.service.repository.ServiceEventRepository;
 import org.icc.pecesatierra.features.type.MemberType;
+import org.icc.pecesatierra.features.type.dtos.MemberTypeResponseDto;
 import org.icc.pecesatierra.features.user.User;
 import org.icc.pecesatierra.support.TestFixtures;
 import org.icc.pecesatierra.utils.exceptions.ExportLimitExceededException;
@@ -31,8 +38,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.http.HttpStatus;
 
+import java.lang.reflect.Method;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
@@ -195,6 +204,95 @@ class AttendanceServiceTest {
         // Solo se cuenta: no se materializa ninguna fila ni se mapea nada.
         verify(attendanceRepository, never()).findAll(any(Specification.class));
         verifyNoInteractions(attendanceMapper);
+    }
+
+    // ---------- H-39: grafo de la exportacion ----------
+
+    @Test
+    void exportEntityGraphFetchesEveryToOneAssociationReadByTheMapper_H39() throws NoSuchMethodException {
+        Method exportQuery = AttendanceRepository.class.getMethod("findAll", Specification.class);
+        EntityGraph graph = exportQuery.getAnnotation(EntityGraph.class);
+
+        assertThat(graph).isNotNull();
+        // Justo las to-one que toca AttendanceMapper.toDto: integrante, evento
+        // con su servicio, sede, categoria, tipo, subcategoria y los dos
+        // integrantes de auditoria.
+        assertThat(graph.attributePaths()).containsExactlyInAnyOrder(
+                "member",
+                "serviceEvent",
+                "serviceEvent.services",
+                "branch",
+                "memberCategory",
+                "memberType",
+                "memberSubCategory",
+                "registeredById",
+                "invalidatorId");
+        // Una coleccion unida a una lista de hasta EXPORT_MAX_ROWS multiplicaria
+        // las filas: las subcategorias de la categoria se resuelven por lotes.
+        assertThat(graph.attributePaths()).doesNotContain("memberCategory.subCategories");
+    }
+
+    @Test
+    void exportMapsTheSameFieldsForEveryRowAfterPreloadingTheGraph_H39() {
+        MemberCategoryMapper categoryMapper = mock(MemberCategoryMapper.class);
+        MemberTypeMapper typeMapper = mock(MemberTypeMapper.class);
+        MemberSubCategoryMapper subCategoryMapper = mock(MemberSubCategoryMapper.class);
+        MemberCategoryResponseDto categoryDto = MemberCategoryResponseDto.builder().id("cat-1").build();
+        MemberTypeResponseDto typeDto = MemberTypeResponseDto.builder().id("type-1").build();
+        MemberSubCategoryResponseDto subCategoryDto = MemberSubCategoryResponseDto.builder().id("sub-1").build();
+        Member registrar = TestFixtures.member("member-op", branch, "Operador A");
+
+        when(categoryMapper.toDto(category)).thenReturn(categoryDto);
+        when(typeMapper.toDto(type)).thenReturn(typeDto);
+        when(subCategoryMapper.toDto(any())).thenReturn(subCategoryDto);
+
+        MemberSubCategory subCategory = MemberSubCategory.builder()
+                .id("sub-1").name("Jovenes").color("#112233").category(category).build();
+        Attendance row = Attendance.builder()
+                .id("attendance-1")
+                .member(TestFixtures.member("member-1", branch, "Ana Perez"))
+                .memberCategory(category)
+                .memberType(type)
+                .memberSubCategory(subCategory)
+                .serviceEvent(eventOne)
+                .branch(branch)
+                .attendanceDate(TestFixtures.FIXED_NOW)
+                .registeredById(registrar)
+                .invalid(false)
+                .note("Nota")
+                .build();
+
+        AttendanceMapper realMapper = new AttendanceMapper(typeMapper, categoryMapper, subCategoryMapper,
+                new DateTimeUtils());
+        AttendanceService service = new AttendanceService(attendanceRepository, memberRepository, realMapper,
+                serviceEventRepository, attendanceSpecification, new DateTimeUtils(), new ExportLimits(10));
+        Specification<Attendance> spec = mock(Specification.class);
+        when(attendanceSpecification.build(any(AttendanceFiltersRequestDto.class), any(User.class))).thenReturn(spec);
+        when(attendanceRepository.count(spec)).thenReturn(1L);
+        when(attendanceRepository.findAll(spec)).thenReturn(List.of(row));
+
+        ExportResponseDto<AttendanceResponseDto> response =
+                service.export(new AttendanceFiltersRequestDto(), operator);
+
+        // Las mismas columnas que el export entregaba antes del grafo.
+        DateTimeUtils dates = new DateTimeUtils();
+        assertThat(response.getTotalElements()).isEqualTo(1);
+        AttendanceResponseDto dto = response.getData().get(0);
+        assertThat(dto.getId()).isEqualTo("attendance-1");
+        assertThat(dto.getServiceName()).isEqualTo("Culto dominical");
+        assertThat(dto.getMemberCompleteName()).isEqualTo("Ana Perez");
+        assertThat(dto.getServiceDate()).isEqualTo(dates.toColombia(eventOne.getStartDateTime()));
+        assertThat(dto.getAttendanceDate()).isEqualTo(dates.toColombia(TestFixtures.FIXED_NOW));
+        assertThat(dto.getBranchName()).isEqualTo("Sede A");
+        assertThat(dto.isInvalid()).isFalse();
+        assertThat(dto.getNote()).isEqualTo("Nota");
+        assertThat(dto.getRegisteredBy()).isEqualTo("Operador A");
+        assertThat(dto.getInvalidatedBy()).isEqualTo("desconocido.");
+        assertThat(dto.getInvalidAt()).isNull();
+        assertThat(dto.getInvalidReason()).isNull();
+        assertThat(dto.getMemberCategory()).isSameAs(categoryDto);
+        assertThat(dto.getMemberType()).isSameAs(typeDto);
+        assertThat(dto.getSubCategory()).isSameAs(subCategoryDto);
     }
 
     private Attendance attendance(String id, String memberId) {

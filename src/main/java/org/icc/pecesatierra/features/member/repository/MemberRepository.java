@@ -28,6 +28,33 @@ public interface MemberRepository extends JpaRepository<Member, String>, JpaSpec
     })
     Page<Member> findAll(Specification<Member> spec, Pageable pageable);
 
+    /**
+     * H-39: esta es la consulta de la exportacion. {@code MemberMapper.toExportDto}
+     * solo lee el nombre del tipo, de la categoria y de la subcategoria, asi que
+     * esas tres asociaciones to-one van en el grafo y se resuelven con la propia
+     * consulta en lugar de una consulta por fila cerca del tope de
+     * {@code EXPORT_MAX_ROWS}.
+     *
+     * <p>Se quedan FUERA a proposito:</p>
+     * <ul>
+     *   <li>{@code notes}: es una coleccion. Unirla multiplicaria las filas del
+     *   resultado y el export devolveria integrantes repetidos; ademas el export
+     *   no incluye notas.</li>
+     *   <li>{@code branch} y {@code registeredBy}: {@code toExportDto} no los
+     *   toca; unirlos solo anadiria trabajo a la consulta mas grande de la
+     *   aplicacion.</li>
+     *   <li>{@code categoryId.subCategories}: coleccion que el export no lee (usa
+     *   {@code categoryId.getName()}).</li>
+     * </ul>
+     */
+    @Override
+    @EntityGraph(attributePaths = {
+            "typeId",
+            "categoryId",
+            "subcategoryId"
+    })
+    List<Member> findAll(Specification<Member> spec);
+
     @Query("SELECT m FROM Member m WHERE FUNCTION('DATE_PART', 'month', m.birthdate) = :currentMonth")
     List<Member> findMembersWithBirthdayInMonth(@Param("currentMonth") int currentMonth);
 
