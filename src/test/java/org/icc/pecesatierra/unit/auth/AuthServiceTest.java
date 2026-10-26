@@ -1,6 +1,8 @@
 package org.icc.pecesatierra.unit.auth;
 
+import org.icc.pecesatierra.features.auth.dtos.AuthRequestDto;
 import org.icc.pecesatierra.features.auth.dtos.ChanggePasswordRequest;
+import org.icc.pecesatierra.features.auth.exceptions.AuthenticatedUserNotFoundException;
 import org.icc.pecesatierra.features.auth.exceptions.PasswordDoesNotMatchException;
 import org.icc.pecesatierra.features.auth.exceptions.PasswordDoesNotMatchWithPasswordRegisterException;
 import org.icc.pecesatierra.features.auth.mapper.RefreshTokenMapper;
@@ -17,12 +19,16 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -66,6 +72,41 @@ class AuthServiceTest {
                 .confirmPassword(confirmPassword)
                 .oldPassword(oldPassword)
                 .build();
+    }
+
+    private AuthRequestDto loginRequest(String username, String password) {
+        return AuthRequestDto.builder()
+                .username(username)
+                .password(password)
+                .build();
+    }
+
+    @Test
+    void unknownUserStillPaysThePasswordHashCost_H19() {
+        when(authenticationManager.authenticate(any()))
+                .thenThrow(new BadCredentialsException("credenciales invalidas"));
+
+        assertThatThrownBy(() -> authService.login(loginRequest("desconocido", "secreta")))
+                .isInstanceOf(BadCredentialsException.class);
+
+        // El camino corto debe costar lo mismo que un hash real de BCrypt.
+        verify(passwordEncoder).matches(eq("secreta"), anyString());
+        verifyNoInteractions(userDetailsService);
+    }
+
+    @Test
+    void inactiveUserStillPaysThePasswordHashCost_H19() {
+        User inactive = user();
+        inactive.setActive(false);
+        when(authenticationManager.authenticate(any()))
+                .thenReturn(new UsernamePasswordAuthenticationToken(inactive, null));
+        when(userDetailsService.loadUserByUsername("operador-a")).thenReturn(inactive);
+
+        assertThatThrownBy(() -> authService.login(loginRequest("operador-a", "secreta")))
+                .isInstanceOf(AuthenticatedUserNotFoundException.class);
+
+        verify(passwordEncoder).matches(eq("secreta"), anyString());
+        verify(refreshTokenService, never()).generate(any(User.class));
     }
 
     @Test

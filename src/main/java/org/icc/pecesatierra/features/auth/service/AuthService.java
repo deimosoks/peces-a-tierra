@@ -11,6 +11,7 @@ import org.icc.pecesatierra.features.user.repository.UserRepository;
 import org.icc.pecesatierra.features.auth.mapper.RefreshTokenMapper;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -31,21 +32,45 @@ public class AuthService {
     private final RefreshTokenMapper refreshTokenMapper;
     private final PasswordEncoder passwordEncoder;
 
+    /**
+     * Hash BCrypt senuelo (coste 10, el mismo que el {@code PasswordEncoder} de
+     * produccion) contra el que se compara la contrasena cuando el usuario no
+     * existe o esta inactivo (H-19).
+     *
+     * <p>Sin esta comparacion el camino de "usuario inexistente" terminaba mucho
+     * antes que el de "usuario existente" y permitia enumerar cuentas midiendo el
+     * tiempo de respuesta. El valor es una constante publica a proposito: su
+     * resultado se descarta y solo aporta el coste de computo.</p>
+     */
+    private static final String DECOY_PASSWORD_HASH =
+            "$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy";
+
     @Transactional
     public AuthResponseDto login(AuthRequestDto authRequestDto) {
 
-         authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        authRequestDto.getUsername(),
-                        authRequestDto.getPassword()
-                )
-        );
+        UserDetails userDetails;
 
-        UserDetails userDetails = userDetailsService.loadUserByUsername(authRequestDto.getUsername());
+        try {
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            authRequestDto.getUsername(),
+                            authRequestDto.getPassword()
+                    )
+            );
+
+            userDetails = userDetailsService.loadUserByUsername(authRequestDto.getUsername());
+        } catch (AuthenticationException authenticationException) {
+            // H-19: mismo coste de hash que el camino valido antes de propagar el
+            // error generico, para no distinguir "no existe" de "contrasena mala".
+            passwordEncoder.matches(authRequestDto.getPassword(), DECOY_PASSWORD_HASH);
+            throw authenticationException;
+        }
 
         User user = (User) userDetails;
 
         if (!user.isActive()) {
+            // H-19: el usuario inactivo tampoco puede ser distinguible por tiempo.
+            passwordEncoder.matches(authRequestDto.getPassword(), DECOY_PASSWORD_HASH);
             throw new AuthenticatedUserNotFoundException();
         }
 
