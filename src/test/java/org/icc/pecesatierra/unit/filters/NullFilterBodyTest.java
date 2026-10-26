@@ -15,6 +15,7 @@ import org.icc.pecesatierra.features.attendance.service.AttendanceService;
 import org.icc.pecesatierra.features.branch.Branch;
 import org.icc.pecesatierra.features.category.repository.mapper.MemberMapper;
 import org.icc.pecesatierra.features.member.Member;
+import org.icc.pecesatierra.features.member.repository.MemberNotesRepository;
 import org.icc.pecesatierra.features.member.repository.MemberRepository;
 import org.icc.pecesatierra.features.member.service.MemberPersistenceService;
 import org.icc.pecesatierra.features.member.service.MemberService;
@@ -169,7 +170,7 @@ class NullFilterBodyTest {
     void setUp() {
         memberService = new MemberService(memberRepository, memberMapper, attendanceRepository,
                 memberPersistenceService, pictureUtils, new MemberSpecification(dateTimeUtils),
-                new ExportLimits(10000));
+                new ExportLimits(10000), mock(MemberNotesRepository.class));
         attendanceService = new AttendanceService(attendanceRepository, memberRepository, attendanceMapper,
                 serviceEventRepository, new AttendanceSpecification(dateTimeUtils), dateTimeUtils,
                 new ExportLimits(10000));

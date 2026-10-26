@@ -5,11 +5,14 @@ import org.icc.pecesatierra.features.branch.Branch;
 import org.icc.pecesatierra.configurations.ExportLimits;
 import org.icc.pecesatierra.features.category.repository.mapper.MemberMapper;
 import org.icc.pecesatierra.features.member.Member;
+import org.icc.pecesatierra.features.member.MemberNotes;
 import org.icc.pecesatierra.features.member.dtos.MemberExportDto;
 import org.icc.pecesatierra.features.member.dtos.MemberFilterRequestDto;
 import org.icc.pecesatierra.features.member.dtos.MemberRequestDto;
+import org.icc.pecesatierra.features.member.dtos.MemberResponseDto;
 import org.icc.pecesatierra.features.member.exceptions.CannotUpdateMemberOutsideYourBranchException;
 import org.icc.pecesatierra.features.member.exceptions.MemberNoHasCategoryForThisSubCategoryException;
+import org.icc.pecesatierra.features.member.repository.MemberNotesRepository;
 import org.icc.pecesatierra.features.member.repository.MemberRepository;
 import org.icc.pecesatierra.features.member.service.MemberPersistenceService;
 import org.icc.pecesatierra.features.member.service.MemberService;
@@ -18,25 +21,35 @@ import org.icc.pecesatierra.support.TestFixtures;
 import org.icc.pecesatierra.utils.cloudinary.PictureUtils;
 import org.icc.pecesatierra.utils.exceptions.ExportLimitExceededException;
 import org.icc.pecesatierra.utils.models.ExportResponseDto;
+import org.icc.pecesatierra.utils.models.PagesResponseDto;
 import org.icc.pecesatierra.utils.specs.MemberSpecification;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.lang.reflect.Method;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -56,6 +69,8 @@ class MemberServiceTest {
     private PictureUtils pictureUtils;
     @Mock
     private MemberSpecification memberSpecification;
+    @Mock
+    private MemberNotesRepository memberNotesRepository;
 
     @InjectMocks
     private MemberService memberService;
@@ -185,7 +200,8 @@ class MemberServiceTest {
 
     private MemberService serviceWithExportLimit(int maxRows) {
         return new MemberService(memberRepository, memberMapper, attendanceRepository,
-                memberPersistenceService, pictureUtils, memberSpecification, new ExportLimits(maxRows));
+                memberPersistenceService, pictureUtils, memberSpecification, new ExportLimits(maxRows),
+                memberNotesRepository);
     }
 
     private User operator() {
@@ -234,5 +250,82 @@ class MemberServiceTest {
         // Solo se cuenta: no se materializa ninguna fila ni se mapea nada.
         verify(memberRepository, never()).findAll(any(Specification.class));
         verifyNoInteractions(memberMapper);
+    }
+
+    // ---------- H-39: notas de la busqueda sin N+1 ----------
+
+    private MemberNotes note(String id, Member member) {
+        return MemberNotes.builder()
+                .id(id)
+                .note("Nota " + id)
+                .member(member)
+                .createdBy(member)
+                .createdAt(TestFixtures.FIXED_NOW)
+                .build();
+    }
+
+    @Test
+    void searchWithoutNotesDoesNotReadTheNotesCollection_H39() {
+        Member member = TestFixtures.member("member-1", branchA, "Ana Perez");
+        Specification<Member> spec = mock(Specification.class);
+
+        when(memberSpecification.build(any(MemberFilterRequestDto.class), any(User.class))).thenReturn(spec);
+        when(memberRepository.findAll(eq(spec), any(Pageable.class)))
+                .thenReturn(new PageImpl<>(List.of(member)));
+        when(memberMapper.toDto(member, false))
+                .thenReturn(MemberResponseDto.builder().id("member-1").build());
+
+        PagesResponseDto<MemberResponseDto> response = memberService.search(0, null, operator(), false);
+
+        assertThat(response.getData()).extracting(MemberResponseDto::getId).containsExactly("member-1");
+        // El caso sin notas no lanza ninguna consulta de notas ni toca la coleccion.
+        verifyNoInteractions(memberNotesRepository);
+        verify(memberMapper, never()).toDto(any(Member.class), any(Collection.class));
+    }
+
+    @Test
+    void searchWithNotesLoadsEveryNoteOfThePageInASingleQuery_H39() {
+        Member first = TestFixtures.member("member-1", branchA, "Ana Perez");
+        Member second = TestFixtures.member("member-2", branchA, "Beto Perez");
+        MemberNotes firstNote = note("note-1", first);
+        MemberNotes secondNote = note("note-2", second);
+        Specification<Member> spec = mock(Specification.class);
+
+        when(memberSpecification.build(any(MemberFilterRequestDto.class), any(User.class))).thenReturn(spec);
+        when(memberRepository.findAll(eq(spec), any(Pageable.class)))
+                .thenReturn(new PageImpl<>(List.of(first, second), PageRequest.of(0, 20), 2));
+        when(memberNotesRepository.findByMember_IdIn(List.of(first.getId(), second.getId())))
+                .thenReturn(List.of(firstNote, secondNote));
+        when(memberMapper.toDto(any(Member.class), any(Collection.class)))
+                .thenReturn(MemberResponseDto.builder().id("member").build());
+
+        memberService.search(0, null, operator(), true);
+
+        // Una sola consulta para las notas de toda la pagina...
+        verify(memberNotesRepository, times(1)).findByMember_IdIn(List.of(first.getId(), second.getId()));
+
+        // ...y cada integrante recibe solo las suyas.
+        @SuppressWarnings("unchecked")
+        ArgumentCaptor<Collection<MemberNotes>> captor = ArgumentCaptor.forClass(Collection.class);
+        verify(memberMapper).toDto(eq(first), captor.capture());
+        assertThat(captor.getValue()).containsExactly(firstNote);
+        verify(memberMapper).toDto(eq(second), captor.capture());
+        assertThat(captor.getAllValues().get(1)).containsExactly(secondNote);
+    }
+
+    @Test
+    void pagedSearchDoesNotFetchTheNotesCollection_H39() throws NoSuchMethodException {
+        Method pageQuery = MemberRepository.class.getMethod("findAll", Specification.class, Pageable.class);
+        EntityGraph pageGraph = pageQuery.getAnnotation(EntityGraph.class);
+
+        // La consulta paginada no puede unir la coleccion: Hibernate paginaria en
+        // memoria. Las notas van por el segundo camino (lote por ids).
+        assertThat(pageGraph).isNotNull();
+        assertThat(pageGraph.attributePaths()).doesNotContain("notes");
+
+        Method notesQuery = MemberNotesRepository.class.getMethod("findByMember_IdIn", Collection.class);
+        EntityGraph notesGraph = notesQuery.getAnnotation(EntityGraph.class);
+        assertThat(notesGraph).isNotNull();
+        assertThat(notesGraph.attributePaths()).contains("createdBy");
     }
 }

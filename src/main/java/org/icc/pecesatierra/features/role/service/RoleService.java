@@ -16,6 +16,7 @@ import org.icc.pecesatierra.features.role.exceptions.RoleNotFoundException;
 import org.icc.pecesatierra.features.role.repository.UserRoleRepository;
 import org.icc.pecesatierra.features.role.mapper.RoleMapper;
 import org.icc.pecesatierra.features.role.repository.RoleRepository;
+import org.icc.pecesatierra.features.role.repository.RoleUsersCount;
 import org.icc.pecesatierra.utils.enums.AppPermission;
 import org.icc.pecesatierra.utils.time.DateTimeUtils;
 import org.springframework.security.core.GrantedAuthority;
@@ -24,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -219,6 +221,25 @@ public class RoleService {
 
     @Transactional(readOnly = true)
     public List<RoleResponseDto> findAll() {
-        return roleRepository.findAll().stream().map(roleMapper::toDto).toList();
+        List<Role> roles = roleRepository.findAll();
+        Map<String, Long> usersByRole = countUsersByRole(roles);
+
+        return roles.stream()
+                .map(role -> roleMapper.toDto(role, usersByRole.getOrDefault(role.getId(), 0L)))
+                .toList();
+    }
+
+    /**
+     * H-39: un solo conteo agregado para toda la lista. Antes el mapper lanzaba
+     * {@code countByRoleId} por cada rol.
+     */
+    private Map<String, Long> countUsersByRole(List<Role> roles) {
+        if (roles.isEmpty()) {
+            return Map.of();
+        }
+
+        return userRoleRepository.countUsersByRoleIds(roles.stream().map(Role::getId).toList())
+                .stream()
+                .collect(Collectors.toMap(RoleUsersCount::getRoleId, RoleUsersCount::getTotal));
     }
 }

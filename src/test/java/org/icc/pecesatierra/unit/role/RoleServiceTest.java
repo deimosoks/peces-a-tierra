@@ -10,6 +10,7 @@ import org.icc.pecesatierra.features.role.exceptions.CannotGrantPermissionsYouDo
 import org.icc.pecesatierra.features.role.exceptions.CannotManageRoleWithMorePrivilegesException;
 import org.icc.pecesatierra.features.role.mapper.RoleMapper;
 import org.icc.pecesatierra.features.role.repository.RoleRepository;
+import org.icc.pecesatierra.features.role.repository.RoleUsersCount;
 import org.icc.pecesatierra.features.role.repository.UserRoleRepository;
 import org.icc.pecesatierra.features.role.service.RoleService;
 import org.icc.pecesatierra.features.user.User;
@@ -26,6 +27,7 @@ import org.springframework.http.HttpStatus;
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -33,8 +35,12 @@ import java.util.stream.Collectors;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyCollection;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -304,5 +310,38 @@ class RoleServiceTest {
         roleService.delete("role-admin", actor);
 
         verify(roleRepository).delete(administratorRole);
+    }
+
+    // ---------- H-39: conteo de usuarios sin N+1 ----------
+
+    private RoleUsersCount roleUsersCount(String roleId, long total) {
+        RoleUsersCount count = mock(RoleUsersCount.class);
+        when(count.getRoleId()).thenReturn(roleId);
+        when(count.getTotal()).thenReturn(total);
+        return count;
+    }
+
+    @Test
+    void findAllResolvesUserCountsWithASingleAggregatedQuery_H39() {
+        Role withUsers = role("role-1", AppPermission.VIEW_MEMBER_PANEL);
+        Role withoutUsers = role("role-2");
+
+        when(roleRepository.findAll()).thenReturn(List.of(withUsers, withoutUsers));
+        // El rol sin usuarios no aparece en el agregado: cuenta 0.
+        RoleUsersCount threeUsers = roleUsersCount("role-1", 3);
+        when(userRoleRepository.countUsersByRoleIds(anyCollection()))
+                .thenReturn(List.of(threeUsers));
+
+        RoleService serviceWithRealMapper = new RoleService(
+                roleRepository, new RoleMapper(userRoleRepository, dateTimeUtils),
+                userRoleRepository, dateTimeUtils);
+
+        List<RoleResponseDto> roles = serviceWithRealMapper.findAll();
+
+        assertThat(roles).extracting(RoleResponseDto::getTotalUsers).containsExactly(3L, 0L);
+        // Una sola consulta agregada para toda la lista y ningun conteo por rol.
+        verify(userRoleRepository, times(1)).countUsersByRoleIds(anyCollection());
+        verify(userRoleRepository, never()).countByRoleId(anyString());
+        verify(roleRepository, times(1)).findAll();
     }
 }

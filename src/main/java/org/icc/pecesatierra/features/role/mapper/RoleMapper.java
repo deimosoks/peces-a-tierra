@@ -23,6 +23,14 @@ public class RoleMapper {
     private final DateTimeUtils dateTimeUtils;
 
     public RoleResponseDto toDto(Role role) {
+        return toDto(role, userRoleRepository.countByRoleId(role.getId()));
+    }
+
+    /**
+     * H-39: variante para listas, donde el conteo de usuarios llega ya resuelto
+     * en un solo agregado. El mapper no debe consultar por rol.
+     */
+    public RoleResponseDto toDto(Role role, long totalUsers) {
         RoleResponseDto roleResponseDto = RoleResponseDto.builder()
                 .id(role.getId())
                 .createdAt(dateTimeUtils.toColombia(role.getCreatedAt()))
@@ -31,7 +39,7 @@ public class RoleMapper {
                 .color(role.getColor())
                 .description(role.getDescription())
                 .permissions(new HashSet<>())
-                .totalUsers(userRoleRepository.countByRoleId(role.getId()))
+                .totalUsers(totalUsers)
                 .build();
         roleResponseDto.getPermissions().addAll(
                 role.getPermissions().stream().map(r -> new PermissionResponseDto(r.getId().getPermission())).collect(Collectors.toSet()));

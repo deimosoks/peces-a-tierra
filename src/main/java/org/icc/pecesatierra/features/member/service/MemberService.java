@@ -7,6 +7,7 @@ import org.icc.pecesatierra.features.member.dtos.MemberFilterRequestDto;
 import org.icc.pecesatierra.features.member.dtos.MemberRequestDto;
 import org.icc.pecesatierra.features.member.dtos.MemberResponseDto;
 import org.icc.pecesatierra.features.member.Member;
+import org.icc.pecesatierra.features.member.MemberNotes;
 import org.icc.pecesatierra.features.member.exceptions.AlreadyExistsMemberWithCc;
 import org.icc.pecesatierra.features.member.exceptions.CannotDeleteMemberWithRecords;
 import org.icc.pecesatierra.features.member.exceptions.CannotUpdateMemberOutsideYourBranchException;
@@ -16,6 +17,7 @@ import org.icc.pecesatierra.configurations.ExportLimits;
 import org.icc.pecesatierra.features.category.repository.mapper.MemberMapper;
 import org.icc.pecesatierra.features.attendance.repository.AttendanceRepository;
 import org.icc.pecesatierra.features.member.repository.MemberRepository;
+import org.icc.pecesatierra.features.member.repository.MemberNotesRepository;
 import org.icc.pecesatierra.utils.enums.AppPermission;
 import org.icc.pecesatierra.utils.models.ApiException;
 import org.icc.pecesatierra.utils.models.ExportResponseDto;
@@ -31,6 +33,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 
 @Slf4j
@@ -45,6 +49,7 @@ public class MemberService {
     private final PictureUtils pictureUtils;
     private final MemberSpecification memberSpecification;
     private final ExportLimits exportLimits;
+    private final MemberNotesRepository memberNotesRepository;
 
     public MemberResponseDto create(MemberRequestDto memberRequestDto, User user) {
 
@@ -127,6 +132,17 @@ public class MemberService {
 
     @Transactional(readOnly = true)
     public PagesResponseDto<MemberResponseDto> search(int page, MemberFilterRequestDto dto, User user) {
+        return search(page, dto, user, true);
+    }
+
+    /**
+     * H-39: la pagina se trae sin la coleccion de notas (un fetch join de
+     * coleccion sobre una consulta paginada obliga a Hibernate a paginar en
+     * memoria). Si hacen falta, se cargan todas las de la pagina en una sola
+     * consulta y el mapper recibe el conjunto ya resuelto.
+     */
+    @Transactional(readOnly = true)
+    public PagesResponseDto<MemberResponseDto> search(int page, MemberFilterRequestDto dto, User user, boolean withNotes) {
 
         dto = dto == null ? new MemberFilterRequestDto() : dto;
 
@@ -149,14 +165,35 @@ public class MemberService {
                 )
         );
 
+        List<Member> members = pageResult.getContent();
+        Map<String, List<MemberNotes>> notesByMember = withNotes ? notesOf(members) : Map.of();
+
         return PagesResponseDto.<MemberResponseDto>builder()
-                .data(pageResult.stream().map(member -> memberMapper.toDto(member, true)).toList())
+                .data(members.stream()
+                        .map(member -> withNotes
+                                ? memberMapper.toDto(member, notesByMember.getOrDefault(member.getId(), List.of()))
+                                : memberMapper.toDto(member, false))
+                        .toList())
                 .page(pageResult.getNumber())
                 .size(pageResult.getSize())
                 .totalPages(pageResult.getTotalPages())
                 .totalElements(pageResult.getTotalElements())
                 .build();
 
+    }
+
+    private Map<String, List<MemberNotes>> notesOf(List<Member> members) {
+        List<String> memberIds = members.stream()
+                .map(Member::getId)
+                .filter(Objects::nonNull)
+                .toList();
+
+        if (memberIds.isEmpty()) {
+            return Map.of();
+        }
+
+        return memberNotesRepository.findByMember_IdIn(memberIds).stream()
+                .collect(Collectors.groupingBy(note -> note.getMember().getId()));
     }
 
     @Transactional(readOnly = true)

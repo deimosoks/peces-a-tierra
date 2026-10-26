@@ -24,8 +24,12 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.http.HttpStatus;
 
+import java.lang.reflect.Method;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.Optional;
@@ -239,6 +243,21 @@ class DiscipuladoServiceTest {
 
         assertThat(progress.getTeacherId()).isSameAs(teacher);
         assertThat(progress.getDateCompleted()).isEqualTo(TestFixtures.FIXED_NOW);
+    }
+
+    // ---------- H-39: grafo de la busqueda ----------
+
+    @Test
+    void searchEntityGraphFetchesMemberAndRegisteredByButNotTheProgressCollection_H39() throws NoSuchMethodException {
+        Method findAll = DiscipuladoRepository.class.getMethod("findAll", Specification.class, Pageable.class);
+        EntityGraph graph = findAll.getAnnotation(EntityGraph.class);
+
+        assertThat(graph).isNotNull();
+        assertThat(graph.attributePaths())
+                .contains("member", "member.branch", "registeredBy");
+        // progress es una coleccion: unirla en la consulta paginada multiplicaria
+        // las filas y Hibernate paginaria en memoria. Se resuelve por lotes.
+        assertThat(graph.attributePaths()).doesNotContain("progress");
     }
 
     private DiscipuladoProgress progressOf(Member member, Member registeredBy) {

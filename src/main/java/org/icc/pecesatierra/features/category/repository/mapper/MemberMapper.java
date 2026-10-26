@@ -8,6 +8,7 @@ import org.icc.pecesatierra.features.member.dtos.MemberExportDto;
 import org.icc.pecesatierra.features.member.dtos.MemberRequestDto;
 import org.icc.pecesatierra.features.member.dtos.MemberResponseDto;
 import org.icc.pecesatierra.features.member.Member;
+import org.icc.pecesatierra.features.member.MemberNotes;
 import org.icc.pecesatierra.features.category.MemberCategory;
 import org.icc.pecesatierra.features.category.MemberSubCategory;
 import org.icc.pecesatierra.features.type.MemberType;
@@ -22,6 +23,7 @@ import org.icc.pecesatierra.utils.time.DateTimeUtils;
 import org.springframework.stereotype.Component;
 
 import java.time.temporal.ChronoUnit;
+import java.util.Collection;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -40,6 +42,18 @@ public class MemberMapper {
     private final DateTimeUtils dateTimeUtils;
 
     public MemberResponseDto toDto(Member member, boolean withNotes) {
+        // Con withNotes=false no se toca la coleccion: no se inicializa ni se
+        // dispara ninguna consulta.
+        return toDto(member, withNotes ? member.getNotes() : null);
+    }
+
+    /**
+     * H-39: variante que recibe las notas ya cargadas. {@code MemberService.search}
+     * las trae en un solo lote para toda la pagina, de modo que mapear 20
+     * integrantes no ejecuta 20 consultas. {@code notes == null} significa "sin
+     * notas".
+     */
+    public MemberResponseDto toDto(Member member, Collection<MemberNotes> notes) {
         if (member == null) {
             return null;
         }
@@ -74,8 +88,8 @@ public class MemberMapper {
                     dateTimeUtils.nowColombia().toLocalDate()));
         }
 
-        if (withNotes) {
-            memberResponseDto.notes(member.getNotes().stream().map(memberNotesMapper::toDto).collect(Collectors.toSet()));
+        if (notes != null) {
+            memberResponseDto.notes(notes.stream().map(memberNotesMapper::toDto).collect(Collectors.toSet()));
         }
 
         return memberResponseDto.build();
