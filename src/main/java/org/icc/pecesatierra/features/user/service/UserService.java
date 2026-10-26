@@ -259,6 +259,17 @@ public class UserService {
 
         validateCanGrantPermissions(givenBy, roles);
 
+        // H-42: renombrar debe respetar la unicidad de negocio del username; antes
+        // solo la frenaba el indice unique y el cliente recibia un 409 generico.
+        // Se valida despues de sede y privilegios para no abrir un oraculo de
+        // usernames de otras sedes.
+        String newUsername = userRequestDto.getUsername();
+        if (newUsername != null
+                && !newUsername.equals(user.getUsername())
+                && userRepository.existsByUsernameAndIdNot(newUsername, user.getId())) {
+            throw new UsernameAlreadyRegister(newUsername);
+        }
+
         User beforeUpdate = User.builder()
                 .id(user.getId())
                 .username(user.getUsername())

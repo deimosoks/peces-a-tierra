@@ -14,6 +14,7 @@ import org.icc.pecesatierra.features.user.dtos.UserResponseDto;
 import org.icc.pecesatierra.features.user.exceptions.CannotManageUserWithMorePrivilegesException;
 import org.icc.pecesatierra.features.user.exceptions.CannotCreateUsersWithMembersOutsideYourBranch;
 import org.icc.pecesatierra.features.user.exceptions.CannotUpdateUserWithMemberOutSideYourBranchException;
+import org.icc.pecesatierra.features.user.exceptions.UsernameAlreadyRegister;
 import org.icc.pecesatierra.features.user.mapper.UserMapper;
 import org.icc.pecesatierra.features.user.repository.UserRepository;
 import org.icc.pecesatierra.features.user.service.UserService;
@@ -368,6 +369,51 @@ class UserServiceTest {
         assertThat(target.getMember()).isSameAs(memberA);
         assertThat(target.getUsername()).isEqualTo("usuario-destino-actualizado");
         verify(userRepository).save(target);
+    }
+
+    // ---------- H-42: unicidad del username al renombrar ----------
+
+    @Test
+    void renamingToAnExistingUsernameReturns409WithItsOwnMessage_H42() {
+        User actor = operator(AppPermission.UPDATE_USER.name(), AppPermission.VIEW_MEMBER_PANEL.name());
+        User target = TestFixtures.user("user-target", "usuario-destino", memberA,
+                AppPermission.VIEW_MEMBER_PANEL.name());
+        Role allowedRole = role("role-view", AppPermission.VIEW_MEMBER_PANEL);
+
+        when(userRepository.findById(target.getId())).thenReturn(Optional.of(target));
+        when(roleRepository.findById("role-view")).thenReturn(Optional.of(allowedRole));
+        when(userRepository.existsByUsernameAndIdNot("usuario-ocupado", target.getId())).thenReturn(true);
+
+        assertThatThrownBy(() -> userService.update(
+                request(null, "usuario-ocupado", null, Set.of("role-view")), target.getId(), actor))
+                .isInstanceOfSatisfying(UsernameAlreadyRegister.class, exception -> {
+                    assertThat(exception.getStatus()).isEqualTo(HttpStatus.CONFLICT);
+                    assertThat(exception.getMessage())
+                            .isEqualTo("Ya existe un usuario registrado con el username usuario-ocupado");
+                });
+
+        verify(userRepository, never()).save(any(User.class));
+        assertThat(target.getUsername()).isEqualTo("usuario-destino");
+    }
+
+    @Test
+    void keepingOwnUsernameIsAllowedAndDoesNotQueryUniqueness_H42() {
+        User actor = operator(AppPermission.UPDATE_USER.name(), AppPermission.VIEW_MEMBER_PANEL.name());
+        User target = TestFixtures.user("user-target", "usuario-destino", memberA,
+                AppPermission.VIEW_MEMBER_PANEL.name());
+        Role allowedRole = role("role-view", AppPermission.VIEW_MEMBER_PANEL);
+
+        when(userRepository.findById(target.getId())).thenReturn(Optional.of(target));
+        when(roleRepository.findById("role-view")).thenReturn(Optional.of(allowedRole));
+        when(dateTimeUtils.nowUTC()).thenReturn(TestFixtures.FIXED_NOW);
+        when(userMapper.toDto(any(User.class))).thenReturn(UserResponseDto.builder().id(target.getId()).build());
+
+        userService.update(
+                request(null, "usuario-destino", null, Set.of("role-view")), target.getId(), actor);
+
+        assertThat(target.getUsername()).isEqualTo("usuario-destino");
+        verify(userRepository).save(target);
+        verify(userRepository, never()).existsByUsernameAndIdNot(any(), any());
     }
 
     // ---------- El administrador conserva el bypass ----------

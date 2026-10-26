@@ -26,4 +26,6 @@ public interface UserRepository extends JpaRepository<User, String>, JpaSpecific
     long countByActiveTrue();
 
     boolean existsByMemberId(String memberId);
+
+    boolean existsByUsernameAndIdNot(String username, String id);
 }
