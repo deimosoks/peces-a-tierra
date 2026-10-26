@@ -3,12 +3,12 @@ package org.icc.pecesatierra.features.auth.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.icc.pecesatierra.features.auth.dtos.*;
+import org.icc.pecesatierra.features.auth.IssuedRefreshToken;
 import org.icc.pecesatierra.features.auth.RefreshToken;
 import org.icc.pecesatierra.features.auth.exceptions.*;
 import org.icc.pecesatierra.features.user.User;
 import org.icc.pecesatierra.features.auth.repository.RefreshTokenRepository;
 import org.icc.pecesatierra.features.user.repository.UserRepository;
-import org.icc.pecesatierra.features.auth.mapper.RefreshTokenMapper;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
@@ -29,7 +29,6 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
     private final UserDetailsService userDetailsService;
     private final UserRepository userRepository;
-    private final RefreshTokenMapper refreshTokenMapper;
     private final PasswordEncoder passwordEncoder;
 
     /**
@@ -92,15 +91,22 @@ public class AuthService {
 
         return AuthResponseDto.builder()
                 .accessTokenDto(accessTokenDto)
-                .refreshTokenDto(refreshTokenMapper.toDto(refreshTokenService.generate(user)))
+                .refreshTokenDto(toRefreshTokenDto(refreshTokenService.generate(user)))
+                .build();
+    }
+
+    private RefreshTokenDto toRefreshTokenDto(IssuedRefreshToken issued) {
+        return RefreshTokenDto.builder()
+                .token(issued.token())
+                .expiresAt(issued.expiresAt())
                 .build();
     }
 
     @Transactional
     public void logout(User user, RefreshTokenRequestDto refreshTokenRequestDto) {
 
-        RefreshToken refreshToken = refreshTokenRepository.findByToken(refreshTokenRequestDto.getRefreshToken())
-                .orElseThrow(InvalidRefreshTokenException::new);
+        RefreshToken refreshToken =
+                refreshTokenService.findByRawToken(refreshTokenRequestDto.getRefreshToken());
 
         if (!user.getUsername().equals(refreshToken.getUser().getUsername())) {
             log.warn("""
@@ -121,10 +127,10 @@ public class AuthService {
     @Transactional
     public AuthResponseDto refresh(RefreshTokenRequestDto refreshTokenRequestDto) {
 
-        RefreshToken newRefreshToken = refreshTokenService.validateAndRotate(refreshTokenRequestDto.getRefreshToken());
+        IssuedRefreshToken newRefreshToken =
+                refreshTokenService.validateAndRotate(refreshTokenRequestDto.getRefreshToken());
 
-        String accessToken = jwtService.generateToken(newRefreshToken.getUser());
-
+        String accessToken = jwtService.generateToken(newRefreshToken.user());
         AccessTokenDto newAccessTokenDto = AccessTokenDto.builder()
                 .token(accessToken)
                 .expiredAt(jwtService.extractExpiration(accessToken))
@@ -136,11 +142,11 @@ public class AuthService {
                         Name: {}
                         Hizo refresco de sesión.
                         """
-                , newRefreshToken.getUser().getMember().getId()
-                , newRefreshToken.getUser().getMember().getCompleteName());
+                , newRefreshToken.user().getMember().getId()
+                , newRefreshToken.user().getMember().getCompleteName());
         return AuthResponseDto.builder()
                 .accessTokenDto(newAccessTokenDto)
-                .refreshTokenDto(refreshTokenMapper.toDto(newRefreshToken))
+                .refreshTokenDto(toRefreshTokenDto(newRefreshToken))
                 .build();
     }
 

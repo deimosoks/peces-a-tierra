@@ -5,7 +5,6 @@ import org.icc.pecesatierra.features.auth.dtos.ChanggePasswordRequest;
 import org.icc.pecesatierra.features.auth.exceptions.AuthenticatedUserNotFoundException;
 import org.icc.pecesatierra.features.auth.exceptions.PasswordDoesNotMatchException;
 import org.icc.pecesatierra.features.auth.exceptions.PasswordDoesNotMatchWithPasswordRegisterException;
-import org.icc.pecesatierra.features.auth.mapper.RefreshTokenMapper;
 import org.icc.pecesatierra.features.auth.repository.RefreshTokenRepository;
 import org.icc.pecesatierra.features.auth.service.AuthService;
 import org.icc.pecesatierra.features.auth.service.JwtService;
@@ -53,8 +52,6 @@ class AuthServiceTest {
     private UserDetailsService userDetailsService;
     @Mock
     private UserRepository userRepository;
-    @Mock
-    private RefreshTokenMapper refreshTokenMapper;
     @Mock
     private PasswordEncoder passwordEncoder;
 
