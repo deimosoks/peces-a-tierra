@@ -21,7 +21,6 @@ import org.icc.pecesatierra.features.type.repository.MemberTypeRepository;
 import org.icc.pecesatierra.utils.time.DateTimeUtils;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -71,7 +70,8 @@ public class MemberMapper {
         }
 
         if (member.getBirthdate() != null) {
-            memberResponseDto.age((int) ChronoUnit.YEARS.between(member.getBirthdate(), LocalDateTime.now()));
+            memberResponseDto.age((int) ChronoUnit.YEARS.between(member.getBirthdate(),
+                    dateTimeUtils.nowColombia().toLocalDate()));
         }
 
         if (withNotes) {
@@ -99,7 +99,8 @@ public class MemberMapper {
         memberExportDto.cc(member.getCc());
 
         if (member.getBirthdate() != null) {
-            memberExportDto.age((int) ChronoUnit.YEARS.between(member.getBirthdate(), LocalDateTime.now()));
+            memberExportDto.age((int) ChronoUnit.YEARS.between(member.getBirthdate(),
+                    dateTimeUtils.nowColombia().toLocalDate()));
         }
 
         if (member.getSubcategoryId() != null) {

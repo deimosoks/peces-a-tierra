@@ -6,9 +6,9 @@ import org.icc.pecesatierra.features.category.CategoryRules;
 import org.icc.pecesatierra.features.member.Member;
 import org.icc.pecesatierra.features.category.repository.CategoryRulesRepository;
 import org.icc.pecesatierra.features.member.repository.MemberRepository;
+import org.icc.pecesatierra.utils.time.DateTimeUtils;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDate;
 import java.time.Period;
 import java.util.List;
 
@@ -19,6 +19,7 @@ public class MemberCategoryDeterminer {
 
     private final CategoryRulesRepository categoryRulesRepository;
     private final MemberRepository memberRepository;
+    private final DateTimeUtils dateTimeUtils;
 
     public void determineCategory(Member member) {
         if (member.getBirthdate() == null) {
@@ -31,7 +32,8 @@ public class MemberCategoryDeterminer {
             return;
         }
 
-        int age = Period.between(member.getBirthdate(), LocalDate.now()).getYears();
+        int age = Period.between(member.getBirthdate(),
+                dateTimeUtils.nowColombia().toLocalDate()).getYears();
 
         List<CategoryRules> rules = categoryRulesRepository.findByActiveTrueOrderByPriorityAsc();
 

@@ -99,7 +99,7 @@ public class MemberSpecification {
             if (filters.getAgeFilterRange1() != null && filters.getAgeFilterRange2() != null) {
                 int minAge = Math.min(filters.getAgeFilterRange1(), filters.getAgeFilterRange2());
                 int maxAge = Math.max(filters.getAgeFilterRange1(), filters.getAgeFilterRange2());
-                LocalDate today = LocalDate.now();
+                LocalDate today = dateTimeUtils.nowColombia().toLocalDate();
                 // La edad es un intervalo de anios, no un punto: quien todavia no
                 // ha cumplido maxAge+1 tambien tiene maxAge. Por eso el limite
                 // inferior de fecha es EXCLUSIVO en el cumpleanios de maxAge+1 y

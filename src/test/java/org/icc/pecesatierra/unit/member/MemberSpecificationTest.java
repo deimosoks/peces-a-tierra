@@ -52,9 +52,11 @@ class MemberSpecificationTest {
             TestFixtures.member("admin-member-1", TestFixtures.branch("branch-a", "Sede A"), "Admin"),
             "ADMINISTRATOR");
 
+    private final DateTimeUtils dateTimeUtils = new DateTimeUtils();
+
     @Test
     void someoneWhoTurnsMaxAgePlusOneTodayIsExcluded_H43() {
-        LocalDate today = LocalDate.now();
+        LocalDate today = dateTimeUtils.nowColombia().toLocalDate();
         Bounds bounds = ageBounds(0, 30);
 
         assertThat(bounds.lowerExclusive).isEqualTo(today.minusYears(31));
@@ -67,7 +69,7 @@ class MemberSpecificationTest {
 
     @Test
     void someoneWhoTurnsMaxAgePlusOneTomorrowStillHasMaxAgeAndIsIncluded_H43() {
-        LocalDate today = LocalDate.now();
+        LocalDate today = dateTimeUtils.nowColombia().toLocalDate();
         Bounds bounds = ageBounds(0, 30);
 
         // Cumple 31 maniana, hoy tiene 30: antes de H-43 quedaba fuera.
@@ -78,7 +80,7 @@ class MemberSpecificationTest {
 
     @Test
     void someoneWhoTurnsMinAgeTodayIsIncluded_H43() {
-        LocalDate today = LocalDate.now();
+        LocalDate today = dateTimeUtils.nowColombia().toLocalDate();
         Bounds bounds = ageBounds(18, 30);
 
         // Cumple 18 hoy: entra, el limite superior es inclusivo.

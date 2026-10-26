@@ -20,7 +20,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class MemberMapperTest {
@@ -61,8 +65,7 @@ class MemberMapperTest {
     }
 
     @Test
-    void updateEntityFromDtoAppliesCategoryLockedFromRequest_H24() {
-        MemberCategory category = MemberCategory.builder().id("cat-1").name("Categoria").color("#112233").build();
+    void updateEntityFromDtoAppliesCategoryLockedFromRequest_H24() {        MemberCategory category = MemberCategory.builder().id("cat-1").name("Categoria").color("#112233").build();
         MemberType type = MemberType.builder().id("type-1").name("Tipo").color("#112233").build();
         Member member = Member.builder()
                 .id("member-1")
@@ -81,5 +84,24 @@ class MemberMapperTest {
         memberMapper().updateEntityFromDto(request(false), member);
 
         assertThat(member.isCategoryLocked()).isFalse();
+    }
+
+    @Test
+    void ageUsesTheColombiaDateAtTheDateChangeBoundary_H40() {
+        // 23:30 del 1 de marzo en Bogota ya es 2 de marzo en UTC. La edad debe
+        // seguir siendo la del dia 1 hasta que cruce la medianoche colombiana.
+        when(dateTimeUtils.nowColombia()).thenReturn(
+                LocalDateTime.of(2026, 3, 1, 23, 30),
+                LocalDateTime.of(2026, 3, 2, 0, 30));
+
+        Member member = Member.builder()
+                .id("member-1")
+                .completeName("Ana Perez")
+                .birthdate(LocalDate.of(1996, 3, 2))
+                .active(true)
+                .build();
+
+        assertThat(memberMapper().toDto(member, false).getAge()).isEqualTo(29);
+        assertThat(memberMapper().toDto(member, false).getAge()).isEqualTo(30);
     }
 }

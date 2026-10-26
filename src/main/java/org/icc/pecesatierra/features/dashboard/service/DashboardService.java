@@ -37,12 +37,17 @@ public class DashboardService {
 
         boolean isAdmin = user.hasAuthority(AppPermission.ADMINISTRATOR.name());
 
+        // H-40: "hoy" es el dia en America/Bogota, no el del servidor. Las
+        // fechas de ReportRequestDto se interpretan como hora local de negocio.
+        LocalDateTime nowColombia = dateTimeUtils.nowColombia();
+        OffsetDateTime lastMonthStartUTC = dateTimeUtils.toUTC(nowColombia.minusDays(30));
+
         long totalMember;
         long totalBaptisms = 0;
         List<MemberResponseDto> memberBirthdays;
         ReportRequestDto reportRequest = ReportRequestDto.builder()
-                .startDate(LocalDateTime.now().minusDays(7))
-                .endDate(LocalDateTime.now())
+                .startDate(nowColombia.minusDays(7))
+                .endDate(nowColombia)
                 .build();
 
 
@@ -55,7 +60,7 @@ public class DashboardService {
                     .stream().map(member -> memberMapper.toDto(member, false)).toList();
             totalBaptisms = baptismRepository.countByInvalidFalse();
 
-            latestMemberRegisteredInThLastMonth = memberRepository.findLatestMembers(OffsetDateTime.now().minusDays(30)).stream().map(member -> memberMapper.toDto(member, false)).toList();
+            latestMemberRegisteredInThLastMonth = memberRepository.findLatestMembers(lastMonthStartUTC).stream().map(member -> memberMapper.toDto(member, false)).toList();
         } else {
             Branch branch = user.getMember().getBranch();
 
@@ -68,7 +73,7 @@ public class DashboardService {
             reportRequest.setBranchIds(List.of(branch.getId()));
             totalBaptisms = baptismRepository.countByBaptizedMemberBranchAndInvalidFalse(branch);
 
-            latestMemberRegisteredInThLastMonth = memberRepository.findLatestMembersByBranch(OffsetDateTime.now().minusDays(30), branch.getId()).stream().map(member -> memberMapper.toDto(member, false)).toList();
+            latestMemberRegisteredInThLastMonth = memberRepository.findLatestMembersByBranch(lastMonthStartUTC, branch.getId()).stream().map(member -> memberMapper.toDto(member, false)).toList();
 
         }
 
