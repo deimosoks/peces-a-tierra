@@ -46,7 +46,8 @@ public class BaptismSpecification {
                     predicates.add(cb.greaterThanOrEqualTo(root.get("date"), dto.getStartDate()));
                 }
                 if (dto.getEndDate() != null) {
-                    predicates.add(cb.lessThanOrEqualTo(root.get("date"), dto.getEndDate()));
+                    predicates.add(cb.lessThan(root.get("date"),
+                            dateTimeUtils.startOfNextDay(dto.getEndDate())));
                 }
 
                 if (dto.isActive()) {

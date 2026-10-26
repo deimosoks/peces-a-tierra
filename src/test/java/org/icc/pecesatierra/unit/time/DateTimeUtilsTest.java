@@ -4,6 +4,7 @@ import org.icc.pecesatierra.utils.time.DateTimeUtils;
 import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
@@ -42,6 +43,28 @@ class DateTimeUtilsTest {
     void nullsArePropagated() {
         assertThat(dateTimeUtils.toUTC(null)).isNull();
         assertThat(dateTimeUtils.toColombia(null)).isNull();
+        assertThat(dateTimeUtils.startOfNextDayUTC(null)).isNull();
+        assertThat(dateTimeUtils.startOfNextDay(null)).isNull();
+    }
+
+    @Test
+    void startOfNextDayUtcMakesTheWholeLastDayInclusive_H29() {
+        // endDate a medianoche del 15 de enero en Bogota: el limite exclusivo
+        // es la medianoche del 16, es decir 05:00Z del 16.
+        OffsetDateTime upperExclusive =
+                dateTimeUtils.startOfNextDayUTC(LocalDateTime.of(2026, 1, 15, 0, 0));
+
+        assertThat(upperExclusive).isEqualTo(OffsetDateTime.parse("2026-01-16T05:00:00Z"));
+
+        // 23:59 del 15 de enero en Colombia entra; 00:00 del 16 ya no.
+        assertThat(OffsetDateTime.parse("2026-01-16T04:59:59Z")).isBefore(upperExclusive);
+        assertThat(OffsetDateTime.parse("2026-01-16T05:00:00Z").isBefore(upperExclusive)).isFalse();
+    }
+
+    @Test
+    void startOfNextDayForLocalDateColumns_H29() {
+        assertThat(dateTimeUtils.startOfNextDay(LocalDate.of(2026, 1, 15)))
+                .isEqualTo(LocalDate.of(2026, 1, 16));
     }
 
     @Test

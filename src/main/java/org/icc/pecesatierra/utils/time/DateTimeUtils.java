@@ -2,6 +2,7 @@ package org.icc.pecesatierra.utils.time;
 
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
@@ -19,6 +20,25 @@ public class DateTimeUtils {
 
     public LocalDateTime toColombia(OffsetDateTime utcTime) {
         return utcTime != null ? utcTime.atZoneSameInstant(COLOMBIA_ZONE).toLocalDateTime() : null;
+    }
+
+    /**
+     * Limite superior EXCLUSIVO para un rango de fechas: el inicio del dia
+     * siguiente al recibido, en hora de Colombia. Un {@code endDate} a
+     * medianoche sigue incluyendo todo ese dia (H-29).
+     */
+    public OffsetDateTime startOfNextDayUTC(LocalDateTime colombiaTime) {
+        return colombiaTime != null
+                ? toUTC(colombiaTime.toLocalDate().plusDays(1).atStartOfDay())
+                : null;
+    }
+
+    /**
+     * Equivalente a {@link #startOfNextDayUTC(LocalDateTime)} para columnas
+     * {@link LocalDate}: el dia siguiente, que actua como limite exclusivo.
+     */
+    public LocalDate startOfNextDay(LocalDate date) {
+        return date != null ? date.plusDays(1) : null;
     }
 
     public LocalDateTime nowColombia() {

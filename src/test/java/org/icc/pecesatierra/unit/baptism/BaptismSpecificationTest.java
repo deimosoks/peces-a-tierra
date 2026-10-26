@@ -23,7 +23,10 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.LocalDate;
+
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.lenient;
@@ -150,6 +153,22 @@ class BaptismSpecificationTest {
 
         verify(cb).equal(branchIdPath, "branch-b");
         verify(cb, never()).equal(branchIdPath, "branch-a");
+    }
+
+    @Test
+    void endDateCoversTheWholeLastDayAndExcludesTheNext_H29() {
+        BaptismFilterRequestDto dto = BaptismFilterRequestDto.builder()
+                .endDate(LocalDate.of(2026, 1, 15))
+                .build();
+
+        specification.build(dto, operatorOf(branchA)).toPredicate(root, query, cb);
+
+        ArgumentCaptor<LocalDate> upperExclusive = ArgumentCaptor.forClass(LocalDate.class);
+        verify(cb).lessThan(any(), upperExclusive.capture());
+
+        assertThat(upperExclusive.getValue()).isEqualTo(LocalDate.of(2026, 1, 16));
+        assertThat(LocalDate.of(2026, 1, 15)).isBefore(upperExclusive.getValue());
+        assertThat(LocalDate.of(2026, 1, 16).isBefore(upperExclusive.getValue())).isFalse();
     }
 
     private User operatorOf(Branch branch) {

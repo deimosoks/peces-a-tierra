@@ -65,7 +65,7 @@ public class AttendanceReportSpecification {
 
             if (dto.getEndDate() != null) {
                 predicates.add(
-                        cb.lessThanOrEqualTo(serviceDateTime, dateTimeUtils.toUTC(dto.getEndDate()))
+                        cb.lessThan(serviceDateTime, dateTimeUtils.startOfNextDayUTC(dto.getEndDate()))
                 );
             }
 
