@@ -53,16 +53,14 @@ public class MemberNoteService {
         log.info("""
                         Se creó una nota de integrante:
                         Nota ID: {}
-                        Integrante: {} ({})
-                        Contenido: {}
-                        Creada por: {} ({})
+                        Integrante ID: {}
+                        Sede ID: {}
+                        Creada por usuario: {}
                         Fecha creación: {}
                         """,
                 memberNotes.getId(),
-                member.getCompleteName(),
                 member.getId(),
-                memberNotes.getNote(),
-                user.getUsername(),
+                member.getBranch().getId(),
                 user.getId(),
                 memberNotes.getCreatedAt()
         );
@@ -82,16 +80,14 @@ public class MemberNoteService {
         log.info("""
                         Se eliminó una nota de integrante:
                         Nota ID: {}
-                        Integrante: {} ({})
-                        Contenido: {}
-                        Eliminada por: {} ({})
+                        Integrante ID: {}
+                        Sede ID: {}
+                        Eliminada por usuario: {}
                         Fecha eliminación: {}
                         """,
                 memberNotes.getId(),
-                memberNotes.getMember().getCompleteName(),
                 memberNotes.getMember().getId(),
-                memberNotes.getNote(),
-                user.getUsername(),
+                memberNotes.getMember().getBranch().getId(),
                 user.getId(),
                 dateTimeUtils.nowUTC()
         );
@@ -130,7 +126,6 @@ public class MemberNoteService {
 
         assertCanManageNotes(user, memberNotes.getMember());
 
-        String previousNote = memberNotes.getNote();
         memberNotes.setNote(memberNoteRequestDto.getNote());
 
         memberNotesRepositor.save(memberNotes);
@@ -138,18 +133,14 @@ public class MemberNoteService {
         log.info("""
                         Se actualizó una nota de integrante:
                         Nota ID: {}
-                        Integrante: {} ({})
-                        Contenido anterior: {}
-                        Contenido nuevo: {}
-                        Actualizada por: {} ({})
+                        Integrante ID: {}
+                        Sede ID: {}
+                        Actualizada por usuario: {}
                         Fecha actualización: {}
                         """,
                 memberNotes.getId(),
-                memberNotes.getMember().getCompleteName(),
                 memberNotes.getMember().getId(),
-                previousNote,
-                memberNotes.getNote(),
-                user.getUsername(),
+                memberNotes.getMember().getBranch().getId(),
                 user.getId(),
                 dateTimeUtils.nowUTC()
         );

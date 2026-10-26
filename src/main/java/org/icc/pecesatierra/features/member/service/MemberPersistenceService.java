@@ -90,10 +90,10 @@ public class MemberPersistenceService {
                     .orElseThrow(SubCategoryNotFoundException::new);
 
             if (!member.getCategoryId().equals(memberSubCategory.getCategory())) {
-                log.warn("Usuario {} intento asignar sub-categoria {} al integrante {} pero no coincide con la categoria",
+                log.warn("Usuario {} intento asignar la sub-categoria {} a la categoria {} pero no coinciden",
                         user.getMember().getId(),
                         memberSubCategory.getId(),
-                        member.getCompleteName());
+                        member.getCategoryId().getId());
                 throw new MemberNoHasCategoryForThisSubCategoryException(member.getCompleteName());
             }
             member.setSubcategoryId(memberSubCategory);
@@ -112,27 +112,17 @@ public class MemberPersistenceService {
         log.info("""
                         Usuario {} creó el integrante:
                         ID: {}
-                        Nombre: {}
-                        CC: {}
-                        Celular: {}
-                        Ciudad: {}
-                        Barrio: {}
-                        Branch: {}
+                        Sede: {}
                         Categoria: {}
                         Tipo: {}
                         SubCategoria: {}
                         """,
                 user.getMember().getId(),
                 member.getId(),
-                member.getCompleteName(),
-                member.getCc(),
-                member.getCellphone(),
-                member.getCity(),
-                member.getNeighborhood(),
-                member.getBranch().getName(),
-                member.getCategoryId().getName(),
-                member.getTypeId().getName(),
-                member.getSubcategoryId() != null ? member.getSubcategoryId().getName() : "N/A"
+                member.getBranch().getId(),
+                member.getCategoryId().getId(),
+                member.getTypeId().getId(),
+                member.getSubcategoryId() != null ? member.getSubcategoryId().getId() : "N/A"
         );
 
         return memberMapper.toDto(member, false);
@@ -147,19 +137,6 @@ public class MemberPersistenceService {
         if (!user.hasAuthority(AppPermission.ADMINISTRATOR.name()) && !user.getMember().getBranch().getId().equals(member.getBranch().getId())) {
             throw new CannotUpdateMemberOutsideYourBranchException();
         }
-
-        Member beforeUpdate = Member.builder()
-                .id(member.getId())
-                .completeName(member.getCompleteName())
-                .cc(member.getCc())
-                .cellphone(member.getCellphone())
-                .city(member.getCity())
-                .neighborhood(member.getNeighborhood())
-                .branch(member.getBranch())
-                .categoryId(member.getCategoryId())
-                .typeId(member.getTypeId())
-                .subcategoryId(member.getSubcategoryId())
-                .build();
 
         memberMapper.updateEntityFromDto(dto, member);
         member.setUpdatedAt(dateTimeUtils.nowUTC());
@@ -179,47 +156,17 @@ public class MemberPersistenceService {
 
         log.info("""
                         Usuario {} actualizó el integrante {}.
-                        Estado anterior:
-                        Nombre: {}
-                        CC: {}
-                        Celular: {}
-                        Ciudad: {}
-                        Barrio: {}
-                        Branch: {}
-                        Categoria: {}
-                        Tipo: {}
-                        SubCategoria: {}
-                        Nuevo estado:
-                        Nombre: {}
-                        CC: {}
-                        Celular: {}
-                        Ciudad: {}
-                        Barrio: {}
-                        Branch: {}
+                        Sede: {}
                         Categoria: {}
                         Tipo: {}
                         SubCategoria: {}
                         """,
                 user.getMember().getId(),
                 member.getId(),
-                beforeUpdate.getCompleteName(),
-                beforeUpdate.getCc(),
-                beforeUpdate.getCellphone(),
-                beforeUpdate.getCity(),
-                beforeUpdate.getNeighborhood(),
-                beforeUpdate.getBranch().getName(),
-                beforeUpdate.getCategoryId().getName(),
-                beforeUpdate.getTypeId().getName(),
-                beforeUpdate.getSubcategoryId() != null ? beforeUpdate.getSubcategoryId().getName() : "N/A",
-                member.getCompleteName(),
-                member.getCc(),
-                member.getCellphone(),
-                member.getCity(),
-                member.getNeighborhood(),
-                member.getBranch().getName(),
-                member.getCategoryId().getName(),
-                member.getTypeId().getName(),
-                member.getSubcategoryId() != null ? member.getSubcategoryId().getName() : "N/A"
+                member.getBranch().getId(),
+                member.getCategoryId().getId(),
+                member.getTypeId().getId(),
+                member.getSubcategoryId() != null ? member.getSubcategoryId().getId() : "N/A"
         );
 
         return memberMapper.toDto(member, true);

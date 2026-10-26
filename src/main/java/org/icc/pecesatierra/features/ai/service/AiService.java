@@ -43,7 +43,8 @@ public class AiService {
             String sqlUserPrompt = buildSqlUserPrompt(request.getMessage(), request.getHistory());
             String llmResponse = callGemini(sqlSystemPrompt, sqlUserPrompt, false);
 
-            log.info("Gemini generated response for SQL: {}", llmResponse);
+            log.info("Gemini respondió a la generación de SQL ({} caracteres).",
+                    llmResponse == null ? 0 : llmResponse.length());
 
             // Extract SQL
             String sql = extractSql(llmResponse);
@@ -59,12 +60,14 @@ public class AiService {
                 // Use JSON mode for the formatting pass
                 String finalLlmResponse = callGemini(formattingSystemPrompt, formattingUserPrompt, true);
 
-                log.info("Gemini final response: {}", finalLlmResponse);
+                log.info("Gemini respondió al formateo final ({} caracteres).",
+                        finalLlmResponse == null ? 0 : finalLlmResponse.length());
 
                 return parseFinalResponse(finalLlmResponse, sql);
             } else {
                 // Si no hay SQL válido o es rechazado por seguridad, damos una respuesta segura
-                log.warn("AI response rejected by validator or no SQL found: {}", llmResponse);
+                log.warn("La respuesta de la IA fue rechazada por el validador o no contenía SQL ({} caracteres).",
+                        llmResponse == null ? 0 : llmResponse.length());
                 
                 // Si la respuesta original de la IA ya era el mensaje de aclaración, lo usamos
                 String fallbackAnswer = (llmResponse != null && llmResponse.contains("información")) 
