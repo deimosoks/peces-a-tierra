@@ -7,6 +7,7 @@ import org.icc.pecesatierra.features.discipulado.Discipulado;
 import org.icc.pecesatierra.features.member.Member;
 import org.icc.pecesatierra.features.user.User;
 import org.icc.pecesatierra.utils.enums.AppPermission;
+import org.icc.pecesatierra.utils.time.DateTimeUtils;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
 
@@ -18,14 +19,16 @@ import java.util.List;
 @RequiredArgsConstructor
 public class DiscipuladoSpecification {
 
-    public Specification<Discipulado> build(DiscipuladoFilterRequestDto dto, User user) {
+    private final DateTimeUtils dateTimeUtils;
+
+    public Specification<Discipulado> build(DiscipuladoFilterRequestDto filters, User user) {
+        // H-27: el DTO nulo se normaliza a una instancia vacia para que el filtro
+        // de sede del no-admin nunca desaparezca (mismo patron que H-02).
+        DiscipuladoFilterRequestDto dto = filters == null ? new DiscipuladoFilterRequestDto() : filters;
+
         return (Root<Discipulado> root, CriteriaQuery<?> query, CriteriaBuilder cb) -> {
 
             List<Predicate> predicates = new ArrayList<>();
-
-            if (dto == null) {
-                return cb.conjunction();
-            }
 
             if (!user.hasAuthority(AppPermission.ADMINISTRATOR.name())) {
                 predicates.add(cb.equal(root.get("member").get("branch").get("id"), user.getMember().getBranch().getId()));
@@ -48,21 +51,23 @@ public class DiscipuladoSpecification {
                 predicates.add(cb.equal(root.get("completed"), dto.getCompleted()));
             }
 
+            // H-27: el cliente envia las fechas en hora de Colombia; la columna
+            // guarda UTC, asi que hay que convertirlas con DateTimeUtils.
             if (dto.getDateStartedFrom() != null && dto.getDateStartedTo() != null) {
                 predicates.add(cb.between(
                         root.get("dateStarted"),
-                        dto.getDateStartedFrom().atOffset(java.time.ZoneOffset.UTC),
-                        dto.getDateStartedTo().atOffset(java.time.ZoneOffset.UTC)
+                        dateTimeUtils.toUTC(dto.getDateStartedFrom()),
+                        dateTimeUtils.toUTC(dto.getDateStartedTo())
                 ));
             } else if (dto.getDateStartedFrom() != null) {
                 predicates.add(cb.greaterThanOrEqualTo(
                         root.get("dateStarted"),
-                        dto.getDateStartedFrom().atOffset(java.time.ZoneOffset.UTC)
+                        dateTimeUtils.toUTC(dto.getDateStartedFrom())
                 ));
             } else if (dto.getDateStartedTo() != null) {
                 predicates.add(cb.lessThanOrEqualTo(
                         root.get("dateStarted"),
-                        dto.getDateStartedTo().atOffset(java.time.ZoneOffset.UTC)
+                        dateTimeUtils.toUTC(dto.getDateStartedTo())
                 ));
             }
 
