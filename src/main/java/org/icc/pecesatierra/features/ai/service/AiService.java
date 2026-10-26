@@ -7,6 +7,7 @@ import org.icc.pecesatierra.configurations.SqlQueryValidator;
 import org.icc.pecesatierra.features.ai.dtos.AiChatRequestDto;
 import org.icc.pecesatierra.features.ai.dtos.AiChatResponseDto;
 import org.icc.pecesatierra.features.user.User;
+import org.icc.pecesatierra.utils.ai.ResultRedactor;
 import org.icc.pecesatierra.utils.sql_executor.SqlExecutor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
@@ -249,14 +250,19 @@ public class AiService {
         prompt.append("2. Usa NOMBRES PROPIOS y FECHAS mencionadas en los datos.\n");
         prompt.append("3. REDONDEO: Para promedios o estadísticas, redondea SIEMPRE a máximo 1 decimal (ej: 10.5). Si el número es entero, muéstralo sin decimales.\n");
         prompt.append("4. LÍMITE DE LISTAS: Si la lista de resultados es muy larga (más de 40 nombres), NO los listes todos. Menciona los primeros 40 de forma clara y dile al usuario: 'Hay más resultados, por favor indícame si deseas ver el resto o si prefieres buscar algo más específico'.\n");
-        prompt.append("5. Sé siempre amable y servicial.\n");
+        prompt.append("5. PRIVACIDAD: Los nombres, documentos, teléfonos, direcciones, correos y notas llegan enmascarados como [REDACTADO]. Nunca los inventes ni los deduzcas: responde con conteos, promedios y distribuciones, y si el usuario pide ese detalle aclárale con amabilidad que por seguridad solo puedes darle resúmenes.\n");
+        prompt.append("6. Sé siempre amable y servicial.\n");
         return prompt.toString();
     }
 
     private String buildFormattingUserPrompt(String originalQuestion, List<Map<String, Object>> data) {
+        ResultRedactor.RedactedResult redacted = ResultRedactor.redact(data);
+        log.info("Resultado enviado al modelo: {} de {} filas, truncado: {}.",
+                redacted.rows().size(), redacted.totalRows(), redacted.truncated());
+
         StringBuilder prompt = new StringBuilder();
         prompt.append("PREGUNTA DEL USUARIO: ").append(originalQuestion).append("\n");
-        prompt.append("DATOS DE LA BASE DE DATOS: ").append(data.toString()).append("\n\n");
+        prompt.append("DATOS DE LA BASE DE DATOS:\n").append(redacted.toPromptText()).append("\n");
         prompt.append("Genera el JSON siguiendo las instrucciones del sistema.");
         return prompt.toString();
     }
