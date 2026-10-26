@@ -1,11 +1,14 @@
 package org.icc.pecesatierra.unit.attendance;
 
 import org.icc.pecesatierra.features.attendance.Attendance;
+import org.icc.pecesatierra.features.attendance.dtos.AttendanceFiltersRequestDto;
 import org.icc.pecesatierra.features.attendance.dtos.AttendanceRequestDto;
+import org.icc.pecesatierra.features.attendance.dtos.AttendanceResponseDto;
 import org.icc.pecesatierra.features.attendance.exceptions.MultipleServiceEventsInBatchException;
 import org.icc.pecesatierra.features.attendance.mapper.AttendanceMapper;
 import org.icc.pecesatierra.features.attendance.repository.AttendanceRepository;
 import org.icc.pecesatierra.features.attendance.service.AttendanceService;
+import org.icc.pecesatierra.configurations.ExportLimits;
 import org.icc.pecesatierra.features.branch.Branch;
 import org.icc.pecesatierra.features.category.MemberCategory;
 import org.icc.pecesatierra.features.member.Member;
@@ -16,6 +19,8 @@ import org.icc.pecesatierra.features.service.repository.ServiceEventRepository;
 import org.icc.pecesatierra.features.type.MemberType;
 import org.icc.pecesatierra.features.user.User;
 import org.icc.pecesatierra.support.TestFixtures;
+import org.icc.pecesatierra.utils.exceptions.ExportLimitExceededException;
+import org.icc.pecesatierra.utils.models.ExportResponseDto;
 import org.icc.pecesatierra.utils.specs.AttendanceSpecification;
 import org.icc.pecesatierra.utils.time.DateTimeUtils;
 import org.junit.jupiter.api.BeforeEach;
@@ -25,6 +30,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 
 import java.time.LocalDateTime;
@@ -38,8 +44,10 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 /**
@@ -139,6 +147,65 @@ class AttendanceServiceTest {
         ArgumentCaptor<Collection<Attendance>> captor = ArgumentCaptor.forClass(Collection.class);
         verify(attendanceRepository).saveAll(captor.capture());
         return captor;
+    }
+
+    // ---------- H-32: techo de la exportacion ----------
+
+    private AttendanceService serviceWithExportLimit(int maxRows) {
+        return new AttendanceService(attendanceRepository, memberRepository, attendanceMapper,
+                serviceEventRepository, attendanceSpecification, dateTimeUtils, new ExportLimits(maxRows));
+    }
+
+    @Test
+    void exportUnderTheLimitReturnsEveryRow_H32() {
+        Attendance first = attendance("attendance-1", "member-1");
+        Attendance second = attendance("attendance-2", "member-2");
+        Specification<Attendance> spec = mock(Specification.class);
+
+        when(attendanceSpecification.build(any(AttendanceFiltersRequestDto.class), any(User.class))).thenReturn(spec);
+        when(attendanceRepository.count(spec)).thenReturn(2L);
+        when(attendanceRepository.findAll(spec)).thenReturn(List.of(first, second));
+        when(attendanceMapper.toDto(any(Attendance.class)))
+                .thenAnswer(invocation -> AttendanceResponseDto.builder()
+                        .id(invocation.getArgument(0, Attendance.class).getId())
+                        .build());
+
+        ExportResponseDto<AttendanceResponseDto> response =
+                serviceWithExportLimit(2).export(new AttendanceFiltersRequestDto(), operator);
+
+        assertThat(response.getTotalElements()).isEqualTo(2);
+        assertThat(response.getData())
+                .extracting(AttendanceResponseDto::getId)
+                .containsExactly("attendance-1", "attendance-2");
+    }
+
+    @Test
+    void exportAboveTheLimitIsRejectedWithoutFetchingTheRows_H32() {
+        Specification<Attendance> spec = mock(Specification.class);
+
+        when(attendanceSpecification.build(any(AttendanceFiltersRequestDto.class), any(User.class))).thenReturn(spec);
+        when(attendanceRepository.count(spec)).thenReturn(3L);
+
+        assertThatThrownBy(() -> serviceWithExportLimit(2).export(new AttendanceFiltersRequestDto(), operator))
+                .isInstanceOfSatisfying(ExportLimitExceededException.class, exception -> {
+                    assertThat(exception.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST);
+                    assertThat(exception.getMessage()).contains("rango de fechas");
+                });
+
+        // Solo se cuenta: no se materializa ninguna fila ni se mapea nada.
+        verify(attendanceRepository, never()).findAll(any(Specification.class));
+        verifyNoInteractions(attendanceMapper);
+    }
+
+    private Attendance attendance(String id, String memberId) {
+        return Attendance.builder()
+                .id(id)
+                .member(TestFixtures.member(memberId, branch, "Integrante " + memberId))
+                .serviceEvent(eventOne)
+                .branch(branch)
+                .attendanceDate(TestFixtures.FIXED_NOW)
+                .invalid(false)
+                .build();
     }
 
     private ServiceEvent event(String id, String serviceName) {

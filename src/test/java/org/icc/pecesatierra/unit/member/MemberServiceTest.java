@@ -2,8 +2,11 @@ package org.icc.pecesatierra.unit.member;
 
 import org.icc.pecesatierra.features.attendance.repository.AttendanceRepository;
 import org.icc.pecesatierra.features.branch.Branch;
+import org.icc.pecesatierra.configurations.ExportLimits;
 import org.icc.pecesatierra.features.category.repository.mapper.MemberMapper;
 import org.icc.pecesatierra.features.member.Member;
+import org.icc.pecesatierra.features.member.dtos.MemberExportDto;
+import org.icc.pecesatierra.features.member.dtos.MemberFilterRequestDto;
 import org.icc.pecesatierra.features.member.dtos.MemberRequestDto;
 import org.icc.pecesatierra.features.member.exceptions.CannotUpdateMemberOutsideYourBranchException;
 import org.icc.pecesatierra.features.member.exceptions.MemberNoHasCategoryForThisSubCategoryException;
@@ -13,15 +16,19 @@ import org.icc.pecesatierra.features.member.service.MemberService;
 import org.icc.pecesatierra.features.user.User;
 import org.icc.pecesatierra.support.TestFixtures;
 import org.icc.pecesatierra.utils.cloudinary.PictureUtils;
+import org.icc.pecesatierra.utils.exceptions.ExportLimitExceededException;
+import org.icc.pecesatierra.utils.models.ExportResponseDto;
 import org.icc.pecesatierra.utils.specs.MemberSpecification;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -172,5 +179,60 @@ class MemberServiceTest {
 
         verify(memberRepository).delete(member);
         verifyNoInteractions(pictureUtils);
+    }
+
+    // ---------- H-32: techo de la exportacion ----------
+
+    private MemberService serviceWithExportLimit(int maxRows) {
+        return new MemberService(memberRepository, memberMapper, attendanceRepository,
+                memberPersistenceService, pictureUtils, memberSpecification, new ExportLimits(maxRows));
+    }
+
+    private User operator() {
+        return TestFixtures.user("user-1", "operador-a",
+                TestFixtures.member("operator-1", branchA, "Operador A"));
+    }
+
+    @Test
+    void exportUnderTheLimitReturnsEveryRow_H32() {
+        User user = operator();
+        Member first = TestFixtures.member("member-1", branchA, "Ana Perez");
+        Member second = TestFixtures.member("member-2", branchA, "Beto Perez");
+        Specification<Member> spec = mock(Specification.class);
+
+        when(memberSpecification.build(any(MemberFilterRequestDto.class), any(User.class))).thenReturn(spec);
+        when(memberRepository.count(spec)).thenReturn(2L);
+        when(memberRepository.findAll(spec)).thenReturn(List.of(first, second));
+        when(memberMapper.toExportDto(any(Member.class)))
+                .thenAnswer(invocation -> MemberExportDto.builder()
+                        .completeName(invocation.getArgument(0, Member.class).getCompleteName())
+                        .build());
+
+        ExportResponseDto<MemberExportDto> response =
+                serviceWithExportLimit(2).export(new MemberFilterRequestDto(), user);
+
+        assertThat(response.getTotalElements()).isEqualTo(2);
+        assertThat(response.getData())
+                .extracting(MemberExportDto::getCompleteName)
+                .containsExactly("Ana Perez", "Beto Perez");
+    }
+
+    @Test
+    void exportAboveTheLimitIsRejectedWithoutFetchingTheRows_H32() {
+        User user = operator();
+        Specification<Member> spec = mock(Specification.class);
+
+        when(memberSpecification.build(any(MemberFilterRequestDto.class), any(User.class))).thenReturn(spec);
+        when(memberRepository.count(spec)).thenReturn(3L);
+
+        assertThatThrownBy(() -> serviceWithExportLimit(2).export(new MemberFilterRequestDto(), user))
+                .isInstanceOfSatisfying(ExportLimitExceededException.class, exception -> {
+                    assertThat(exception.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST);
+                    assertThat(exception.getMessage()).contains("rango de fechas");
+                });
+
+        // Solo se cuenta: no se materializa ninguna fila ni se mapea nada.
+        verify(memberRepository, never()).findAll(any(Specification.class));
+        verifyNoInteractions(memberMapper);
     }
 }

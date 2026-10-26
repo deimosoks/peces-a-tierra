@@ -12,6 +12,7 @@ import org.icc.pecesatierra.features.member.exceptions.CannotDeleteMemberWithRec
 import org.icc.pecesatierra.features.member.exceptions.CannotUpdateMemberOutsideYourBranchException;
 import org.icc.pecesatierra.features.member.exceptions.MemberNotFoundException;
 import org.icc.pecesatierra.features.user.User;
+import org.icc.pecesatierra.configurations.ExportLimits;
 import org.icc.pecesatierra.features.category.repository.mapper.MemberMapper;
 import org.icc.pecesatierra.features.attendance.repository.AttendanceRepository;
 import org.icc.pecesatierra.features.member.repository.MemberRepository;
@@ -43,6 +44,7 @@ public class MemberService {
     private final MemberPersistenceService memberPersistenceService;
     private final PictureUtils pictureUtils;
     private final MemberSpecification memberSpecification;
+    private final ExportLimits exportLimits;
 
     public MemberResponseDto create(MemberRequestDto memberRequestDto, User user) {
 
@@ -160,6 +162,10 @@ public class MemberService {
     @Transactional(readOnly = true)
     public ExportResponseDto<MemberExportDto> export(MemberFilterRequestDto dto, User user) {
         Specification<Member> spec = memberSpecification.build(dto, user);
+
+        // H-32: se cuenta con la misma especificacion antes de materializar las
+        // filas. Por encima del techo se rechaza; nunca se trunca en silencio.
+        exportLimits.assertAllowed(memberRepository.count(spec));
 
         List<Member> members = memberRepository.findAll(spec);
 

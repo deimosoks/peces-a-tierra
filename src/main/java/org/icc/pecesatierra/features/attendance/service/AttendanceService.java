@@ -20,6 +20,7 @@ import org.icc.pecesatierra.features.attendance.exceptions.MultipleServiceEvents
 import org.icc.pecesatierra.features.service.service.events.ServiceEventNotFoundException;
 import org.icc.pecesatierra.features.member.exceptions.CannotDeleteMemberOutSideYourBranchException;
 import org.icc.pecesatierra.features.attendance.mapper.AttendanceMapper;
+import org.icc.pecesatierra.configurations.ExportLimits;
 import org.icc.pecesatierra.utils.enums.AppPermission;
 import org.icc.pecesatierra.utils.models.ExportResponseDto;
 import org.icc.pecesatierra.utils.models.PagesResponseDto;
@@ -49,6 +50,7 @@ public class AttendanceService{
     private final ServiceEventRepository serviceEventRepository;
     private final AttendanceSpecification attendanceSpecification;
     private final DateTimeUtils dateTimeUtils;
+    private final ExportLimits exportLimits;
 
     @Transactional
     public void create(List<AttendanceRequestDto> attendances, User user) {
@@ -211,6 +213,10 @@ public class AttendanceService{
     @Transactional(readOnly = true)
     public ExportResponseDto<AttendanceResponseDto> export(AttendanceFiltersRequestDto dto, User user) {
         Specification<Attendance> spec = attendanceSpecification.build(dto, user);
+
+        // H-32: mismo techo que en la exportacion de integrantes. Se cuenta
+        // primero para no materializar decenas de miles de asistencias.
+        exportLimits.assertAllowed(attendanceRepository.count(spec));
 
         List<Attendance> members = attendanceRepository.findAll(spec);
 

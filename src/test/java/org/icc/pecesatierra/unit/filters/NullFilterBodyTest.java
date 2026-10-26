@@ -7,6 +7,7 @@ import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Path;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
+import org.icc.pecesatierra.configurations.ExportLimits;
 import org.icc.pecesatierra.features.attendance.Attendance;
 import org.icc.pecesatierra.features.attendance.mapper.AttendanceMapper;
 import org.icc.pecesatierra.features.attendance.repository.AttendanceRepository;
@@ -167,9 +168,11 @@ class NullFilterBodyTest {
     @BeforeEach
     void setUp() {
         memberService = new MemberService(memberRepository, memberMapper, attendanceRepository,
-                memberPersistenceService, pictureUtils, new MemberSpecification(dateTimeUtils));
+                memberPersistenceService, pictureUtils, new MemberSpecification(dateTimeUtils),
+                new ExportLimits(10000));
         attendanceService = new AttendanceService(attendanceRepository, memberRepository, attendanceMapper,
-                serviceEventRepository, new AttendanceSpecification(dateTimeUtils), dateTimeUtils);
+                serviceEventRepository, new AttendanceSpecification(dateTimeUtils), dateTimeUtils,
+                new ExportLimits(10000));
         userService = new UserService(userRepository, memberRepository, passwordEncoder, roleRepository,
                 userMapper, new UserSpecification(), dateTimeUtils);
         serviceEventService = new ServiceEventService(serviceEventRepository, serviceEventMapper,
