@@ -16,6 +16,7 @@ import org.icc.pecesatierra.features.member.repository.MemberRepository;
 import org.icc.pecesatierra.features.attendance.exceptions.AttendanceNotFoundException;
 import org.icc.pecesatierra.features.attendance.exceptions.AttendanceOutOfRangeException;
 import org.icc.pecesatierra.features.attendance.exceptions.CannotRegisterAttendanceWithDeactivatedServiceException;
+import org.icc.pecesatierra.features.attendance.exceptions.MultipleServiceEventsInBatchException;
 import org.icc.pecesatierra.features.service.service.events.ServiceEventNotFoundException;
 import org.icc.pecesatierra.features.member.exceptions.CannotDeleteMemberOutSideYourBranchException;
 import org.icc.pecesatierra.features.attendance.mapper.AttendanceMapper;
@@ -55,7 +56,17 @@ public class AttendanceService{
         if (attendances == null || attendances.isEmpty())
             return;
 
-        ServiceEvent event = serviceEventRepository.findById(attendances.getFirst().getServiceEventId())
+        // H-41: el lote se registra contra un unico evento. Si llegan eventos
+        // distintos no se puede elegir uno sin perder integridad, asi que se
+        // rechaza en lugar de descartar los demas en silencio.
+        Set<String> serviceEventIds = attendances.stream()
+                .map(AttendanceRequestDto::getServiceEventId)
+                .collect(Collectors.toSet());
+
+        if (serviceEventIds.size() > 1)
+            throw new MultipleServiceEventsInBatchException();
+
+        ServiceEvent event = serviceEventRepository.findById(serviceEventIds.iterator().next())
                 .orElseThrow(ServiceEventNotFoundException::new);
 
         if (!event.getServices().isActive()) {
