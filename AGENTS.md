@@ -14,6 +14,10 @@ Spring Boot 3.5.9 / Java 21 REST API with a prebuilt Angular PWA embedded in the
 
 No linter, formatter, type checker, CI, or codegen step is configured. Compile + test are the verification steps. `build/`, `bin/`, `.gradle/` are artifacts; never edit them.
 
+## Frontend deploy
+
+`scripts/deploy-frontend.ps1` is the only supported way to refresh the embedded SPA. It builds the Angular app (`npx ng build --configuration production`), copies `dist/icc-tda-frontend/browser` into `src/main/resources/static/`, removes files from the previous bundle that no longer exist, verifies the SHA256 of every copied file and checks that every hash declared in `ngsw.json` exists and matches. It aborts loudly on any mismatch. Paths are parameters: `-FrontendRoot`, `-OutputPath`, `-BackendStatic`, `-Configuration`. Do not hand-edit `static/` and do not copy with tools that rewrite line endings: `ngsw.json` hashes the exact bytes.
+
 ## Commits
 
 - One commit = one atomic change. It must compile on its own and must not mix unrelated fixes, refactors, formatting, dependency updates, or test suites.

@@ -1,3 +1,8 @@
+# El estático de Angular se sirve byte a byte y ngsw.json valida su SHA256: si
+# git convierte el fin de línea al hacer checkout, los hashes dejan de coincidir
+# y el service worker rechaza el bundle. -text desactiva toda conversión EOL.
+src/main/resources/static/** -text
+
 /gradlew text eol=lf
 *.bat text eol=crlf
 *.jar binary
