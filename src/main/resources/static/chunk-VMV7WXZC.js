@@ -1,0 +1,1 @@
+import{H as o,O as s,b as n,y as r}from"./chunk-7ES6GNN3.js";function h(t){t||(t=o(s));let i=new n(e=>{if(t.destroyed){e.next();return}return t.onDestroy(e.next.bind(e))});return e=>e.pipe(r(i))}export{h as a};
