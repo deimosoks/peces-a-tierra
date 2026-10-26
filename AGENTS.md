@@ -42,14 +42,14 @@ No linter, formatter, type checker, CI, or codegen step is configured. Compile +
 - Layout: `features/<domain>/` contains `controller/`, `service/`, `repository/`, `dtos/`, `mapper/`, `exceptions/`; the entity sits at the domain root. Cross-cutting specs live in `utils/specs/`.
 - Response style is inconsistent: some controllers extend `BaseController` (`ApiResponse` envelope), others (e.g. `MemberController`) return raw DTOs. Match the controller being edited; don't standardize opportunistically.
 - User-facing messages and most logs are Spanish; identifiers and class names are English. Keep new user-facing strings in Spanish.
-- Every endpoint except `POST /api/auth/login` and `GET /api/health` (67 of 69 handlers) is guarded with `@PreAuthorize` combining `hasAuthority(T(...AppPermission).X.name())` (often `|| ADMINISTRATOR`) and `@securityService.isActive(authentication)`. Permission strings are also rows in the `role_permission` table, so adding an `AppPermission` enum value does not grant it to any role.
+- Every endpoint except `POST /api/auth/login` and `GET /api/health` (69 of 71 handlers) is guarded with `@PreAuthorize` combining `hasAuthority(T(...AppPermission).X.name())` (often `|| ADMINISTRATOR`) and `@securityService.isActive(authentication)`. Permission strings are also rows in the `role_permission` table, so adding an `AppPermission` enum value does not grant it to any role.
 - Most non-admin operations are branch-scoped: services and specifications compare `user.getMember().getBranch().getId()`. Admins may pass `branchId`. Preserve this in any new query.
 - Timestamps are stored in UTC (`OffsetDateTime`), business timezone is `America/Bogota`. Use `DateTimeUtils.toUTC`/`nowUTC` for writes and convert to Colombia on output; don't call local `now()`.
 - Throw a dedicated `ApiException` subclass from `features/**/exceptions` for each business error; `GlobalHandlerException` maps it to `ErrorResponseDto`. Unhandled `DataIntegrityViolationException` maps to 409 (details stay in the log); anything else becomes a generic 500.
 
 ## Frontend
 
-- `src/main/resources/static/` is committed, hashed Angular build output (no `package.json` here); the deployed bundle is `main-PCRBV2VD.js` (frontend commit `9de9c3c`). Do not hand-edit `main-*.js`/`chunk-*.js`; rebuild the frontend externally and copy its `dist`.
+- `src/main/resources/static/` is committed, hashed Angular build output (no `package.json` here); the deployed bundle is `main-PJ2GMY5K.js`. The real source is **`C:\dev\frontendmagico`** (Angular 21, remote `github.com/deimosoks/peces-a-tierra-frontend`). `C:\dev\flow frontend` is an obsolete lineage: do not use it. Rebuild in `frontendmagico` and deploy with `scripts/deploy-frontend.ps1`; never hand-edit `main-*.js`/`chunk-*.js`.
 - `MvcConfig` serves `static/` and falls back to `index.html` for non-`api/` paths (SPA routing). Public routes: `/api/auth/login`, `/api/auth/refresh`, `GET /api/health`, plus static assets; all other `/api/**` need a Bearer JWT.
 
 ## AI endpoint caution
@@ -58,13 +58,17 @@ No linter, formatter, type checker, CI, or codegen step is configured. Compile +
 
 ## Testing reality
 
-The suite has 29 classes and 158 tests: unit tests under `src/test/java/.../unit`, MockMvc/security
-tests under `.../web`, and Testcontainers integration tests (`ApplicationContextIT`,
-`AttendanceExportIT`). `.\gradlew.bat test` runs everything; the 4 integration tests are skipped when
-Docker is absent (`@Testcontainers(disabledWithoutDocker = true)`), so the expected result is
-158 tests / 0 failures / 0 errors / 4 skipped. Recent additions cover the age-filter boundaries
-(`MemberSpecificationTest`), `MemberSubCategoryServiceTest`, `MemberTypeServiceTest`,
-`MemberMapperTest` and the 409 handler (`GlobalHandlerExceptionTest`,
-`GlobalHandlerExceptionMvcTest`). There is no JaCoCo coverage, no CI pipeline and no linter.
+The suite has 34 classes and 191 tests (158 from the previous round + 33 new): unit tests under
+`src/test/java/.../unit`, MockMvc/security tests under `.../web`, and Testcontainers integration tests
+(`ApplicationContextIT`, `AttendanceExportIT`). `.\gradlew.bat test` runs everything; the 4 integration
+tests are skipped when Docker is absent (`@Testcontainers(disabledWithoutDocker = true)`), so the
+expected result is 191 tests / 0 failures / 0 errors / 4 skipped. `EndpointInventoryTest` pins the
+handler inventory at **71 handlers / 69 with `@PreAuthorize`** and cross-checks
+`src/test/resources/security/endpoint-matrix.csv`, so adding or removing an endpoint requires updating
+the constants and the CSV. Recent additions cover the age-filter boundaries (`MemberSpecificationTest`),
+`MemberSubCategoryServiceTest`, `MemberTypeServiceTest`, `MemberMapperTest` and the note contract
+(`MemberNoteControllerTest`). The 409 handler added one test to each of the pre-existing
+`GlobalHandlerExceptionTest` and `GlobalHandlerExceptionMvcTest`; neither is a new class. There is no
+JaCoCo coverage, no CI pipeline and no linter.
 Verify behaviour with `compileJava`, `test`, or a manual `bootRun` against a populated
 database. Behaviour changes need a regression test in the same commit.
