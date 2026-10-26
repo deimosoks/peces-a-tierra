@@ -1,0 +1,1 @@
+import{Q as e,V as o,wc as a,zc as p}from"./chunk-NJ47G6E7.js";var i=class t{http=o(a);baseUrl=`${p.baseUrl}/reports`;generateReport(r){return this.http.post(this.baseUrl,r)}static \u0275fac=function(s){return new(s||t)};static \u0275prov=e({token:t,factory:t.\u0275fac,providedIn:"root"})};export{i as a};
