@@ -3,7 +3,6 @@ package org.icc.pecesatierra.features.user.controller;
 import jakarta.validation.Valid;
 import jakarta.validation.groups.Default;
 import lombok.RequiredArgsConstructor;
-import org.icc.pecesatierra.utils.models.BaseController;
 import org.icc.pecesatierra.features.user.User;
 import org.icc.pecesatierra.features.user.dtos.*;
 import org.icc.pecesatierra.features.user.service.UserService;
@@ -18,7 +17,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/users")
 @RequiredArgsConstructor
-public class UserController extends BaseController {
+public class UserController {
 
     private final UserService userService;
 

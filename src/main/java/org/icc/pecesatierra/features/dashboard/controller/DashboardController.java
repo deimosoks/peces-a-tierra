@@ -1,7 +1,6 @@
 package org.icc.pecesatierra.features.dashboard.controller;
 
 import lombok.RequiredArgsConstructor;
-import org.icc.pecesatierra.utils.models.BaseController;
 import org.icc.pecesatierra.features.dashboard.dtos.DashboardResponseDto;
 import org.icc.pecesatierra.features.dashboard.service.DashboardService;
 import org.icc.pecesatierra.features.user.User;
@@ -15,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/dashboards")
 @RequiredArgsConstructor
-public class DashboardController extends BaseController {
+public class DashboardController {
 
     private final DashboardService dashboardService;
 

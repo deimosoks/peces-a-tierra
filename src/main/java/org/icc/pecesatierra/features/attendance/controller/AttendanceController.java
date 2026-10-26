@@ -2,7 +2,6 @@ package org.icc.pecesatierra.features.attendance.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.icc.pecesatierra.utils.models.BaseController;
 import org.icc.pecesatierra.features.attendance.dtos.AttendanceFiltersRequestDto;
 import org.icc.pecesatierra.features.attendance.dtos.AttendanceInvalidRequestDto;
 import org.icc.pecesatierra.features.attendance.dtos.AttendanceRequestDto;
@@ -21,7 +20,7 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/attendances")
-public class AttendanceController extends BaseController {
+public class AttendanceController {
 
     private final AttendanceService attendanceService;
 

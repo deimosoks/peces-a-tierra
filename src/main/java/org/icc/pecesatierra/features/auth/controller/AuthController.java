@@ -3,7 +3,6 @@ package org.icc.pecesatierra.features.auth.controller;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.icc.pecesatierra.features.auth.service.AuthService;
-import org.icc.pecesatierra.utils.models.BaseController;
 import org.icc.pecesatierra.features.auth.dtos.AuthRequestDto;
 import org.icc.pecesatierra.features.auth.dtos.AuthResponseDto;
 import org.icc.pecesatierra.features.auth.dtos.ChanggePasswordRequest;
@@ -20,7 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/auth")
-public class AuthController extends BaseController {
+public class AuthController {
 
     private final AuthService authService;
 

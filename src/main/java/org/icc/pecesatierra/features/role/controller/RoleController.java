@@ -2,7 +2,6 @@ package org.icc.pecesatierra.features.role.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.icc.pecesatierra.utils.models.BaseController;
 import org.icc.pecesatierra.features.role.dtos.RoleRequestDto;
 import org.icc.pecesatierra.features.role.dtos.RoleResponseDto;
 import org.icc.pecesatierra.features.role.service.RoleService;
@@ -18,7 +17,7 @@ import java.util.List;
 @RequestMapping("/api/roles")
 @RequiredArgsConstructor
 @RestController
-public class RoleController extends BaseController {
+public class RoleController {
 
     private final RoleService roleService;
 

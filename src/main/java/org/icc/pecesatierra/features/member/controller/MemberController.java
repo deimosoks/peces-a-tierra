@@ -2,7 +2,6 @@ package org.icc.pecesatierra.features.member.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.icc.pecesatierra.utils.models.BaseController;
 import org.icc.pecesatierra.features.member.dtos.MemberExportDto;
 import org.icc.pecesatierra.features.member.dtos.MemberFilterRequestDto;
 import org.icc.pecesatierra.features.member.dtos.MemberRequestDto;
@@ -20,7 +19,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/members")
-public class MemberController extends BaseController {
+public class MemberController {
 
     private final MemberService memberService;
 

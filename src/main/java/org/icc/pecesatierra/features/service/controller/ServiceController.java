@@ -2,7 +2,6 @@ package org.icc.pecesatierra.features.service.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.icc.pecesatierra.utils.models.BaseController;
 import org.icc.pecesatierra.features.service.dtos.ServiceRequestDto;
 import org.icc.pecesatierra.features.service.dtos.ServiceResponseDto;
 import org.icc.pecesatierra.features.service.service.ServiceService;
@@ -18,7 +17,7 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/services")
-public class ServiceController extends BaseController {
+public class ServiceController {
 
     private final ServiceService serviceService;
 

@@ -1,7 +1,6 @@
 package org.icc.pecesatierra.features.report.controller;
 
 import lombok.RequiredArgsConstructor;
-import org.icc.pecesatierra.utils.models.BaseController;
 import org.icc.pecesatierra.features.report.dtos.ReportRequestDto;
 import org.icc.pecesatierra.features.report.dtos.ReportResponseDto;
 import org.icc.pecesatierra.features.report.service.ReportService;
@@ -20,7 +19,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/reports")
 @RequiredArgsConstructor
-public class ReportController extends BaseController {
+public class ReportController {
 
     private final ReportService reportService;
 

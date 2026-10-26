@@ -2,7 +2,6 @@ package org.icc.pecesatierra.features.ai.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.icc.pecesatierra.utils.enums.AppPermission;
-import org.icc.pecesatierra.utils.models.BaseController;
 import org.icc.pecesatierra.features.ai.dtos.AiChatRequestDto;
 import org.icc.pecesatierra.features.ai.dtos.AiChatResponseDto;
 import org.icc.pecesatierra.features.ai.service.AiService;
@@ -14,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/ai")
-public class AiController extends BaseController {
+public class AiController {
 
     private final AiService aiService;
 
