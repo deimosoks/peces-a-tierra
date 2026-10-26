@@ -61,15 +61,16 @@ No linter, formatter, type checker, CI, or codegen step is configured. Compile +
 
 ## Testing reality
 
-The suite has 46 classes and 248 tests: unit tests under `src/test/java/.../unit`, MockMvc/security tests
+The suite has 47 classes and 262 tests: unit tests under `src/test/java/.../unit`, MockMvc/security tests
 under `.../web`, and Testcontainers integration tests (`ApplicationContextIT`, `AttendanceExportIT`).
 `.\gradlew.bat test` runs everything; the 4 integration tests are skipped when Docker is absent
-(`@Testcontainers(disabledWithoutDocker = true)`), so the expected result is 248 tests / 0 failures /
+(`@Testcontainers(disabledWithoutDocker = true)`), so the expected result is 262 tests / 0 failures /
 0 errors / 4 skipped. (The wave of 2026-10-25 that closed H-41/H-13/H-40/H-29/H-16 left 39 classes /
 209 tests; the H-27/H-42 wave added `DiscipuladoSpecificationTest` and two tests to `UserServiceTest`;
 the H-14/H-19/H-18/H-17 wave added `ResultRedactorTest`, `InMemoryRateLimiterTest`,
 `RateLimitFilterTest`, `RateLimitFilterRegistrationTest`, `JwtServiceTest`, `RefreshTokenServiceTest`
-and two login-timing tests to `AuthServiceTest`.)
+and two login-timing tests to `AuthServiceTest`; the H-32/H-39/H-42b wave added `ServiceServiceTest` and
+new tests in `MemberServiceTest`, `AttendanceServiceTest`, `RoleServiceTest` and `DiscipuladoServiceTest`.)
 `EndpointInventoryTest` pins the handler inventory at **71 handlers / 69 with `@PreAuthorize`** and
 cross-checks `src/test/resources/security/endpoint-matrix.csv`, so adding or removing an endpoint
 requires updating the constants and the CSV. Recent additions cover the discipulado date conversion and
