@@ -11,6 +11,12 @@ import java.util.List;
 public interface MemberCategoryRepository extends JpaRepository<MemberCategory, String> {
     boolean existsByName(String name);
 
+    /**
+     * H-42b: excluye la propia categoria para que guardar sin cambiar el nombre
+     * no se considere un conflicto. Mismo criterio que en tipo y subcategoria.
+     */
+    boolean existsByNameAndIdNot(String name, String id);
+
     @Override
     @EntityGraph(attributePaths = {
             "subCategories"

@@ -42,6 +42,15 @@ public class MemberCategoryService {
         MemberCategory memberCategory = memberCategoryRepository.findById(categoryId)
                 .orElseThrow(CategoryNotFoundException::new);
 
+        // H-42b: excluye la propia categoria, igual que en tipo y subcategoria.
+        // El 404 de arriba va primero: sobre una categoria inexistente no se
+        // consulta unicidad.
+        if (memberCategoryRepository.existsByNameAndIdNot(memberCategoryRequestDto.getName(), memberCategory.getId())) {
+            log.warn("Usuario {} intento actualizar la categoria {} con el nombre {} pero ya existe otra categoria con ese nombre.",
+                    user.getMember().getId(), memberCategory.getId(), memberCategoryRequestDto.getName());
+            throw new CategoryWithNameAlreadyExistsException(memberCategoryRequestDto.getName());
+        }
+
         MemberCategory beforeUpdate = MemberCategory.builder()
                 .id(memberCategory.getId())
                 .name(memberCategory.getName())
