@@ -9,4 +9,8 @@ import java.util.List;
 @Repository
 public interface ServiceRepository extends JpaRepository<Services,String> {
     List<Services> findAllByActiveTrue();
+
+    boolean existsByName(String name);
+
+    boolean existsByNameAndIdNot(String name, String id);
 }

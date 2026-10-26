@@ -7,6 +7,7 @@ import org.icc.pecesatierra.features.service.dtos.ServiceResponseDto;
 import org.icc.pecesatierra.features.service.Services;
 import org.icc.pecesatierra.features.user.User;
 import org.icc.pecesatierra.features.service.exceptions.CannotDeleteServiceWithRecords;
+import org.icc.pecesatierra.features.service.exceptions.ServiceWithNameAlreadyExistsException;
 import org.icc.pecesatierra.features.service.exceptions.ServicesNotFoundException;
 import org.icc.pecesatierra.features.service.repository.ServiceEventRepository;
 import org.icc.pecesatierra.features.service.mapper.ServiceMapper;
@@ -29,6 +30,14 @@ public class ServiceService {
 
     @Transactional
     public ServiceResponseDto create(ServiceRequestDto serviceRequestDto, User user) {
+
+        // H-42b: el nombre es la clave natural del catalogo; se valida antes de
+        // guardar para no depender de un indice ni del 409 generico de integridad.
+        if (serviceRepository.existsByName(serviceRequestDto.getName())) {
+            log.warn("Usuario {} intento crear el servicio '{}' pero ya existe.",
+                    user.getMember().getId(), serviceRequestDto.getName());
+            throw new ServiceWithNameAlreadyExistsException(serviceRequestDto.getName());
+        }
 
         Services services = Services.builder()
                 .name(serviceRequestDto.getName())
@@ -60,6 +69,13 @@ public class ServiceService {
     public ServiceResponseDto update(ServiceRequestDto serviceRequestDto, String serviceId, User user) {
         Services services = serviceRepository.findById(serviceId)
                 .orElseThrow(ServicesNotFoundException::new);
+
+        // Excluye el propio servicio: guardar sin cambiar el nombre no es conflicto.
+        if (serviceRepository.existsByNameAndIdNot(serviceRequestDto.getName(), services.getId())) {
+            log.warn("Usuario {} intento renombrar el servicio {} a '{}' pero ya existe otro con ese nombre.",
+                    user.getMember().getId(), services.getId(), serviceRequestDto.getName());
+            throw new ServiceWithNameAlreadyExistsException(serviceRequestDto.getName());
+        }
 
         Services beforeUpdate = Services.builder()
                 .id(services.getId())
