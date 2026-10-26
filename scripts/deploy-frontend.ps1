@@ -98,14 +98,26 @@ if (-not (Test-Path -LiteralPath (Join-Path $backendStaticPath 'index.html') -Pa
 
 Write-Host "Compilando Angular ($Configuration) en $FrontendRoot ..." -ForegroundColor Cyan
 Push-Location -LiteralPath $FrontendRoot
+# Angular escribe los warnings (presupuesto, CommonJS) por stderr. Con
+# `$ErrorActionPreference = 'Stop'` PowerShell 5.1 los trata como errores
+# terminantes y aborta un build que en realidad fue correcto, así que aquí se
+# rebaja la preferencia y el código de salida se evalúa explícitamente.
+$buildExitCode = 0
+$previousErrorActionPreference = $ErrorActionPreference
 try {
-    & npx ng build --configuration $Configuration
-    if ($LASTEXITCODE -ne 0) {
-        Fail "ng build terminó con código $LASTEXITCODE."
-    }
+    $ErrorActionPreference = 'Continue'
+    # Se invoca a través de cmd para que stdout y stderr lleguen como texto plano
+    # en orden: si PowerShell captura stderr de un ejecutable nativo lo convierte
+    # en ErrorRecord y, con 'Stop', aborta un build que fue correcto.
+    & cmd /c "npx ng build --configuration $Configuration 2>&1"
+    $buildExitCode = $LASTEXITCODE
 }
 finally {
+    $ErrorActionPreference = $previousErrorActionPreference
     Pop-Location
+}
+if ($buildExitCode -ne 0) {
+    Fail "ng build terminó con código $buildExitCode."
 }
 
 if (-not (Test-Path -LiteralPath $distPath -PathType Container)) {
