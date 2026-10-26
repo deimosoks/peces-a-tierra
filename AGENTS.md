@@ -58,17 +58,23 @@ No linter, formatter, type checker, CI, or codegen step is configured. Compile +
 
 ## Testing reality
 
-The suite has 34 classes and 191 tests (158 from the previous round + 33 new): unit tests under
-`src/test/java/.../unit`, MockMvc/security tests under `.../web`, and Testcontainers integration tests
-(`ApplicationContextIT`, `AttendanceExportIT`). `.\gradlew.bat test` runs everything; the 4 integration
-tests are skipped when Docker is absent (`@Testcontainers(disabledWithoutDocker = true)`), so the
-expected result is 191 tests / 0 failures / 0 errors / 4 skipped. `EndpointInventoryTest` pins the
-handler inventory at **71 handlers / 69 with `@PreAuthorize`** and cross-checks
-`src/test/resources/security/endpoint-matrix.csv`, so adding or removing an endpoint requires updating
-the constants and the CSV. Recent additions cover the age-filter boundaries (`MemberSpecificationTest`),
-`MemberSubCategoryServiceTest`, `MemberTypeServiceTest`, `MemberMapperTest` and the note contract
+The suite has 40 classes and 217 tests: unit tests under `src/test/java/.../unit`, MockMvc/security tests
+under `.../web`, and Testcontainers integration tests (`ApplicationContextIT`, `AttendanceExportIT`).
+`.\gradlew.bat test` runs everything; the 4 integration tests are skipped when Docker is absent
+(`@Testcontainers(disabledWithoutDocker = true)`), so the expected result is 217 tests / 0 failures /
+0 errors / 4 skipped. (The wave of 2026-10-25 that closed H-41/H-13/H-40/H-29/H-16 left 39 classes /
+209 tests; the H-27/H-42 wave added `DiscipuladoSpecificationTest` and two tests to `UserServiceTest`.)
+`EndpointInventoryTest` pins the handler inventory at **71 handlers / 69 with `@PreAuthorize`** and
+cross-checks `src/test/resources/security/endpoint-matrix.csv`, so adding or removing an endpoint
+requires updating the constants and the CSV. Recent additions cover the discipulado date conversion and
+null-filter branch scoping (`DiscipuladoSpecificationTest`, H-27), username uniqueness on rename
+(`UserServiceTest`, H-42), the age-filter boundaries (`MemberSpecificationTest`), and the note contract
 (`MemberNoteControllerTest`). The 409 handler added one test to each of the pre-existing
 `GlobalHandlerExceptionTest` and `GlobalHandlerExceptionMvcTest`; neither is a new class. There is no
 JaCoCo coverage, no CI pipeline and no linter.
+
+The Gradle wrapper (8.14.3) does not start under the system JDK 25 (`major version 69`); run the build
+with `JAVA_HOME` pointing at JDK 21 (H-38 still open).
+
 Verify behaviour with `compileJava`, `test`, or a manual `bootRun` against a populated
 database. Behaviour changes need a regression test in the same commit.

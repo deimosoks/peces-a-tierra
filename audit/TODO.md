@@ -3,13 +3,43 @@
 Decisiones de producto que aplazan un cambio de diseño. No son "descartados": siguen siendo deuda
 técnica y deben retomarse cuando se cumpla su disparador.
 
-## Estado al cierre del 2026-10-25
+## Estado al cierre del 2026-10-25 (ola de higiene y correctitud)
+
+- Suite: **40 clases / 217 tests, 213 ejecutados, 4 saltados** (Docker), **0 fallos / 0 errores**.
+  Al abrir la ola eran 39 clases / 209 tests; H-27 (6 tests nuevos) y H-42 (2 tests nuevos) suman 8.
+  Inventario de seguridad sin cambios: **71 handlers / 69 con `@PreAuthorize`**.
+- Cerrados en esta ola: **H-41** (`88178ea`), **H-13** (`49b9978`), **H-40** (`6cd0e67`), **H-29**
+  (`3c40f4b`), **H-16** (`0d46cce`), **H-27** (`8aa866d`), **H-42 residual** (`01774f6`), **H-33**
+  (`e876e1a`) y **H-37** (`cff2b16`).
+- Abiertos: **H-01 (P0)**; altos **H-14, H-15, H-17, H-18, H-19, H-47**; medios **H-32, H-39,
+  H-42b, H-51**; bajos/proceso **H-30, H-34, H-35, H-36, H-38, H-44, H-50** y **M-03 residual, M-06,
+  M-07, M-09, M-10, M-18, M-21, M-22**.
+- Despliegue: `src/main/resources/static/` no cambió; el bundle servido sigue siendo `main-PJ2GMY5K.js`.
+  `src (2).zip` ya no está en `HEAD`, pero sigue en el historial (quitarlo exigiría reescribir `master`).
+- Siguiente paso recomendado: H-01 (vistas `ai_read` + validador de lista blanca); es el único P0.
+
+### Detalle de los hallazgos cerrados en esta ola
+
+| Hallazgo | Qué se corrigió | Commit | Test de regresión |
+|---|---|---|---|
+| H-41 — el lote de asistencias se atribuía al primer evento | `AttendanceService.create` rechaza un lote con más de un `serviceEventId` (nueva `MultipleServiceEventsInBatchException`) | `88178ea` | tests nuevos en `AttendanceServiceTest` |
+| H-13 — PII, notas pastorales y SQL en logs INFO | `MemberPersistenceService`, `MemberNoteService` y `AiService` dejan de registrar datos personales y notas | `49b9978` | `LogPrivacyTest` |
+| H-40 — edades y ventana del dashboard con la zona del servidor | `MemberCategoryDeterminer`, `MemberMapper`, `MemberSpecification` y `DashboardService` calculan en `America/Bogota` | `6cd0e67` | `DashboardServiceTest`, `MemberMapperTest`, `MemberSpecificationTest` |
+| H-29 — el reporte excluía el último día | `DateTimeUtils.startOfNextDayUTC` y límite superior exclusivo en el reporte y en bautismos | `3c40f4b` | `AttendanceReportSpecificationTest`, `BaptismSpecificationTest`, `DateTimeUtilsTest` |
+| H-16 — CORS `*` con credenciales | `SecurityConfig` usa solo `CORS_ALLOWED_ORIGINS` (lista explícita; vacío = sin cabeceras) | `0d46cce` | `CorsConfigTest` |
+| H-27 — discipulado interpretaba hora Bogotá como UTC | `DiscipuladoSpecification` convierte con `DateTimeUtils.toUTC` y aplica el filtro de sede también con DTO nulo | `8aa866d` | `DiscipuladoSpecificationTest` |
+| H-42 residual — renombrar `username` sin unicidad de negocio | `UserService.update` valida `existsByUsernameAndIdNot` y lanza `UsernameAlreadyRegister` (409 con mensaje propio) tras comprobar sede y privilegios | `01774f6` | dos tests nuevos en `UserServiceTest` |
+| H-33 — `BaseController`/`ApiResponse` y `features/log` sin uso | se eliminan las dos clases y la entidad; los 9 controladores dejan de extender `BaseController` sin tocar rutas, firmas ni códigos | `e876e1a` | ningún test los referenciaba; `EndpointInventoryTest` sigue verde |
+| H-37 — dependencia duplicada y `src (2).zip` versionado | una sola declaración de `spring-boot-starter-web`; artefacto eliminado del índice con `git rm` | `cff2b16` | no aplica (build) |
+
+## Estado al cierre de la ronda del 2026-10-25 (H-23…M-01)
 
 - Suite: **158 tests en 29 clases, 154 ejecutados, 4 saltados** (Docker), **0 fallos / 0 errores**.
 - Cerrados en la ronda: H-23, H-24, H-25, H-28, H-42, H-42a, H-43, H-45, H-49 y, con el despliegue del
   estático, **M-01**. Detalle, tests de regresión y evidencia en `audit/ronda-2026-10-25.md`.
-- Abiertos: **H-01** (P0), **H-41**, **H-42b**, **M-03 residual**, **M-06, M-07, M-09, M-10, M-18,
-  M-21, M-22**, más los medios/bajos H-13 a H-19 y H-51.
+- Abiertos al cerrar esa ronda: **H-01** (P0), **H-41** (cerrado después en `88178ea`), **H-42b**,
+  **M-03 residual**, **M-06, M-07, M-09, M-10, M-18, M-21, M-22**, más los medios/bajos H-13 a H-19 y
+  H-51.
 - Despliegue: último commit de código `eb186ac`; estático `main-PCRBV2VD.js` (34 archivos, 0
   apariciones de `ui-avatars.com`). Sigue sin CI y sin migraciones (`ddl-auto=validate`).
 - Siguiente paso recomendado: H-01 (vistas `ai_read` + validador de lista blanca); es el único P0.
@@ -39,14 +69,23 @@ técnica y deben retomarse cuando se cumpla su disparador.
   abiertos. `AI_DB_USER`/`AI_DB_PASS` son obligatorias en el entorno de producción.
 - Siguiente paso recomendado: H-01 (vistas `ai_read` + validador) y rebuild del PWA para M-01.
 
-## H-41 — El lote de asistencias debe llevar un solo `serviceEventId`
+## H-41 — El lote de asistencias debe llevar un solo `serviceEventId` (RESUELTO)
 
-- **Estado**: aceptado temporalmente el **2026-10-24**. No se implementa en este ciclo.
-- **Problema actual**: `POST /api/attendances` recibe `List<AttendanceRequestDto>` y cada elemento
-  trae su propio `serviceEventId`, pero `AttendanceService.create` solo lee el del primero
-  (`AttendanceService.java:58`) y construye todas las filas con ese evento (`:106-107`). La
-  deduplicación (`:71`, `:118`) y la ventana horaria (`:94-101`) también usan solo el primer evento.
-- **Diseño objetivo**: un DTO de lote con el evento una sola vez y una lista de asistentes.
+- **Estado**: **RESUELTO** el **2026-10-25** (`88178ea`). El cierre se hizo por la vía defensiva, sin
+  cambiar el contrato que consume la PWA.
+- **Qué cambió**: `AttendanceService.create` compara los `serviceEventId` del lote y, si hay más de uno,
+  aborta con `MultipleServiceEventsInBatchException` (409) antes de deduplicar o de escribir filas. Ya no
+  es posible que un lote mixto se atribuya en silencio al primer evento. La deduplicación y la ventana
+  horaria siguen usando un único evento porque el lote lo garantiza.
+- **Test de regresión**: los 177 líneas añadidas a `AttendanceServiceTest` cubren lote uniforme (se
+  guarda), lote mixto (409 y ninguna fila) y el mensaje de la excepción.
+- **Deuda que queda (no bloquea)**: el DTO de lote con el evento una sola vez sigue siendo el diseño
+  objetivo. Cuando el frontend Angular (`C:\dev\frontendmagico`) se recompile se puede introducir
+  `POST /api/attendances/batch` y deprecar el array plano.
+- **Contexto histórico**: antes de `88178ea` el servicio leía solo el `serviceEventId` del primer
+  elemento (`AttendanceService.java:58`) y construía todas las filas con él (`:106-107`); un cliente
+  externo podía descuadrar reportes y dashboard. Era integridad de datos, no una fuga entre sedes.
+- **Diseño objetivo (referencia)**:
   ```java
   class AttendanceBatchRequestDto {
       @NotBlank String serviceEventId;
@@ -58,21 +97,11 @@ técnica y deben retomarse cuando se cumpla su disparador.
       String note;
   }
   ```
-  El servicio carga el evento una vez, valida estado/ventana una vez y rechaza integrantes
-  duplicados en el lote. Eliminar `serviceDate`, que hoy se recibe y no se usa.
-- **Bloqueo**: la PWA comprometida en `src/main/resources/static/` envía un array plano con
-  `serviceEventId` repetido en cada elemento. El contrato nuevo le devolvería 400. No se puede
-  editar el bundle a mano (`AGENTS.md`); hay que recompilar el frontend externamente o introducir
-  `POST /api/attendances/batch` y dejar el endpoint actual deprecado durante una transición.
-- **Riesgo aceptado**: hoy la PWA manda un solo evento, así que el defecto está latente. Un cliente
-  externo, un script o una futura UI multi-evento puede atribuir asistencias al evento equivocado y
-  descuadrar reportes/dashboard. No es una fuga entre sedes; es integridad de datos.
-- **Disparadores para retomarlo**: rebuild del frontend Angular, aparición de un cliente API
-  distinto de la PWA, o soporte de selección multi-evento.
 
 ## H-42b — `Services.name` no tiene restricción única (ABIERTO)
 
-- **Estado**: **ABIERTO**. Separado de H-42 durante la verificación adversarial del 2026-10-25: la
+- **Estado**: **ABIERTO**. El residual de H-42 sobre el renombrado de `username` se cerró aparte en
+  `01774f6` (ola del 2026-10-25); este sigue siendo un hallazgo distinto y separado: la
   tabla `member_types` tiene `unique` en `name` y por eso el alta duplicada acaba en 409; la tabla
   `services` no lo tiene.
 - **Problema actual**: `Services.java:22` declara `@Column(nullable = false)` sin `unique = true`, y
