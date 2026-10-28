@@ -52,7 +52,7 @@ No linter, formatter, type checker, CI, or codegen step is configured. Compile +
 
 ## Frontend
 
-- `src/main/resources/static/` is committed, hashed Angular build output (no `package.json` here); the deployed bundle is `main-O2DCXEYA.js`. The real source is **`C:\dev\frontendmagico`** (Angular 21, remote `github.com/deimosoks/peces-a-tierra-frontend`). `C:\dev\flow frontend` is an obsolete lineage: do not use it. Rebuild in `frontendmagico` and deploy with `scripts/deploy-frontend.ps1`; never hand-edit `main-*.js`/`chunk-*.js`.
+- `src/main/resources/static/` is committed, hashed Angular build output (no `package.json` here); the deployed bundle is `main-AWQ35QGX.js`. The real source is **`C:\dev\frontendmagico`** (Angular 21, remote `github.com/deimosoks/peces-a-tierra-frontend`). `C:\dev\flow frontend` is an obsolete lineage: do not use it. Rebuild in `frontendmagico` and deploy with `scripts/deploy-frontend.ps1`; never hand-edit `main-*.js`/`chunk-*.js`.
 - `MvcConfig` serves `static/` and falls back to `index.html` for non-`api/` paths (SPA routing). Public routes: `/api/auth/login`, `/api/auth/refresh`, `GET /api/health`, plus static assets; all other `/api/**` need a Bearer JWT.
 
 ## AI endpoint caution
